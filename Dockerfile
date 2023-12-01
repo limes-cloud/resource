@@ -1,24 +1,29 @@
-FROM golang:1.18 AS builder
+# 构建打包镜像
+FROM golang:alpine AS build
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE on
+WORKDIR /go/cache
+ADD go.mod .
+ADD go.sum .
+RUN go mod download
+WORKDIR /go/build
+ADD . .
+RUN GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${APP_VERSION} -X main.Name=${APP_NAME} -X main.ConfigHost=${CONFIG_HOST}  -X main.ConfigToken=${CONFIG_TOKEN}" -installsuffix cgo -o resource cmd/resource/main.go
 
-COPY . /src
-WORKDIR /src
+# 构建执行镜像
+FROM alpine
+WORKDIR /go/build
 
-RUN GOPROXY=https://goproxy.cn make build
+ARG APP_VERSION
+ARG APP_NAME
+ARG CONF_HOST
+ARG CONF_TOKEN
+ENV CONF_HOST=$CONF_HOST
+ENV CONF_TOKEN=$CONF_TOKEN
+ENV APP_NAME=$APP_NAME
+ENV APP_VERSION=$APP_VERSION
+RUN echo ${APP_NAME} $CONF_HOST
 
-FROM debian:stable-slim
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		ca-certificates  \
-        netbase \
-        && rm -rf /var/lib/apt/lists/ \
-        && apt-get autoremove -y && apt-get autoclean -y
-
-COPY --from=builder /src/bin /app
-
-WORKDIR /app
-
-EXPOSE 8000
-EXPOSE 9000
-VOLUME /data/conf
-
-CMD ["./server", "-conf", "/data/conf"]
+COPY ./static/ /go/build/static/
+COPY --from=build /go/build/resource /go/build/resource
+CMD ["./resource"]
