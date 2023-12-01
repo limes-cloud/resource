@@ -54,7 +54,7 @@ func (f *File) PageFile(ctx kratos.Context, in *v1.PageFileRequest) (*v1.PageFil
 		Page:     in.Page,
 		PageSize: in.PageSize,
 		Scopes: func(db *gorm.DB) *gorm.DB {
-			db = db.Where("directory_id=?", in.DirectoryId)
+			db = db.Where("directory_id=? and status=?", in.DirectoryId, consts.STATUS_COMPLETED)
 			if in.Name != nil {
 				db = db.Where("name like ?", *in.Name+"%")
 			}
