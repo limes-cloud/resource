@@ -24,6 +24,5 @@ ENV APP_NAME=$APP_NAME
 ENV APP_VERSION=$APP_VERSION
 RUN echo ${APP_NAME} $CONF_HOST
 
-COPY ./static/ /go/build/static/
 COPY --from=build /go/build/resource /go/build/resource
 CMD ["./resource"]
