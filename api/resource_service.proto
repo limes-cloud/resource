@@ -11,34 +11,34 @@ import "google/protobuf/empty.proto";
 service Service {
   rpc GetDirectory (GetDirectoryRequest) returns (GetDirectoryReply) {
     option (google.api.http) = {
-      get: "/resource/v1/{app}/directory",
+      get: "/resource/v1/directory",
       response_body:"list"
     };
   }
 
   rpc AddDirectory (AddDirectoryRequest) returns (Directory) {
     option (google.api.http) = {
-      post: "/resource/v1/{app}/directory",
+      post: "/resource/v1/directory",
       body:"*",
     };
   }
 
   rpc UpdateDirectory (UpdateDirectoryRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put: "/resource/v1/{app}/directory",
+      put: "/resource/v1/directory",
       body:"*",
     };
   }
 
   rpc DeleteDirectory (DeleteDirectoryRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/resource/v1/{app}/directory",
+      delete: "/resource/v1/directory",
     };
   }
 
   rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
     option (google.api.http) = {
-      post: "/resource/v1/{app}/upload/prepare",
+      post: "/resource/v1/upload/prepare",
       body:"*"
     };
   }
@@ -52,20 +52,20 @@ service Service {
 
   rpc PageFile (PageFileRequest) returns (PageFileReply) {
     option (google.api.http) = {
-      get: "/resource/v1/{app}/files"
+      get: "/resource/v1/files"
     };
   }
 
   rpc UpdateFile (UpdateFileRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put: "/resource/v1/{app}/file",
+      put: "/resource/v1/file",
       body:"*"
     };
   }
 
   rpc DeleteFile (DeleteFileRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/resource/v1/{app}/file",
+      post: "/resource/v1/file",
       body:"*"
     };
   }

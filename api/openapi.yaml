@@ -6,46 +6,21 @@ info:
     title: Service API
     version: 0.0.1
 paths:
-    /resource/v1/upload:
-        post:
-            tags:
-                - Service
-            operationId: Service_UploadFile
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UploadFileRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UploadFileReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /resource/v1/{app}/directory:
+    /resource/v1/directory:
         get:
             tags:
                 - Service
             operationId: Service_GetDirectory
             parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
                 - name: parentId
                   in: query
                   schema:
                     type: integer
                     format: uint32
+                - name: app
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -63,12 +38,6 @@ paths:
             tags:
                 - Service
             operationId: Service_UpdateDirectory
-            parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
@@ -89,12 +58,6 @@ paths:
             tags:
                 - Service
             operationId: Service_AddDirectory
-            parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
@@ -119,16 +82,15 @@ paths:
                 - Service
             operationId: Service_DeleteDirectory
             parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
                 - name: id
                   in: query
                   schema:
                     type: integer
                     format: uint32
+                - name: app
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -139,17 +101,11 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /resource/v1/{app}/file:
+    /resource/v1/file:
         put:
             tags:
                 - Service
             operationId: Service_UpdateFile
-            parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
@@ -170,12 +126,6 @@ paths:
             tags:
                 - Service
             operationId: Service_DeleteFile
-            parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
@@ -192,22 +142,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /resource/v1/{app}/files:
+    /resource/v1/files:
         get:
             tags:
                 - Service
             operationId: Service_PageFile
             parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
                 - name: directoryId
                   in: query
                   schema:
                     type: integer
                     format: uint32
+                - name: app
+                  in: query
+                  schema:
+                    type: string
                 - name: name
                   in: query
                   schema:
@@ -235,17 +184,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /resource/v1/{app}/upload/prepare:
+    /resource/v1/upload:
+        post:
+            tags:
+                - Service
+            operationId: Service_UploadFile
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UploadFileRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UploadFileReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /resource/v1/upload/prepare:
         post:
             tags:
                 - Service
             operationId: Service_PrepareUploadFile
-            parameters:
-                - name: app
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:

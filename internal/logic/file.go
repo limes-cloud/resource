@@ -96,7 +96,7 @@ func (f *File) UpdateFile(ctx kratos.Context, in *v1.UpdateFileRequest) (*empty.
 		return nil, v1.ErrorNotExistFile()
 	}
 	// 查询文件名称是否已经存在
-	if err := oldFile.OneByDirAndName(ctx, oldFile.DirectoryID, in.Name); err != nil {
+	if err := oldFile.OneByDirAndName(ctx, oldFile.DirectoryID, in.Name); err == nil {
 		return nil, v1.ErrorAlreadyExistFileName()
 	}
 

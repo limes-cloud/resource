@@ -44,24 +44,21 @@ type ServiceHTTPServer interface {
 
 func RegisterServiceHTTPServer(s *http.Server, srv ServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/resource/v1/{app}/directory", _Service_GetDirectory0_HTTP_Handler(srv))
-	r.POST("/resource/v1/{app}/directory", _Service_AddDirectory0_HTTP_Handler(srv))
-	r.PUT("/resource/v1/{app}/directory", _Service_UpdateDirectory0_HTTP_Handler(srv))
-	r.DELETE("/resource/v1/{app}/directory", _Service_DeleteDirectory0_HTTP_Handler(srv))
-	r.POST("/resource/v1/{app}/upload/prepare", _Service_PrepareUploadFile0_HTTP_Handler(srv))
+	r.GET("/resource/v1/directory", _Service_GetDirectory0_HTTP_Handler(srv))
+	r.POST("/resource/v1/directory", _Service_AddDirectory0_HTTP_Handler(srv))
+	r.PUT("/resource/v1/directory", _Service_UpdateDirectory0_HTTP_Handler(srv))
+	r.DELETE("/resource/v1/directory", _Service_DeleteDirectory0_HTTP_Handler(srv))
+	r.POST("/resource/v1/upload/prepare", _Service_PrepareUploadFile0_HTTP_Handler(srv))
 	r.POST("/resource/v1/upload", _Service_UploadFile0_HTTP_Handler(srv))
-	r.GET("/resource/v1/{app}/files", _Service_PageFile0_HTTP_Handler(srv))
-	r.PUT("/resource/v1/{app}/file", _Service_UpdateFile0_HTTP_Handler(srv))
-	r.POST("/resource/v1/{app}/file", _Service_DeleteFile0_HTTP_Handler(srv))
+	r.GET("/resource/v1/files", _Service_PageFile0_HTTP_Handler(srv))
+	r.PUT("/resource/v1/file", _Service_UpdateFile0_HTTP_Handler(srv))
+	r.POST("/resource/v1/file", _Service_DeleteFile0_HTTP_Handler(srv))
 }
 
 func _Service_GetDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetDirectoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceGetDirectory)
@@ -86,9 +83,6 @@ func _Service_AddDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Co
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
 		http.SetOperation(ctx, OperationServiceAddDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.AddDirectory(ctx, req.(*AddDirectoryRequest))
@@ -111,9 +105,6 @@ func _Service_UpdateDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
 		http.SetOperation(ctx, OperationServiceUpdateDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.UpdateDirectory(ctx, req.(*UpdateDirectoryRequest))
@@ -131,9 +122,6 @@ func _Service_DeleteDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http
 	return func(ctx http.Context) error {
 		var in DeleteDirectoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceDeleteDirectory)
@@ -156,9 +144,6 @@ func _Service_PrepareUploadFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx ht
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationServicePrepareUploadFile)
@@ -202,9 +187,6 @@ func _Service_PageFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Contex
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
 		http.SetOperation(ctx, OperationServicePageFile)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.PageFile(ctx, req.(*PageFileRequest))
@@ -227,9 +209,6 @@ func _Service_UpdateFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Cont
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
 		http.SetOperation(ctx, OperationServiceUpdateFile)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.UpdateFile(ctx, req.(*UpdateFileRequest))
@@ -250,9 +229,6 @@ func _Service_DeleteFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Cont
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceDeleteFile)
@@ -290,7 +266,7 @@ func NewServiceHTTPClient(client *http.Client) ServiceHTTPClient {
 
 func (c *ServiceHTTPClientImpl) AddDirectory(ctx context.Context, in *AddDirectoryRequest, opts ...http.CallOption) (*Directory, error) {
 	var out Directory
-	pattern := "/resource/v1/{app}/directory"
+	pattern := "/resource/v1/directory"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationServiceAddDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -303,7 +279,7 @@ func (c *ServiceHTTPClientImpl) AddDirectory(ctx context.Context, in *AddDirecto
 
 func (c *ServiceHTTPClientImpl) DeleteDirectory(ctx context.Context, in *DeleteDirectoryRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/resource/v1/{app}/directory"
+	pattern := "/resource/v1/directory"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationServiceDeleteDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -316,7 +292,7 @@ func (c *ServiceHTTPClientImpl) DeleteDirectory(ctx context.Context, in *DeleteD
 
 func (c *ServiceHTTPClientImpl) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/resource/v1/{app}/file"
+	pattern := "/resource/v1/file"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationServiceDeleteFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -329,7 +305,7 @@ func (c *ServiceHTTPClientImpl) DeleteFile(ctx context.Context, in *DeleteFileRe
 
 func (c *ServiceHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirectoryRequest, opts ...http.CallOption) (*GetDirectoryReply, error) {
 	var out GetDirectoryReply
-	pattern := "/resource/v1/{app}/directory"
+	pattern := "/resource/v1/directory"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationServiceGetDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -342,7 +318,7 @@ func (c *ServiceHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirecto
 
 func (c *ServiceHTTPClientImpl) PageFile(ctx context.Context, in *PageFileRequest, opts ...http.CallOption) (*PageFileReply, error) {
 	var out PageFileReply
-	pattern := "/resource/v1/{app}/files"
+	pattern := "/resource/v1/files"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationServicePageFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -355,7 +331,7 @@ func (c *ServiceHTTPClientImpl) PageFile(ctx context.Context, in *PageFileReques
 
 func (c *ServiceHTTPClientImpl) PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...http.CallOption) (*PrepareUploadFileReply, error) {
 	var out PrepareUploadFileReply
-	pattern := "/resource/v1/{app}/upload/prepare"
+	pattern := "/resource/v1/upload/prepare"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationServicePrepareUploadFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -368,7 +344,7 @@ func (c *ServiceHTTPClientImpl) PrepareUploadFile(ctx context.Context, in *Prepa
 
 func (c *ServiceHTTPClientImpl) UpdateDirectory(ctx context.Context, in *UpdateDirectoryRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/resource/v1/{app}/directory"
+	pattern := "/resource/v1/directory"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationServiceUpdateDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -381,7 +357,7 @@ func (c *ServiceHTTPClientImpl) UpdateDirectory(ctx context.Context, in *UpdateD
 
 func (c *ServiceHTTPClientImpl) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/resource/v1/{app}/file"
+	pattern := "/resource/v1/file"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationServiceUpdateFile))
 	opts = append(opts, http.PathTemplate(pattern))
