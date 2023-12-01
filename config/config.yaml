@@ -1,0 +1,59 @@
+server:
+  http:
+    addr: 0.0.0.0:7003
+    timeout: 1s
+    marshal:
+      emitUnpopulated: true
+      useProtoNames: true
+  grpc:
+    addr: 0.0.0.0:8003
+    timeout: 1s
+log:
+  level: 0 #日志输出等级
+  output:
+    - stdout # stdout:控制台输出，k8s日志收集
+    - file # file:输出到文件
+  file: #output存在file时此配置才可生效
+    name: ./tmp/runtime/output.log #日志存放地址
+    maxSize: 1 #日志文件最大容量,单位m
+    maxBackup: 5 #日志文件最多保存个数
+    maxAge: 1 #保留就文件的最大天数,单位天
+    compress: false #是否进行压缩归档
+database:
+  system: #数据库实例名称,如有多个数据库可新增
+    enable: true #是否启用数据库
+    drive: mysql #数据库类型
+    dsn: root:root@tcp(127.0.0.1:3306)/resource?charset=utf8mb4&parseTime=True&loc=Local #连接dsn
+    maxLifetime: 2h #最大生存时间
+    maxOpenConn: 10 #最大连接数量
+    maxIdleConn: 10 #最大空闲数量
+    logLevel: 1 #日志等级
+    slowThreshold: 2s #慢sql阈值
+pool: #并非池配置
+  size: 100000 #最大协程数量
+  expiryDuration: 30s #过期时间
+  preAlloc: true #是否预分配
+  maxBlockingTasks: 1000 #最大的并发任务
+  nonblocking: true #设置为true时maxBlockingTasks讲失效，不限制并发任务
+logging:
+  enable: true
+  whitelist:
+    "/v1.Service/PrepareUploadFile": true
+    "/v1.Service/UploadFile": true
+#jwt:
+#  enable: true #是否开启jwt
+#  secret: "hello world" #密钥
+#  expire: 2h #过期时间
+#  whitelist: #忽略token校验以及鉴权的白名单
+#    GET:/helloworld/fangweiye: false #仅 http可用 方法名:path
+#    v1:Greeter/SayHello: true #http和grpc通用 包名.服务名.函数名 具体可在pb里面查看
+#以下存放业务配置
+
+file:
+  storage: local
+  serverPath: /resource/v1/static
+  localDir: static
+  maxSingularSize: 1 #单位M
+  maxChunkSize: 1  #单位M
+  maxChunkCount: 20
+  acceptTypes: ["jpg","png","txt","ppt","pptx","mp4"]

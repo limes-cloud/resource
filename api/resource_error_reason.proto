@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package v1;
+
+import "errors/errors.proto";
+option go_package = "./v1;v1";
+
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 200;
+  NOT_FOUND = 0[(errors.message) = "不存在数据"];
+  TRANSFORM = 1[(errors.message)="数据转换失败"];
+  NO_SUPPORT_STORE = 2[(errors.message)="不支持的存储引擎"];
+  SYSTEM =3 [(errors.message)="系统错误"];
+  CHUNK_UPLOAD = 4[(errors.message)="分片上传失败"];
+  DATABASE = 5[(errors.message)="数据库错误"];
+  STATUS_PROGRESS = 6[(errors.message)="文件上传中"];
+  UPLOAD_FILE = 7[(errors.message)="文件上传失败"];
+  INIT_STORE = 8[(errors.message)="存储引擎初始化失败"];
+  FILE_FORMAT = 9[(errors.message)="文件格式错误"];
+  ADD_DIRECTORY = 10[(errors.message)="目录创建失败"];
+  UPDATE_DIRECTORY = 11[(errors.message)="目录更新失败"];
+  DELETE_DIRECTORY = 12[(errors.message)="目录删除失败"];
+  NOT_EXIST_FILE = 13[(errors.message)="文件不存在"];
+  ALREADY_EXIST_FILE_NAME = 14[(errors.message)="文件名已存在"];
+  NOT_EXIST_DIRECTORY = 15[(errors.message)="文件夹不存在"];
+  NOT_EXIST_RESOURCE = 16[(errors.message)="资源不存在"];
+}
+
+
+
