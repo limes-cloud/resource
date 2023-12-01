@@ -40,15 +40,6 @@ logging:
   whitelist:
     "/v1.Service/PrepareUploadFile": true
     "/v1.Service/UploadFile": true
-#jwt:
-#  enable: true #是否开启jwt
-#  secret: "hello world" #密钥
-#  expire: 2h #过期时间
-#  whitelist: #忽略token校验以及鉴权的白名单
-#    GET:/helloworld/fangweiye: false #仅 http可用 方法名:path
-#    v1:Greeter/SayHello: true #http和grpc通用 包名.服务名.函数名 具体可在pb里面查看
-#以下存放业务配置
-
 file:
   storage: local
   serverPath: /resource/v1/static
