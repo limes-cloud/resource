@@ -5,12 +5,13 @@ import (
 	"resource/internal/handler"
 	"resource/router"
 
+	"github.com/limes-cloud/kratos/contrib/config/configure"
+
 	v1 "resource/api/v1"
 	srcConf "resource/config"
 
 	"github.com/limes-cloud/kratos"
 	"github.com/limes-cloud/kratos/config"
-	"github.com/limes-cloud/kratos/config/file"
 	"github.com/limes-cloud/kratos/log"
 	"github.com/limes-cloud/kratos/middleware/tracing"
 	"github.com/limes-cloud/kratos/transport/grpc"
@@ -28,7 +29,7 @@ func main() {
 		kratos.ID(id),
 		kratos.Name(Name),
 		kratos.Metadata(map[string]string{}),
-		kratos.Config(file.NewSource("config/config.yaml")),
+		kratos.Config(configure.NewFromEnv()),
 		kratos.RegistrarServer(RegisterServer),
 		kratos.LoggerWith(kratos.LogField{
 			"id":    id,
