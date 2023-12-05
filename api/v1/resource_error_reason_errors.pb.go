@@ -4,281 +4,281 @@ package v1
 
 import (
 	fmt "fmt"
-	errors "github.com/limes-cloud/kratos/errors"
+	errors "github.com/go-kratos/kratos/v2/errors"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
-func IsNotFound(err error) bool {
+func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NOT_FOUND.String() && e.Code == 200
+	return e.Reason == ErrorReason_NotFoundError.String() && e.Code == 200
 }
 
-func ErrorNotFoundFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_NOT_FOUND.String(), "不存在数据:"+fmt.Sprintf(format, args...))
+func NotFoundErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_NotFoundError.String(), "不存在数据:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorNotFound() *errors.Error {
-	return errors.New(200, ErrorReason_NOT_FOUND.String(), "不存在数据")
+func NotFoundError() *errors.Error {
+	return errors.New(200, ErrorReason_NotFoundError.String(), "不存在数据")
 }
 
-func IsTransform(err error) bool {
+func IsTransformError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_TRANSFORM.String() && e.Code == 200
+	return e.Reason == ErrorReason_TransformError.String() && e.Code == 200
 }
 
-func ErrorTransformFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_TRANSFORM.String(), "数据转换失败:"+fmt.Sprintf(format, args...))
+func TransformErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_TransformError.String(), "数据转换失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorTransform() *errors.Error {
-	return errors.New(200, ErrorReason_TRANSFORM.String(), "数据转换失败")
+func TransformError() *errors.Error {
+	return errors.New(200, ErrorReason_TransformError.String(), "数据转换失败")
 }
 
-func IsNoSupportStore(err error) bool {
+func IsNoSupportStoreError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NO_SUPPORT_STORE.String() && e.Code == 200
+	return e.Reason == ErrorReason_NoSupportStoreError.String() && e.Code == 200
 }
 
-func ErrorNoSupportStoreFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_NO_SUPPORT_STORE.String(), "不支持的存储引擎:"+fmt.Sprintf(format, args...))
+func NoSupportStoreErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_NoSupportStoreError.String(), "不支持的存储引擎:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorNoSupportStore() *errors.Error {
-	return errors.New(200, ErrorReason_NO_SUPPORT_STORE.String(), "不支持的存储引擎")
+func NoSupportStoreError() *errors.Error {
+	return errors.New(200, ErrorReason_NoSupportStoreError.String(), "不支持的存储引擎")
 }
 
-func IsSystem(err error) bool {
+func IsSystemError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_SYSTEM.String() && e.Code == 200
+	return e.Reason == ErrorReason_SystemError.String() && e.Code == 200
 }
 
-func ErrorSystemFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_SYSTEM.String(), "系统错误:"+fmt.Sprintf(format, args...))
+func SystemErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_SystemError.String(), "系统错误:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorSystem() *errors.Error {
-	return errors.New(200, ErrorReason_SYSTEM.String(), "系统错误")
+func SystemError() *errors.Error {
+	return errors.New(200, ErrorReason_SystemError.String(), "系统错误")
 }
 
-func IsChunkUpload(err error) bool {
+func IsChunkUploadError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_CHUNK_UPLOAD.String() && e.Code == 200
+	return e.Reason == ErrorReason_ChunkUploadError.String() && e.Code == 200
 }
 
-func ErrorChunkUploadFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_CHUNK_UPLOAD.String(), "分片上传失败:"+fmt.Sprintf(format, args...))
+func ChunkUploadErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_ChunkUploadError.String(), "分片上传失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorChunkUpload() *errors.Error {
-	return errors.New(200, ErrorReason_CHUNK_UPLOAD.String(), "分片上传失败")
+func ChunkUploadError() *errors.Error {
+	return errors.New(200, ErrorReason_ChunkUploadError.String(), "分片上传失败")
 }
 
-func IsDatabase(err error) bool {
+func IsDatabaseError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_DATABASE.String() && e.Code == 200
+	return e.Reason == ErrorReason_DatabaseError.String() && e.Code == 200
 }
 
-func ErrorDatabaseFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_DATABASE.String(), "数据库错误:"+fmt.Sprintf(format, args...))
+func DatabaseErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_DatabaseError.String(), "数据库错误:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorDatabase() *errors.Error {
-	return errors.New(200, ErrorReason_DATABASE.String(), "数据库错误")
+func DatabaseError() *errors.Error {
+	return errors.New(200, ErrorReason_DatabaseError.String(), "数据库错误")
 }
 
-func IsStatusProgress(err error) bool {
+func IsStatusProgressError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_STATUS_PROGRESS.String() && e.Code == 200
+	return e.Reason == ErrorReason_StatusProgressError.String() && e.Code == 200
 }
 
-func ErrorStatusProgressFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_STATUS_PROGRESS.String(), "文件上传中:"+fmt.Sprintf(format, args...))
+func StatusProgressErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_StatusProgressError.String(), "文件上传中:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorStatusProgress() *errors.Error {
-	return errors.New(200, ErrorReason_STATUS_PROGRESS.String(), "文件上传中")
+func StatusProgressError() *errors.Error {
+	return errors.New(200, ErrorReason_StatusProgressError.String(), "文件上传中")
 }
 
-func IsUploadFile(err error) bool {
+func IsUploadFileError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_UPLOAD_FILE.String() && e.Code == 200
+	return e.Reason == ErrorReason_UploadFileError.String() && e.Code == 200
 }
 
-func ErrorUploadFileFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_UPLOAD_FILE.String(), "文件上传失败:"+fmt.Sprintf(format, args...))
+func UploadFileErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_UploadFileError.String(), "文件上传失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorUploadFile() *errors.Error {
-	return errors.New(200, ErrorReason_UPLOAD_FILE.String(), "文件上传失败")
+func UploadFileError() *errors.Error {
+	return errors.New(200, ErrorReason_UploadFileError.String(), "文件上传失败")
 }
 
-func IsInitStore(err error) bool {
+func IsInitStoreError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_INIT_STORE.String() && e.Code == 200
+	return e.Reason == ErrorReason_InitStoreError.String() && e.Code == 200
 }
 
-func ErrorInitStoreFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_INIT_STORE.String(), "存储引擎初始化失败:"+fmt.Sprintf(format, args...))
+func InitStoreErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_InitStoreError.String(), "存储引擎初始化失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorInitStore() *errors.Error {
-	return errors.New(200, ErrorReason_INIT_STORE.String(), "存储引擎初始化失败")
+func InitStoreError() *errors.Error {
+	return errors.New(200, ErrorReason_InitStoreError.String(), "存储引擎初始化失败")
 }
 
-func IsFileFormat(err error) bool {
+func IsFileFormatError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_FILE_FORMAT.String() && e.Code == 200
+	return e.Reason == ErrorReason_FileFormatError.String() && e.Code == 200
 }
 
-func ErrorFileFormatFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_FILE_FORMAT.String(), "文件格式错误:"+fmt.Sprintf(format, args...))
+func FileFormatErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_FileFormatError.String(), "文件格式错误:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorFileFormat() *errors.Error {
-	return errors.New(200, ErrorReason_FILE_FORMAT.String(), "文件格式错误")
+func FileFormatError() *errors.Error {
+	return errors.New(200, ErrorReason_FileFormatError.String(), "文件格式错误")
 }
 
-func IsAddDirectory(err error) bool {
+func IsAddDirectoryError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_ADD_DIRECTORY.String() && e.Code == 200
+	return e.Reason == ErrorReason_AddDirectoryError.String() && e.Code == 200
 }
 
-func ErrorAddDirectoryFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_ADD_DIRECTORY.String(), "目录创建失败:"+fmt.Sprintf(format, args...))
+func AddDirectoryErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_AddDirectoryError.String(), "目录创建失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorAddDirectory() *errors.Error {
-	return errors.New(200, ErrorReason_ADD_DIRECTORY.String(), "目录创建失败")
+func AddDirectoryError() *errors.Error {
+	return errors.New(200, ErrorReason_AddDirectoryError.String(), "目录创建失败")
 }
 
-func IsUpdateDirectory(err error) bool {
+func IsUpdateDirectoryError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_UPDATE_DIRECTORY.String() && e.Code == 200
+	return e.Reason == ErrorReason_UpdateDirectoryError.String() && e.Code == 200
 }
 
-func ErrorUpdateDirectoryFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_UPDATE_DIRECTORY.String(), "目录更新失败:"+fmt.Sprintf(format, args...))
+func UpdateDirectoryErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_UpdateDirectoryError.String(), "目录更新失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorUpdateDirectory() *errors.Error {
-	return errors.New(200, ErrorReason_UPDATE_DIRECTORY.String(), "目录更新失败")
+func UpdateDirectoryError() *errors.Error {
+	return errors.New(200, ErrorReason_UpdateDirectoryError.String(), "目录更新失败")
 }
 
-func IsDeleteDirectory(err error) bool {
+func IsDeleteDirectoryError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_DELETE_DIRECTORY.String() && e.Code == 200
+	return e.Reason == ErrorReason_DeleteDirectoryError.String() && e.Code == 200
 }
 
-func ErrorDeleteDirectoryFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_DELETE_DIRECTORY.String(), "目录删除失败:"+fmt.Sprintf(format, args...))
+func DeleteDirectoryErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_DeleteDirectoryError.String(), "目录删除失败:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorDeleteDirectory() *errors.Error {
-	return errors.New(200, ErrorReason_DELETE_DIRECTORY.String(), "目录删除失败")
+func DeleteDirectoryError() *errors.Error {
+	return errors.New(200, ErrorReason_DeleteDirectoryError.String(), "目录删除失败")
 }
 
-func IsNotExistFile(err error) bool {
+func IsNotExistFileError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NOT_EXIST_FILE.String() && e.Code == 200
+	return e.Reason == ErrorReason_NotExistFileError.String() && e.Code == 200
 }
 
-func ErrorNotExistFileFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_FILE.String(), "文件不存在:"+fmt.Sprintf(format, args...))
+func NotExistFileErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_NotExistFileError.String(), "文件不存在:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorNotExistFile() *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_FILE.String(), "文件不存在")
+func NotExistFileError() *errors.Error {
+	return errors.New(200, ErrorReason_NotExistFileError.String(), "文件不存在")
 }
 
-func IsAlreadyExistFileName(err error) bool {
+func IsAlreadyExistFileNameError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_ALREADY_EXIST_FILE_NAME.String() && e.Code == 200
+	return e.Reason == ErrorReason_AlreadyExistFileNameError.String() && e.Code == 200
 }
 
-func ErrorAlreadyExistFileNameFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_ALREADY_EXIST_FILE_NAME.String(), "文件名已存在:"+fmt.Sprintf(format, args...))
+func AlreadyExistFileNameErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_AlreadyExistFileNameError.String(), "文件名已存在:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorAlreadyExistFileName() *errors.Error {
-	return errors.New(200, ErrorReason_ALREADY_EXIST_FILE_NAME.String(), "文件名已存在")
+func AlreadyExistFileNameError() *errors.Error {
+	return errors.New(200, ErrorReason_AlreadyExistFileNameError.String(), "文件名已存在")
 }
 
-func IsNotExistDirectory(err error) bool {
+func IsNotExistDirectoryError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NOT_EXIST_DIRECTORY.String() && e.Code == 200
+	return e.Reason == ErrorReason_NotExistDirectoryError.String() && e.Code == 200
 }
 
-func ErrorNotExistDirectoryFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_DIRECTORY.String(), "文件夹不存在:"+fmt.Sprintf(format, args...))
+func NotExistDirectoryErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_NotExistDirectoryError.String(), "文件夹不存在:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorNotExistDirectory() *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_DIRECTORY.String(), "文件夹不存在")
+func NotExistDirectoryError() *errors.Error {
+	return errors.New(200, ErrorReason_NotExistDirectoryError.String(), "文件夹不存在")
 }
 
-func IsNotExistResource(err error) bool {
+func IsNotExistResourceError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NOT_EXIST_RESOURCE.String() && e.Code == 200
+	return e.Reason == ErrorReason_NotExistResourceError.String() && e.Code == 200
 }
 
-func ErrorNotExistResourceFormat(format string, args ...interface{}) *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_RESOURCE.String(), "资源不存在:"+fmt.Sprintf(format, args...))
+func NotExistResourceErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_NotExistResourceError.String(), "资源不存在:"+fmt.Sprintf(format, args...))
 }
 
-func ErrorNotExistResource() *errors.Error {
-	return errors.New(200, ErrorReason_NOT_EXIST_RESOURCE.String(), "资源不存在")
+func NotExistResourceError() *errors.Error {
+	return errors.New(200, ErrorReason_NotExistResourceError.String(), "资源不存在")
 }

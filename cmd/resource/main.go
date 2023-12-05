@@ -1,54 +1,45 @@
 package main
 
 import (
-	"os"
+	"log"
+	v1 "resource/api/v1"
+	srcConf "resource/config"
 	"resource/internal/handler"
 	"resource/router"
 
-	"github.com/limes-cloud/kratos/contrib/config/configure"
-
-	v1 "resource/api/v1"
-	srcConf "resource/config"
-
-	"github.com/limes-cloud/kratos"
-	"github.com/limes-cloud/kratos/config"
-	"github.com/limes-cloud/kratos/log"
-	"github.com/limes-cloud/kratos/middleware/tracing"
-	"github.com/limes-cloud/kratos/transport/grpc"
-	"github.com/limes-cloud/kratos/transport/http"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
+	configure "github.com/limes-cloud/configure/client"
+	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/config"
 	_ "go.uber.org/automaxprocs"
 )
 
-var (
-	Name  string
-	id, _ = os.Hostname()
-)
-
 func main() {
-	app := kratos.New(
-		kratos.ID(id),
-		kratos.Name(Name),
-		kratos.Metadata(map[string]string{}),
-		kratos.Config(configure.NewFromEnv()),
-		kratos.RegistrarServer(RegisterServer),
-		kratos.LoggerWith(kratos.LogField{
-			"id":    id,
-			"name":  Name,
-			"trace": tracing.TraceID(),
-			"span":  tracing.SpanID(),
-		}),
+	app := kratosx.New(
+		kratosx.Config(configure.NewFromEnv()),
+		kratosx.RegistrarServer(RegisterServer),
 	)
 
 	if err := app.Run(); err != nil {
-		log.Errorf("run service fail: %v", err)
+		log.Fatal("run service fail", err)
 	}
 }
 
-func RegisterServer(hs *http.Server, gs *grpc.Server, c config.Config) {
+func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 	conf := &srcConf.Config{}
-	if err := c.ScanKey("file", conf); err != nil {
-		panic("business config format error:" + err.Error())
+
+	// 配置初始化
+	if err := c.Value("business").Scan(conf); err != nil {
+		panic("author config format error:" + err.Error())
 	}
+
+	// 监听服务
+	c.Watch("business", func(value config.Value) {
+		if err := value.Scan(conf); err != nil {
+			log.Printf("business配置变更失败：%s", err.Error())
+		}
+	})
 
 	srv := handler.New(conf)
 

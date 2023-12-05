@@ -8,8 +8,9 @@ package v1
 
 import (
 	context "context"
-	http "github.com/limes-cloud/kratos/transport/http"
-	binding "github.com/limes-cloud/kratos/transport/http/binding"
+
+	http "github.com/go-kratos/kratos/v2/transport/http"
+	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 

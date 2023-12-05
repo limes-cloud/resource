@@ -21,16 +21,14 @@ import (
 	"sync"
 
 	"github.com/gabriel-vasile/mimetype"
-
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/limes-cloud/kratosx"
 
 	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 
 	"google.golang.org/protobuf/proto"
-
-	"github.com/limes-cloud/kratos"
 )
 
 type File struct {
@@ -48,7 +46,7 @@ func NewFile(conf *config.Config) *File {
 }
 
 // PageFile 获取分页文件
-func (f *File) PageFile(ctx kratos.Context, in *v1.PageFileRequest) (*v1.PageFileReply, error) {
+func (f *File) PageFile(ctx kratosx.Context, in *v1.PageFileRequest) (*v1.PageFileReply, error) {
 	file := model.File{}
 	list, total, err := file.Page(ctx, &model.PageOptions{
 		Page:     in.Page,
@@ -63,7 +61,7 @@ func (f *File) PageFile(ctx kratos.Context, in *v1.PageFileRequest) (*v1.PageFil
 	})
 
 	if err != nil {
-		return nil, v1.ErrorDatabaseFormat(err.Error())
+		return nil, v1.DatabaseErrorFormat(err.Error())
 	}
 
 	for ind, item := range list {
@@ -73,31 +71,31 @@ func (f *File) PageFile(ctx kratos.Context, in *v1.PageFileRequest) (*v1.PageFil
 	reply := v1.PageFileReply{Total: &total}
 	// 进行数据转换
 	if err = util.Transform(list, &reply.List); err != nil {
-		return nil, v1.ErrorTransformFormat(err.Error())
+		return nil, v1.TransformErrorFormat(err.Error())
 	}
 
 	return &reply, nil
 }
 
 // UpdateFile 修改文件
-func (f *File) UpdateFile(ctx kratos.Context, in *v1.UpdateFileRequest) (*empty.Empty, error) {
+func (f *File) UpdateFile(ctx kratosx.Context, in *v1.UpdateFileRequest) (*empty.Empty, error) {
 	dir := model.Directory{}
 	if err := dir.OneByID(ctx, in.DirectoryId); err != nil {
-		return nil, v1.ErrorNotExistDirectory()
+		return nil, v1.NotExistDirectoryError()
 	}
 
 	// 需要通过app鉴权，所以这里检测一遍
 	if dir.App != in.App {
-		return nil, v1.ErrorSystem()
+		return nil, v1.SystemError()
 	}
 
 	oldFile := model.File{}
 	if err := oldFile.OneByID(ctx, in.Id); err != nil {
-		return nil, v1.ErrorNotExistFile()
+		return nil, v1.NotExistFileError()
 	}
 	// 查询文件名称是否已经存在
 	if err := oldFile.OneByDirAndName(ctx, oldFile.DirectoryID, in.Name); err == nil {
-		return nil, v1.ErrorAlreadyExistFileName()
+		return nil, v1.AlreadyExistFileNameError()
 	}
 
 	file := model.File{
@@ -106,40 +104,40 @@ func (f *File) UpdateFile(ctx kratos.Context, in *v1.UpdateFileRequest) (*empty.
 	}
 
 	if err := file.Update(ctx); err != nil {
-		return nil, v1.ErrorDatabaseFormat(err.Error())
+		return nil, v1.DatabaseErrorFormat(err.Error())
 	}
 	return nil, nil
 }
 
 // DeleteFile 删除文件
-func (f *File) DeleteFile(ctx kratos.Context, in *v1.DeleteFileRequest) (*empty.Empty, error) {
+func (f *File) DeleteFile(ctx kratosx.Context, in *v1.DeleteFileRequest) (*empty.Empty, error) {
 	dir := model.Directory{}
 	if err := dir.OneByID(ctx, in.DirectoryId); err != nil {
-		return nil, v1.ErrorNotExistDirectory()
+		return nil, v1.NotExistDirectoryError()
 	}
 
 	// 需要通过app鉴权，所以这里检测一遍
 	if dir.App != in.App {
-		return nil, v1.ErrorSystem()
+		return nil, v1.SystemError()
 	}
 
 	file := model.File{}
 	if err := file.DeleteByDirAndIds(ctx, in.DirectoryId, in.Ids); err != nil {
-		return nil, v1.ErrorDatabaseFormat(err.Error())
+		return nil, v1.DatabaseErrorFormat(err.Error())
 	}
 	return nil, nil
 }
 
 // PrepareUploadFile 预上传文件
-func (f *File) PrepareUploadFile(ctx kratos.Context, in *v1.PrepareUploadFileRequest) (*v1.PrepareUploadFileReply, error) {
+func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRequest) (*v1.PrepareUploadFileReply, error) {
 	dir := model.Directory{}
 	if err := dir.OneByID(ctx, in.DirectoryId); err != nil {
-		return nil, v1.ErrorUploadFileFormat("不存在文件夹")
+		return nil, v1.UploadFileErrorFormat("不存在文件夹")
 	}
 
 	// 需要通过app鉴权，所以这里检测一遍
 	if dir.App != in.App {
-		return nil, v1.ErrorSystem()
+		return nil, v1.SystemError()
 	}
 
 	// 获取文件个数，重置文件名
@@ -165,11 +163,11 @@ func (f *File) PrepareUploadFile(ctx kratos.Context, in *v1.PrepareUploadFileReq
 		if file.ChunkCount > 1 {
 			store, err := f.NewStore(ctx)
 			if err != nil {
-				return nil, v1.ErrorInitStore()
+				return nil, v1.InitStoreError()
 			}
 			chunk, err := store.NewPutChunkByUploadID(file.Src, file.UploadID)
 			if err != nil {
-				return nil, v1.ErrorChunkUpload()
+				return nil, v1.ChunkUploadError()
 			}
 			_ = util.Transform(chunk.UploadedChunkIndex(), &uploadChunks)
 		}
@@ -216,14 +214,14 @@ func (f *File) PrepareUploadFile(ctx kratos.Context, in *v1.PrepareUploadFileReq
 
 		pc, err := store.NewPutChunk(file.Src)
 		if err != nil {
-			return nil, v1.ErrorChunkUpload()
+			return nil, v1.ChunkUploadError()
 		}
 		file.UploadID = pc.UploadID()
 		file.ChunkCount = uint32(f.chunkCount(int64(in.Size)))
 	}
 
 	if err := file.Create(ctx); err != nil {
-		return nil, v1.ErrorDatabase()
+		return nil, v1.DatabaseError()
 	}
 
 	return &v1.PrepareUploadFileReply{
@@ -236,7 +234,7 @@ func (f *File) PrepareUploadFile(ctx kratos.Context, in *v1.PrepareUploadFileReq
 }
 
 // UploadFile 上传文件
-func (f *File) UploadFile(ctx kratos.Context, in *v1.UploadFileRequest) (*v1.UploadFileReply, error) {
+func (f *File) UploadFile(ctx kratosx.Context, in *v1.UploadFileRequest) (*v1.UploadFileReply, error) {
 	f.rw.Lock()
 	if f.muiOnce[in.UploadId] == nil {
 		f.muiOnce[in.UploadId] = &sync.Once{}
@@ -245,16 +243,16 @@ func (f *File) UploadFile(ctx kratos.Context, in *v1.UploadFileRequest) (*v1.Upl
 
 	file := model.File{}
 	if err := file.OneByUploadID(ctx, in.UploadId); err != nil {
-		return nil, v1.ErrorUploadFileFormat("上传id不存在")
+		return nil, v1.UploadFileErrorFormat("上传id不存在")
 	}
 
 	fileByte, err := base64.StdEncoding.DecodeString(in.Data)
 	if err != nil {
-		return nil, v1.ErrorFileFormat()
+		return nil, v1.FileFormatError()
 	}
 
 	if file.Status == consts.STATUS_COMPLETED {
-		return nil, v1.ErrorUploadFileFormat("请勿重复上传")
+		return nil, v1.UploadFileErrorFormat("请勿重复上传")
 	}
 
 	file.Status = consts.STATUS_COMPLETED
@@ -267,7 +265,7 @@ func (f *File) UploadFile(ctx kratos.Context, in *v1.UploadFileRequest) (*v1.Upl
 	// 直接上传
 	if file.ChunkCount == 1 {
 		if err := store.PutBytes(file.Src, fileByte); err != nil {
-			return nil, v1.ErrorUploadFile()
+			return nil, v1.UploadFileError()
 		}
 		_ = file.Update(ctx)
 		return &v1.UploadFileReply{
@@ -279,11 +277,11 @@ func (f *File) UploadFile(ctx kratos.Context, in *v1.UploadFileRequest) (*v1.Upl
 	// 切片上传
 	chunk, err := store.NewPutChunkByUploadID(file.Src, in.UploadId)
 	if err != nil {
-		return nil, v1.ErrorChunkUpload()
+		return nil, v1.ChunkUploadError()
 	}
 
 	if err := chunk.AppendBytes(fileByte, int(in.Index)); err != nil {
-		return nil, v1.ErrorChunkUpload()
+		return nil, v1.ChunkUploadError()
 	}
 
 	if chunk.ChunkCount() == int(file.ChunkCount) {
@@ -305,14 +303,14 @@ func (f *File) UploadFile(ctx kratos.Context, in *v1.UploadFileRequest) (*v1.Upl
 }
 
 // GetFile 上传文件
-func (f *File) GetFile(ctx kratos.Context, in *types.GetFileRequest) (*types.GetFileResponse, error) {
+func (f *File) GetFile(ctx kratosx.Context, in *types.GetFileRequest) (*types.GetFileResponse, error) {
 	store, err := f.NewStore(ctx)
 	if err != nil {
-		return nil, v1.ErrorSystem()
+		return nil, v1.SystemError()
 	}
 	reader, err := store.Get(in.Src)
 	if err != nil {
-		return nil, v1.ErrorNotExistResource()
+		return nil, v1.NotExistResourceError()
 	}
 	rb, _ := io.ReadAll(reader)
 
@@ -340,7 +338,7 @@ func (f *File) GetFile(ctx kratos.Context, in *types.GetFileRequest) (*types.Get
 }
 
 // NewStore 新建存储引擎
-func (f *File) NewStore(ctx kratos.Context) (store.Store, error) {
+func (f *File) NewStore(ctx kratosx.Context) (store.Store, error) {
 	c := &store.Config{
 		Endpoint: f.conf.Endpoint,
 		Key:      f.conf.Key,
@@ -357,7 +355,7 @@ func (f *File) NewStore(ctx kratos.Context) (store.Store, error) {
 	case consts.STORE_LOCAL:
 		return local.New(c)
 	default:
-		return nil, v1.ErrorNoSupportStore()
+		return nil, v1.NoSupportStoreError()
 	}
 }
 
@@ -384,7 +382,7 @@ func (f *File) storeKey(sha, tp string) string {
 // checkType 检查文件类型是否合法
 func (f *File) checkType(tp string) error {
 	if !util.InList(f.conf.AcceptTypes, tp) {
-		return v1.ErrorUploadFileFormat("不支持的文件后缀")
+		return v1.UploadFileErrorFormat("不支持的文件后缀")
 	}
 	return nil
 }
@@ -392,7 +390,7 @@ func (f *File) checkType(tp string) error {
 // checkSize 检查大小是否合法
 func (f *File) checkSize(size int64) error {
 	if size > f.maxChunkSize()*f.conf.MaxChunkCount {
-		return v1.ErrorUploadFileFormat("超过传输文件大小")
+		return v1.UploadFileErrorFormat("超过传输文件大小")
 	}
 	return nil
 }

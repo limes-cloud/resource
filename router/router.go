@@ -5,7 +5,7 @@ import (
 	"resource/internal/handler"
 	"resource/internal/types"
 
-	"github.com/limes-cloud/kratos/transport/http"
+	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 func Register(hs *http.Server, srv *handler.Handler) {
