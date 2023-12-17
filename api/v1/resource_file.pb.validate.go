@@ -173,16 +173,9 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetDirectoryId() <= 0 {
-		err := PrepareUploadFileRequestValidationError{
-			field:  "DirectoryId",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for DirectoryId
+
+	// no validation rules for DirectoryPath
 
 	if utf8.RuneCountInString(m.GetApp()) < 1 {
 		err := PrepareUploadFileRequestValidationError{

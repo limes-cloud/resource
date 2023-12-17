@@ -5,10 +5,11 @@ import (
 	"errors"
 	"io"
 	"os"
-	"resource/pkg/store"
-	"resource/pkg/util"
 	"strings"
 	"unsafe"
+
+	"github.com/limes-cloud/resource/pkg/store"
+	"github.com/limes-cloud/resource/pkg/util"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

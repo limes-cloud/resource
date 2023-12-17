@@ -1,4 +1,4 @@
-module resource
+module github.com/limes-cloud/resource
 
 go 1.21.1
 
@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
 	github.com/limes-cloud/configure/client v0.0.0-20231204173321-be74fe745740
-	github.com/limes-cloud/kratosx v1.0.2
+	github.com/limes-cloud/kratosx v1.0.4
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45
 	go.uber.org/automaxprocs v1.5.1

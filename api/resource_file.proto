@@ -18,7 +18,8 @@ message File{
 }
 
 message PrepareUploadFileRequest{
-    uint32 directory_id = 1[(validate.rules).uint32 = {gt:0}];
+    uint32 directory_id = 1;
+    string directory_path = 2;
     string app = 3[(validate.rules).string = {min_len:1}];
     string name = 4[(validate.rules).string = {min_len:1}];
     string sha = 5[(validate.rules).string = {min_len:1}];

@@ -1,10 +1,10 @@
 package logic
 
 import (
-	v1 "resource/api/v1"
-	"resource/config"
-	"resource/internal/model"
-	"resource/pkg/util"
+	v1 "github.com/limes-cloud/resource/api/v1"
+	"github.com/limes-cloud/resource/config"
+	"github.com/limes-cloud/resource/internal/model"
+	"github.com/limes-cloud/resource/pkg/util"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/limes-cloud/kratosx"

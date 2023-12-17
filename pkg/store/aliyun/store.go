@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"resource/pkg/store"
 	"strconv"
+
+	"github.com/limes-cloud/resource/pkg/store"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )

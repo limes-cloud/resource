@@ -231,8 +231,8 @@ github.com/limes-cloud/configure v1.0.12 h1:Z1Et21YIa0NdBb+lqA8mG7psllaH65Djaqth
 github.com/limes-cloud/configure v1.0.12/go.mod h1:dlx/YoAfRrQlMfj/O6N4NdnNk4qwnRKH62u9Hqnw+3g=
 github.com/limes-cloud/configure/client v0.0.0-20231204173321-be74fe745740 h1:JqfH8f6MhFYp+d1GT9MciWpDE+nVGnjYuEhVObFJ7Jk=
 github.com/limes-cloud/configure/client v0.0.0-20231204173321-be74fe745740/go.mod h1:cXxBQgSNr7qzejqnScAcogMsUmOybJLvI8cJCByWQws=
-github.com/limes-cloud/kratosx v1.0.2 h1:nSMgJORpilAhu9KdWlcZcOs4U7oGIRCWF13j2LVj7hM=
-github.com/limes-cloud/kratosx v1.0.2/go.mod h1:EqhYS+PD98s1WkAKPXDnGRb7B4e9gMEDZtLrDAfR7b0=
+github.com/limes-cloud/kratosx v1.0.4 h1:FOyrUBiH4MkswPZaOOyswGL8pXBVJD1cjFhp/+aoj14=
+github.com/limes-cloud/kratosx v1.0.4/go.mod h1:EqhYS+PD98s1WkAKPXDnGRb7B4e9gMEDZtLrDAfR7b0=
 github.com/limes-cloud/library/gte v0.0.0-20231025145839-5dc0dee270f9 h1:ZPNTW3BN45931YMC2EfpqinPU2VVhzpLrnT2bIP4C4w=
 github.com/limes-cloud/library/gte v0.0.0-20231025145839-5dc0dee270f9/go.mod h1:/joOf+DOhMap5AYaTLaoE4nXJZ0j+xoJvcZA8RI1+zo=
 github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0/go.mod h1:zJYVVT2jmtg6P3p1VtQj7WsuWi/y4VnjVBn7F8KPB3I=

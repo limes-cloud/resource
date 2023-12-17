@@ -24,6 +24,24 @@ func (u *Directory) OneByName(ctx kratosx.Context, id uint32, name string) error
 	return ctx.DB().Model(u).First(u, "parent_id=? and name=?", id, name).Error
 }
 
+// OneByPaths 获取目录信息
+func (u *Directory) OneByPaths(ctx kratosx.Context, app string, paths []string) error {
+	parent := uint32(0)
+	for _, path := range paths {
+		nd := &Directory{}
+		if err := ctx.DB().Where(Directory{
+			App:      app,
+			ParentID: parent,
+			Name:     path,
+		}).FirstOrCreate(nd).Error; err != nil {
+			return err
+		}
+		parent = nd.ID
+		*u = *nd
+	}
+	return nil
+}
+
 // Update 更新目录信息
 func (u *Directory) Update(ctx kratosx.Context) error {
 	return ctx.DB().Model(u).Updates(&u).Error

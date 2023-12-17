@@ -2,16 +2,16 @@ package main
 
 import (
 	"log"
-	v1 "resource/api/v1"
-	srcConf "resource/config"
-	"resource/internal/handler"
-	"resource/router"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	configure "github.com/limes-cloud/configure/client"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/config"
+	v1 "github.com/limes-cloud/resource/api/v1"
+	resourceconf "github.com/limes-cloud/resource/config"
+	"github.com/limes-cloud/resource/internal/handler"
+	"github.com/limes-cloud/resource/router"
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -27,10 +27,10 @@ func main() {
 }
 
 func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
-	conf := &srcConf.Config{}
+	conf := &resourceconf.Config{}
 
 	// 配置初始化
-	if err := c.Value("business").Scan(conf); err != nil {
+	if err := c.Value("file").Scan(conf); err != nil {
 		panic("author config format error:" + err.Error())
 	}
 

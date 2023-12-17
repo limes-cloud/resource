@@ -26,6 +26,7 @@ enum ErrorReason {
   AlreadyExistFileNameError = 14[(errors.message)="文件名已存在"];
   NotExistDirectoryError = 15[(errors.message)="文件夹不存在"];
   NotExistResourceError = 16[(errors.message)="资源不存在"];
+  ParamsError = 17[(errors.message)="参数错误"];
 }
 
 

@@ -282,3 +282,19 @@ func NotExistResourceErrorFormat(format string, args ...any) *errors.Error {
 func NotExistResourceError() *errors.Error {
 	return errors.New(200, ErrorReason_NotExistResourceError.String(), "资源不存在")
 }
+
+func IsParamsError(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_ParamsError.String() && e.Code == 200
+}
+
+func ParamsErrorFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, ErrorReason_ParamsError.String(), "参数错误:"+fmt.Sprintf(format, args...))
+}
+
+func ParamsError() *errors.Error {
+	return errors.New(200, ErrorReason_ParamsError.String(), "参数错误")
+}

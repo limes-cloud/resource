@@ -6,19 +6,20 @@ import (
 	"io"
 	"math"
 	"mime"
-	v1 "resource/api/v1"
-	"resource/config"
-	"resource/consts"
-	"resource/internal/model"
-	"resource/internal/types"
-	"resource/pkg/image"
-	"resource/pkg/store"
-	"resource/pkg/store/aliyun"
-	"resource/pkg/store/local"
-	"resource/pkg/store/tencent"
-	"resource/pkg/util"
 	"strings"
 	"sync"
+
+	v1 "github.com/limes-cloud/resource/api/v1"
+	"github.com/limes-cloud/resource/config"
+	"github.com/limes-cloud/resource/consts"
+	"github.com/limes-cloud/resource/internal/model"
+	"github.com/limes-cloud/resource/internal/types"
+	"github.com/limes-cloud/resource/pkg/image"
+	"github.com/limes-cloud/resource/pkg/store"
+	"github.com/limes-cloud/resource/pkg/store/aliyun"
+	"github.com/limes-cloud/resource/pkg/store/local"
+	"github.com/limes-cloud/resource/pkg/store/tencent"
+	"github.com/limes-cloud/resource/pkg/util"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -130,14 +131,23 @@ func (f *File) DeleteFile(ctx kratosx.Context, in *v1.DeleteFileRequest) (*empty
 
 // PrepareUploadFile 预上传文件
 func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRequest) (*v1.PrepareUploadFileReply, error) {
-	dir := model.Directory{}
-	if err := dir.OneByID(ctx, in.DirectoryId); err != nil {
-		return nil, v1.UploadFileErrorFormat("不存在文件夹")
+	if in.DirectoryPath == "" && in.DirectoryId == 0 {
+		return nil, v1.ParamsError()
 	}
 
-	// 需要通过app鉴权，所以这里检测一遍
-	if dir.App != in.App {
-		return nil, v1.SystemError()
+	dir := model.Directory{}
+	if in.DirectoryId != 0 {
+		if err := dir.OneByID(ctx, in.DirectoryId); err != nil {
+			return nil, v1.UploadFileErrorFormat("不存在文件夹")
+		}
+		if dir.App != in.App {
+			return nil, v1.SystemError()
+		}
+	} else {
+		paths := strings.Split(in.DirectoryPath, "/")
+		if err := dir.OneByPaths(ctx, in.App, paths); err != nil {
+			return nil, err
+		}
 	}
 
 	// 获取文件个数，重置文件名
@@ -150,7 +160,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 	if err := file.OneBySha(ctx, in.Sha); err == nil {
 		// 存在且已经上传完成
 		if file.Status == consts.STATUS_COMPLETED {
-			_ = file.Copy(ctx, in.DirectoryId, in.Name)
+			_ = file.Copy(ctx, dir.BaseModel.ID, in.Name)
 			return &v1.PrepareUploadFileReply{
 				Uploaded: proto.Bool(true),
 				Src:      proto.String(f.fileSrc(file.Src)),
@@ -193,7 +203,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 
 	fileType := f.getType(in.Name)
 	file = model.File{
-		DirectoryID: in.DirectoryId,
+		DirectoryID: dir.BaseModel.ID,
 		Size:        in.Size,
 		Sha:         in.Sha,
 		Name:        in.Name,

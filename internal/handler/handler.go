@@ -2,14 +2,14 @@ package handler
 
 import (
 	"context"
-	"resource/internal/logic"
-	"resource/internal/types"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/resource/internal/logic"
+	"github.com/limes-cloud/resource/internal/types"
 
-	v1 "resource/api/v1"
-	"resource/config"
+	v1 "github.com/limes-cloud/resource/api/v1"
+	"github.com/limes-cloud/resource/config"
 )
 
 // Handler is a file service handler.

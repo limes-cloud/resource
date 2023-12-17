@@ -2,8 +2,9 @@ package router
 
 import (
 	"context"
-	"resource/internal/handler"
-	"resource/internal/types"
+
+	"github.com/limes-cloud/resource/internal/handler"
+	"github.com/limes-cloud/resource/internal/types"
 
 	"github.com/go-kratos/kratos/v2/transport/http"
 )

@@ -8,7 +8,6 @@ package v1
 
 import (
 	context "context"
-
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -63,7 +62,7 @@ func _Service_GetDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Co
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceGetDirectory)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.GetDirectory(ctx, req.(*GetDirectoryRequest))
 		})
 		out, err := h(ctx, &in)
@@ -85,7 +84,7 @@ func _Service_AddDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Co
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceAddDirectory)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.AddDirectory(ctx, req.(*AddDirectoryRequest))
 		})
 		out, err := h(ctx, &in)
@@ -107,7 +106,7 @@ func _Service_UpdateDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceUpdateDirectory)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.UpdateDirectory(ctx, req.(*UpdateDirectoryRequest))
 		})
 		out, err := h(ctx, &in)
@@ -126,7 +125,7 @@ func _Service_DeleteDirectory0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceDeleteDirectory)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.DeleteDirectory(ctx, req.(*DeleteDirectoryRequest))
 		})
 		out, err := h(ctx, &in)
@@ -148,7 +147,7 @@ func _Service_PrepareUploadFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx ht
 			return err
 		}
 		http.SetOperation(ctx, OperationServicePrepareUploadFile)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.PrepareUploadFile(ctx, req.(*PrepareUploadFileRequest))
 		})
 		out, err := h(ctx, &in)
@@ -170,7 +169,7 @@ func _Service_UploadFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Cont
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceUploadFile)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.UploadFile(ctx, req.(*UploadFileRequest))
 		})
 		out, err := h(ctx, &in)
@@ -189,7 +188,7 @@ func _Service_PageFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Contex
 			return err
 		}
 		http.SetOperation(ctx, OperationServicePageFile)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.PageFile(ctx, req.(*PageFileRequest))
 		})
 		out, err := h(ctx, &in)
@@ -211,7 +210,7 @@ func _Service_UpdateFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Cont
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceUpdateFile)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.UpdateFile(ctx, req.(*UpdateFileRequest))
 		})
 		out, err := h(ctx, &in)
@@ -233,7 +232,7 @@ func _Service_DeleteFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Cont
 			return err
 		}
 		http.SetOperation(ctx, OperationServiceDeleteFile)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.DeleteFile(ctx, req.(*DeleteFileRequest))
 		})
 		out, err := h(ctx, &in)

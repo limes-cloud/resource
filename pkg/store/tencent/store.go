@@ -7,7 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"resource/pkg/store"
+
+	"github.com/limes-cloud/resource/pkg/store"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
