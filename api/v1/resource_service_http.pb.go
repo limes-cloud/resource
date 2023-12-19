@@ -24,6 +24,7 @@ const OperationServiceAddDirectory = "/v1.Service/AddDirectory"
 const OperationServiceDeleteDirectory = "/v1.Service/DeleteDirectory"
 const OperationServiceDeleteFile = "/v1.Service/DeleteFile"
 const OperationServiceGetDirectory = "/v1.Service/GetDirectory"
+const OperationServiceGetFileBySha = "/v1.Service/GetFileBySha"
 const OperationServicePageFile = "/v1.Service/PageFile"
 const OperationServicePrepareUploadFile = "/v1.Service/PrepareUploadFile"
 const OperationServiceUpdateDirectory = "/v1.Service/UpdateDirectory"
@@ -35,6 +36,7 @@ type ServiceHTTPServer interface {
 	DeleteDirectory(context.Context, *DeleteDirectoryRequest) (*emptypb.Empty, error)
 	DeleteFile(context.Context, *DeleteFileRequest) (*emptypb.Empty, error)
 	GetDirectory(context.Context, *GetDirectoryRequest) (*GetDirectoryReply, error)
+	GetFileBySha(context.Context, *GetFileByShaRequest) (*File, error)
 	PageFile(context.Context, *PageFileRequest) (*PageFileReply, error)
 	PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error)
 	UpdateDirectory(context.Context, *UpdateDirectoryRequest) (*emptypb.Empty, error)
@@ -51,6 +53,7 @@ func RegisterServiceHTTPServer(s *http.Server, srv ServiceHTTPServer) {
 	r.POST("/resource/v1/upload/prepare", _Service_PrepareUploadFile0_HTTP_Handler(srv))
 	r.POST("/resource/v1/upload", _Service_UploadFile0_HTTP_Handler(srv))
 	r.GET("/resource/v1/files", _Service_PageFile0_HTTP_Handler(srv))
+	r.GET("/resource/v1/file/sha", _Service_GetFileBySha0_HTTP_Handler(srv))
 	r.PUT("/resource/v1/file", _Service_UpdateFile0_HTTP_Handler(srv))
 	r.POST("/resource/v1/file", _Service_DeleteFile0_HTTP_Handler(srv))
 }
@@ -200,6 +203,25 @@ func _Service_PageFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _Service_GetFileBySha0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetFileByShaRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationServiceGetFileBySha)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.GetFileBySha(ctx, req.(*GetFileByShaRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*File)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Service_UpdateFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UpdateFileRequest
@@ -249,6 +271,7 @@ type ServiceHTTPClient interface {
 	DeleteDirectory(ctx context.Context, req *DeleteDirectoryRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	DeleteFile(ctx context.Context, req *DeleteFileRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	GetDirectory(ctx context.Context, req *GetDirectoryRequest, opts ...http.CallOption) (rsp *GetDirectoryReply, err error)
+	GetFileBySha(ctx context.Context, req *GetFileByShaRequest, opts ...http.CallOption) (rsp *File, err error)
 	PageFile(ctx context.Context, req *PageFileRequest, opts ...http.CallOption) (rsp *PageFileReply, err error)
 	PrepareUploadFile(ctx context.Context, req *PrepareUploadFileRequest, opts ...http.CallOption) (rsp *PrepareUploadFileReply, err error)
 	UpdateDirectory(ctx context.Context, req *UpdateDirectoryRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
@@ -310,6 +333,19 @@ func (c *ServiceHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirecto
 	opts = append(opts, http.Operation(OperationServiceGetDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out.List, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *ServiceHTTPClientImpl) GetFileBySha(ctx context.Context, in *GetFileByShaRequest, opts ...http.CallOption) (*File, error) {
+	var out File
+	pattern := "/resource/v1/file/sha"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationServiceGetFileBySha))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -56,6 +56,12 @@ service Service {
     };
   }
 
+  rpc GetFileBySha (GetFileByShaRequest) returns (File) {
+    option (google.api.http) = {
+      get: "/resource/v1/file/sha"
+    };
+  }
+
   rpc UpdateFile (UpdateFileRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       put: "/resource/v1/file",

@@ -17,6 +17,10 @@ message File{
   uint32 created_at = 10;
 }
 
+message GetFileByShaRequest{
+  string sha = 5[(validate.rules).string = {min_len:1}];
+}
+
 message PrepareUploadFileRequest{
     uint32 directory_id = 1;
     string directory_path = 2;

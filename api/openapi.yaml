@@ -142,6 +142,29 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /resource/v1/file/sha:
+        get:
+            tags:
+                - Service
+            operationId: Service_GetFileBySha
+            parameters:
+                - name: sha
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/File'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /resource/v1/files:
         get:
             tags:

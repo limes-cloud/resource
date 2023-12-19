@@ -46,6 +46,25 @@ func NewFile(conf *config.Config) *File {
 	}
 }
 
+// GetFileBySha 查询文件
+func (f *File) GetFileBySha(ctx kratosx.Context, in *v1.GetFileByShaRequest) (*v1.File, error) {
+
+	file := model.File{}
+	if err := file.OneBySha(ctx, in.Sha); err != nil {
+		return nil, v1.NotExistFileError()
+	}
+
+	file.Src = f.fileSrc(file.Src)
+
+	reply := v1.File{}
+	// 进行数据转换
+	if err := util.Transform(file, &reply); err != nil {
+		return nil, v1.TransformErrorFormat(err.Error())
+	}
+
+	return &reply, nil
+}
+
 // PageFile 获取分页文件
 func (f *File) PageFile(ctx kratosx.Context, in *v1.PageFileRequest) (*v1.PageFileReply, error) {
 	file := model.File{}

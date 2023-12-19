@@ -56,6 +56,11 @@ func (h *Handler) UploadFile(ctx context.Context, in *v1.UploadFileRequest) (*v1
 	return h.file.UploadFile(kratosx.MustContext(ctx), in)
 }
 
+// GetFileBySha 文件查询
+func (h *Handler) GetFileBySha(ctx context.Context, in *v1.GetFileByShaRequest) (*v1.File, error) {
+	return h.file.GetFileBySha(kratosx.MustContext(ctx), in)
+}
+
 // PageFile 文件分野查询
 func (h *Handler) PageFile(ctx context.Context, in *v1.PageFileRequest) (*v1.PageFileReply, error) {
 	return h.file.PageFile(kratosx.MustContext(ctx), in)

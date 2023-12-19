@@ -151,6 +151,119 @@ var _ interface {
 	ErrorName() string
 } = FileValidationError{}
 
+// Validate checks the field values on GetFileByShaRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetFileByShaRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetFileByShaRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetFileByShaRequestMultiError, or nil if none found.
+func (m *GetFileByShaRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetFileByShaRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetSha()) < 1 {
+		err := GetFileByShaRequestValidationError{
+			field:  "Sha",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetFileByShaRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetFileByShaRequestMultiError is an error wrapping multiple validation
+// errors returned by GetFileByShaRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetFileByShaRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetFileByShaRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetFileByShaRequestMultiError) AllErrors() []error { return m }
+
+// GetFileByShaRequestValidationError is the validation error returned by
+// GetFileByShaRequest.Validate if the designated constraints aren't met.
+type GetFileByShaRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetFileByShaRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetFileByShaRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetFileByShaRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetFileByShaRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetFileByShaRequestValidationError) ErrorName() string {
+	return "GetFileByShaRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetFileByShaRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetFileByShaRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetFileByShaRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetFileByShaRequestValidationError{}
+
 // Validate checks the field values on PrepareUploadFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

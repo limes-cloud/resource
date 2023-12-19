@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 
+	configure "github.com/limes-cloud/configure/client"
+
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	configure "github.com/limes-cloud/configure/client"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/config"
 	v1 "github.com/limes-cloud/resource/api/v1"
@@ -35,7 +36,7 @@ func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 	}
 
 	// 监听服务
-	c.Watch("business", func(value config.Value) {
+	c.Watch("file", func(value config.Value) {
 		if err := value.Scan(conf); err != nil {
 			log.Printf("business配置变更失败：%s", err.Error())
 		}

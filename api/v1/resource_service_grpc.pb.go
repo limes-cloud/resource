@@ -27,6 +27,7 @@ const (
 	Service_PrepareUploadFile_FullMethodName = "/v1.Service/PrepareUploadFile"
 	Service_UploadFile_FullMethodName        = "/v1.Service/UploadFile"
 	Service_PageFile_FullMethodName          = "/v1.Service/PageFile"
+	Service_GetFileBySha_FullMethodName      = "/v1.Service/GetFileBySha"
 	Service_UpdateFile_FullMethodName        = "/v1.Service/UpdateFile"
 	Service_DeleteFile_FullMethodName        = "/v1.Service/DeleteFile"
 )
@@ -42,6 +43,7 @@ type ServiceClient interface {
 	PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...grpc.CallOption) (*PrepareUploadFileReply, error)
 	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileReply, error)
 	PageFile(ctx context.Context, in *PageFileRequest, opts ...grpc.CallOption) (*PageFileReply, error)
+	GetFileBySha(ctx context.Context, in *GetFileByShaRequest, opts ...grpc.CallOption) (*File, error)
 	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -117,6 +119,15 @@ func (c *serviceClient) PageFile(ctx context.Context, in *PageFileRequest, opts 
 	return out, nil
 }
 
+func (c *serviceClient) GetFileBySha(ctx context.Context, in *GetFileByShaRequest, opts ...grpc.CallOption) (*File, error) {
+	out := new(File)
+	err := c.cc.Invoke(ctx, Service_GetFileBySha_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serviceClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Service_UpdateFile_FullMethodName, in, out, opts...)
@@ -146,6 +157,7 @@ type ServiceServer interface {
 	PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error)
 	UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error)
 	PageFile(context.Context, *PageFileRequest) (*PageFileReply, error)
+	GetFileBySha(context.Context, *GetFileByShaRequest) (*File, error)
 	UpdateFile(context.Context, *UpdateFileRequest) (*emptypb.Empty, error)
 	DeleteFile(context.Context, *DeleteFileRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedServiceServer()
@@ -175,6 +187,9 @@ func (UnimplementedServiceServer) UploadFile(context.Context, *UploadFileRequest
 }
 func (UnimplementedServiceServer) PageFile(context.Context, *PageFileRequest) (*PageFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PageFile not implemented")
+}
+func (UnimplementedServiceServer) GetFileBySha(context.Context, *GetFileByShaRequest) (*File, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFileBySha not implemented")
 }
 func (UnimplementedServiceServer) UpdateFile(context.Context, *UpdateFileRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
@@ -321,6 +336,24 @@ func _Service_PageFile_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_GetFileBySha_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFileByShaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).GetFileBySha(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Service_GetFileBySha_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).GetFileBySha(ctx, req.(*GetFileByShaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Service_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateFileRequest)
 	if err := dec(in); err != nil {
@@ -391,6 +424,10 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PageFile",
 			Handler:    _Service_PageFile_Handler,
+		},
+		{
+			MethodName: "GetFileBySha",
+			Handler:    _Service_GetFileBySha_Handler,
 		},
 		{
 			MethodName: "UpdateFile",
