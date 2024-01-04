@@ -23,12 +23,22 @@ database:
   system: #数据库实例名称,如有多个数据库可新增
     enable: true #是否启用数据库
     drive: mysql #数据库类型
-    dsn: root:root@tcp(127.0.0.1:3306)/resource?charset=utf8mb4&parseTime=True&loc=Local #连接dsn
-    maxLifetime: 2h #最大生存时间
-    maxOpenConn: 10 #最大连接数量
-    maxIdleConn: 10 #最大空闲数量
-    logLevel: 1 #日志等级
-    slowThreshold: 2s #慢sql阈值
+    autoCreate: true #是否自动创建数据库
+    connect:
+      username: root
+      password: root
+      host: 127.0.0.1
+      port: 3306
+      dbName: resource_test
+      option: ?charset=utf8mb4&parseTime=True&loc=Local
+    config:
+      transformError:
+        enable: true
+      maxLifetime: 2h #最大生存时间
+      maxOpenConn: 10 #最大连接数量
+      maxIdleConn: 10 #最大空闲数量
+      logLevel: 4 #日志等级
+      slowThreshold: 2s #慢sql阈值
 pool: #并非池配置
   size: 100000 #最大协程数量
   expiryDuration: 30s #过期时间

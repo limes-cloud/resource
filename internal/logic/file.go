@@ -9,6 +9,14 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/google/uuid"
+	"github.com/limes-cloud/kratosx"
+	ktypes "github.com/limes-cloud/kratosx/types"
+	"google.golang.org/protobuf/proto"
+	"gorm.io/gorm"
+
 	v1 "github.com/limes-cloud/resource/api/v1"
 	"github.com/limes-cloud/resource/config"
 	"github.com/limes-cloud/resource/consts"
@@ -20,16 +28,6 @@ import (
 	"github.com/limes-cloud/resource/pkg/store/local"
 	"github.com/limes-cloud/resource/pkg/store/tencent"
 	"github.com/limes-cloud/resource/pkg/util"
-
-	"github.com/gabriel-vasile/mimetype"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/limes-cloud/kratosx"
-
-	"gorm.io/gorm"
-
-	"github.com/google/uuid"
-
-	"google.golang.org/protobuf/proto"
 )
 
 type File struct {
@@ -48,7 +46,6 @@ func NewFile(conf *config.Config) *File {
 
 // GetFileBySha 查询文件
 func (f *File) GetFileBySha(ctx kratosx.Context, in *v1.GetFileByShaRequest) (*v1.File, error) {
-
 	file := model.File{}
 	if err := file.OneBySha(ctx, in.Sha); err != nil {
 		return nil, v1.NotExistFileError()
@@ -68,7 +65,7 @@ func (f *File) GetFileBySha(ctx kratosx.Context, in *v1.GetFileByShaRequest) (*v
 // PageFile 获取分页文件
 func (f *File) PageFile(ctx kratosx.Context, in *v1.PageFileRequest) (*v1.PageFileReply, error) {
 	file := model.File{}
-	list, total, err := file.Page(ctx, &model.PageOptions{
+	list, total, err := file.Page(ctx, &ktypes.PageOptions{
 		Page:     in.Page,
 		PageSize: in.PageSize,
 		Scopes: func(db *gorm.DB) *gorm.DB {
@@ -119,7 +116,7 @@ func (f *File) UpdateFile(ctx kratosx.Context, in *v1.UpdateFileRequest) (*empty
 	}
 
 	file := model.File{
-		BaseModel: model.BaseModel{ID: in.Id},
+		BaseModel: ktypes.BaseModel{ID: in.Id},
 		Name:      in.Name,
 	}
 

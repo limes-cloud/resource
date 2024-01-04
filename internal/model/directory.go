@@ -1,12 +1,15 @@
 package model
 
-import "github.com/limes-cloud/kratosx"
+import (
+	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/types"
+)
 
 type Directory struct {
-	BaseModel
-	ParentID uint32 `json:"parent_id"`
-	Name     string `json:"name"`
-	App      string `json:"app"`
+	types.BaseModel
+	ParentID uint32 `json:"parent_id" gorm:"uniqueIndex:pn;not null;comment:父id"`
+	Name     string `json:"name" gorm:"uniqueIndex:pn;not null;size:128;comment:目录名称"`
+	App      string `json:"app" gorm:"not null;size:32;comment:所属应用"`
 }
 
 // Create 创建目录信息

@@ -1,20 +1,23 @@
 package model
 
-import "github.com/limes-cloud/kratosx"
+import (
+	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/types"
+)
 
 type File struct {
-	BaseModel
-	DirectoryID uint32 `json:"directory_id"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Size        uint32 `json:"size"`
-	Sha         string `json:"sha"`
-	Src         string `json:"src"`
-	UploadID    string `json:"upload_id"`
-	ChunkCount  uint32 `json:"chunk_count"`
-	Storage     string `json:"storage"`
-	Status      string `json:"status"`
-	//SrcFormat   string `json:"-" gorm:"-"`
+	types.BaseModel
+	DirectoryID uint32     `json:"directory_id" gorm:"uniqueIndex:dir_name;uniqueIndex:dir_sha;not null;comment:目录id"`
+	Name        string     `json:"name" gorm:"uniqueIndex:dir_name;not null;size:128;comment:文件名称"`
+	Type        string     `json:"type" gorm:"not null;size:32;comment:文件类型"`
+	Size        uint32     `json:"size" gorm:"not null;comment:文件大小"`
+	Sha         string     `json:"sha" gorm:"uniqueIndex:dir_sha;not null;size:128;comment:文件sha"`
+	Src         string     `json:"src" gorm:"size:256;comment:文件真实路径"`
+	UploadID    string     `json:"upload_id" gorm:"uniqueIndex;size:128;comment:上传id"`
+	ChunkCount  uint32     `json:"chunk_count" gorm:"default:1;comment:切片数量"`
+	Storage     string     `json:"storage" gorm:"not null;size:32;comment:存储引擎"`
+	Status      string     `json:"status" gorm:"default:PROGRESS;size:32;comment:上传状态"`
+	Directory   *Directory `json:"directory" gorm:"constraint:onDelete:cascade"`
 }
 
 func (f *File) Copy(ctx kratosx.Context, dir uint32, key string) error {
@@ -48,7 +51,7 @@ func (f *File) OneByUploadID(ctx kratosx.Context, ui string) error {
 }
 
 // Page 查询分页数据
-func (f *File) Page(ctx kratosx.Context, options *PageOptions) ([]*File, uint32, error) {
+func (f *File) Page(ctx kratosx.Context, options *types.PageOptions) ([]*File, uint32, error) {
 	var list []*File
 	total := int64(0)
 
