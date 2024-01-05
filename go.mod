@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/gookit/color v1.5.4
 	github.com/limes-cloud/configure v1.0.14
-	github.com/limes-cloud/kratosx v1.0.6
+	github.com/limes-cloud/kratosx v1.0.7
 	github.com/mbndr/figlet4go v0.0.0-20190224160619-d6cef5b186ea
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45
