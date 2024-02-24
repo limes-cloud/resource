@@ -39,14 +39,22 @@ service Service {
   rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
     option (google.api.http) = {
       post: "/resource/v1/upload/prepare",
-      body:"*"
+      body:"*",
+      additional_bindings:{
+        post: "/resource/client/v1/upload/prepare",
+        body:"*",
+      }
     };
   }
 
   rpc UploadFile (UploadFileRequest) returns (UploadFileReply) {
     option (google.api.http) = {
       post: "/resource/v1/upload",
-      body:"*"
+      body:"*",
+      additional_bindings:{
+        post: "/resource/client/v1/upload",
+        body:"*",
+      }
     };
   }
 
@@ -58,7 +66,10 @@ service Service {
 
   rpc GetFileBySha (GetFileByShaRequest) returns (File) {
     option (google.api.http) = {
-      get: "/resource/v1/file/sha"
+      get: "/resource/v1/file/sha",
+      additional_bindings:{
+        get: "/resource/client/v1/file/sha",
+      }
     };
   }
 

@@ -50,10 +50,13 @@ func RegisterServiceHTTPServer(s *http.Server, srv ServiceHTTPServer) {
 	r.POST("/resource/v1/directory", _Service_AddDirectory0_HTTP_Handler(srv))
 	r.PUT("/resource/v1/directory", _Service_UpdateDirectory0_HTTP_Handler(srv))
 	r.DELETE("/resource/v1/directory", _Service_DeleteDirectory0_HTTP_Handler(srv))
-	r.POST("/resource/v1/upload/prepare", _Service_PrepareUploadFile0_HTTP_Handler(srv))
-	r.POST("/resource/v1/upload", _Service_UploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/client/v1/upload/prepare", _Service_PrepareUploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/v1/upload/prepare", _Service_PrepareUploadFile1_HTTP_Handler(srv))
+	r.POST("/resource/client/v1/upload", _Service_UploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/v1/upload", _Service_UploadFile1_HTTP_Handler(srv))
 	r.GET("/resource/v1/files", _Service_PageFile0_HTTP_Handler(srv))
-	r.GET("/resource/v1/file/sha", _Service_GetFileBySha0_HTTP_Handler(srv))
+	r.GET("/resource/client/v1/file/sha", _Service_GetFileBySha0_HTTP_Handler(srv))
+	r.GET("/resource/v1/file/sha", _Service_GetFileBySha1_HTTP_Handler(srv))
 	r.PUT("/resource/v1/file", _Service_UpdateFile0_HTTP_Handler(srv))
 	r.POST("/resource/v1/file", _Service_DeleteFile0_HTTP_Handler(srv))
 }
@@ -162,7 +165,51 @@ func _Service_PrepareUploadFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx ht
 	}
 }
 
+func _Service_PrepareUploadFile1_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in PrepareUploadFileRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationServicePrepareUploadFile)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.PrepareUploadFile(ctx, req.(*PrepareUploadFileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*PrepareUploadFileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Service_UploadFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UploadFileRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationServiceUploadFile)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.UploadFile(ctx, req.(*UploadFileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UploadFileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Service_UploadFile1_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UploadFileRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -204,6 +251,25 @@ func _Service_PageFile0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Contex
 }
 
 func _Service_GetFileBySha0_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetFileByShaRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationServiceGetFileBySha)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.GetFileBySha(ctx, req.(*GetFileByShaRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*File)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Service_GetFileBySha1_HTTP_Handler(srv ServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetFileByShaRequest
 		if err := ctx.BindQuery(&in); err != nil {

@@ -13,7 +13,7 @@ type File struct {
 	Size        uint32     `json:"size" gorm:"not null;comment:文件大小"`
 	Sha         string     `json:"sha" gorm:"uniqueIndex:dir_sha;not null;size:128;comment:文件sha"`
 	Src         string     `json:"src" gorm:"size:256;comment:文件真实路径"`
-	UploadID    string     `json:"upload_id" gorm:"uniqueIndex;size:128;comment:上传id"`
+	UploadID    *string    `json:"upload_id" gorm:"uniqueIndex;size:128;comment:上传id"`
 	ChunkCount  uint32     `json:"chunk_count" gorm:"default:1;comment:切片数量"`
 	Storage     string     `json:"storage" gorm:"not null;size:32;comment:存储引擎"`
 	Status      string     `json:"status" gorm:"default:PROGRESS;size:32;comment:上传状态"`
@@ -30,7 +30,7 @@ func (f *File) Copy(ctx kratosx.Context, dir uint32, key string) error {
 	nf.DirectoryID = dir
 	nf.Name = key
 	nf.CreatedAt = 0
-	nf.UploadID = ""
+	nf.UploadID = nil
 
 	return ctx.DB().Create(&nf).Error
 }

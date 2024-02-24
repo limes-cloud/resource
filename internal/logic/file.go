@@ -186,12 +186,12 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 
 		// 存在但是处于上传中
 		uploadChunks := []uint32{}
-		if file.ChunkCount > 1 {
+		if file.ChunkCount > 1 && file.UploadID != nil {
 			store, err := f.NewStore(ctx)
 			if err != nil {
 				return nil, v1.InitStoreError()
 			}
-			chunk, err := store.NewPutChunkByUploadID(file.Src, file.UploadID)
+			chunk, err := store.NewPutChunkByUploadID(file.Src, *file.UploadID)
 			if err != nil {
 				return nil, v1.ChunkUploadError()
 			}
@@ -199,7 +199,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 		}
 		return &v1.PrepareUploadFileReply{
 			Uploaded:     proto.Bool(false),
-			UploadId:     proto.String(file.UploadID),
+			UploadId:     file.UploadID,
 			ChunkSize:    proto.Uint32(uint32(f.maxChunkSize())),
 			ChunkCount:   proto.Uint32(file.ChunkCount),
 			UploadChunks: uploadChunks,
@@ -227,7 +227,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 		Status:      consts.STATUS_PROGRESS,
 		Storage:     f.conf.Storage,
 		Type:        fileType,
-		UploadID:    uuid.NewString(),
+		UploadID:    proto.String(uuid.NewString()),
 		ChunkCount:  1,
 	}
 
@@ -242,7 +242,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 		if err != nil {
 			return nil, v1.ChunkUploadError()
 		}
-		file.UploadID = pc.UploadID()
+		file.UploadID = proto.String(pc.UploadID())
 		file.ChunkCount = uint32(f.chunkCount(int64(in.Size)))
 	}
 
@@ -252,7 +252,7 @@ func (f *File) PrepareUploadFile(ctx kratosx.Context, in *v1.PrepareUploadFileRe
 
 	return &v1.PrepareUploadFileReply{
 		Uploaded:     proto.Bool(false),
-		UploadId:     proto.String(file.UploadID),
+		UploadId:     file.UploadID,
 		ChunkSize:    proto.Uint32(uint32(f.maxChunkSize())),
 		ChunkCount:   proto.Uint32(file.ChunkCount),
 		UploadChunks: []uint32{},
@@ -421,14 +421,14 @@ func (f *File) checkSize(size int64) error {
 	return nil
 }
 
-// maxSingularSize 获取单个文件的最大大小
+// maxSingularSize 获取单个文件的最大大小,单位KB
 func (f *File) maxSingularSize() int64 {
-	return f.conf.MaxSingularSize * 1024 * 1024
+	return f.conf.MaxSingularSize * 1024
 }
 
-// maxChunkSize 获取分片的大小
+// maxChunkSize 获取分片的大小 单位KB
 func (f *File) maxChunkSize() int64 {
-	return f.conf.MaxChunkSize * 1024 * 1024
+	return f.conf.MaxChunkSize * 1024
 }
 
 func (f *File) fileSrcFormat() string {
