@@ -4,23 +4,15 @@ import (
 	"github.com/limes-cloud/kratosx"
 	gte "github.com/limes-cloud/kratosx/library/db/gormtranserror"
 
-	"github.com/limes-cloud/resource/config"
-	"github.com/limes-cloud/resource/internal/model"
-	"github.com/limes-cloud/resource/pkg/store/local"
+	biz "github.com/limes-cloud/resource/internal/biz/file"
+	"github.com/limes-cloud/resource/internal/pkg/store/local"
 )
 
-func IsInit(ctx kratosx.Context) bool {
-	db := ctx.DB().Migrator()
-	return db.HasTable(model.Directory{}) &&
-		db.HasTable(model.File{}) &&
-		db.HasTable(local.Chunk{})
-}
-
-func Init(ctx kratosx.Context, config *config.Config) {
+func Run(ctx kratosx.Context) {
 	db := ctx.DB()
-	_ = db.Set("gorm:table_options", "COMMENT='目录信息' ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(model.Directory{})
-	_ = db.Set("gorm:table_options", "COMMENT='文件信息' ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(model.File{})
+	_ = db.Set("gorm:table_options", "COMMENT='目录信息' ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(biz.Directory{})
+	_ = db.Set("gorm:table_options", "COMMENT='文件信息' ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(biz.File{})
 	_ = db.Set("gorm:table_options", "COMMENT='切片信息' ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(local.Chunk{})
 	// 重新载入gorm错误插件
-	gte.NewGlobalGormErrorPlugin().Initialize(ctx.DB())
+	_ = gte.NewGlobalGormErrorPlugin().Initialize(ctx.DB())
 }

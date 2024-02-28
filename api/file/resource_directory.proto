@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package v1;
+option go_package = "./v1;v1";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+message Directory{
+  uint32 id = 1;
+  optional uint32 parent_id = 2;
+  string app = 3;
+  string name = 4;
+  uint32 created_at = 5;
+  uint32 updated_at = 6;
+}
+
+message AllDirectoryRequest{
+  uint32 parent_id = 1;
+  string app = 2[(validate.rules).string = {min_len:0}];
+}
+
+message AllDirectoryReply{
+  repeated Directory list = 1;
+}
+
+message AddDirectoryRequest{
+  uint32 parent_id = 1;
+  string name = 2[(validate.rules).string = {min_len:1}];
+  string app = 3[(validate.rules).string = {min_len:1}];
+}
+
+message UpdateDirectoryRequest{
+  uint32 id = 1[(validate.rules).uint32 = {gt:0}];
+  string app = 2[(validate.rules).string = {min_len:1}];
+  string name = 3[(validate.rules).string = {min_len:1}];
+}
+
+message DeleteDirectoryRequest{
+  uint32 id = 1[(validate.rules).uint32 = {gt:0}];
+  string app = 2[(validate.rules).string = {min_len:1}];
+}

@@ -11,14 +11,13 @@ import (
 	configure "github.com/limes-cloud/configure/client"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/config"
+	"github.com/limes-cloud/kratosx/pkg/util"
 	_ "go.uber.org/automaxprocs"
 
-	v1 "github.com/limes-cloud/resource/api/v1"
-	resourceconf "github.com/limes-cloud/resource/config"
-	"github.com/limes-cloud/resource/internal/handler"
+	resourceconf "github.com/limes-cloud/resource/internal/config"
 	"github.com/limes-cloud/resource/internal/initiator"
-	"github.com/limes-cloud/resource/pkg/pt"
-	"github.com/limes-cloud/resource/router"
+	"github.com/limes-cloud/resource/internal/router"
+	"github.com/limes-cloud/resource/internal/service"
 )
 
 func main() {
@@ -27,7 +26,7 @@ func main() {
 		kratosx.RegistrarServer(RegisterServer),
 		kratosx.Options(kratos.AfterStart(func(ctx context.Context) error {
 			kt := kratosx.MustContext(ctx)
-			pt.ArtFont(fmt.Sprintf("Hello %s !", kt.Name()))
+			util.PrintArtFont(fmt.Sprintf("Hello %s !", kt.Name()))
 			return nil
 		})),
 	)
@@ -38,12 +37,13 @@ func main() {
 }
 
 func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
+	// 初始化并监听配置变更
 	conf := &resourceconf.Config{}
-
-	// 配置初始化
-	if err := c.Value("file").Scan(conf); err != nil {
-		panic("author config format error:" + err.Error())
-	}
+	c.ScanWatch("file", func(value config.Value) {
+		if err := value.Scan(conf); err != nil {
+			panic("file config format error:" + err.Error())
+		}
+	})
 
 	// 初始化逻辑
 	ior := initiator.New(conf)
@@ -51,18 +51,7 @@ func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 		panic("initiator error:" + err.Error())
 	}
 
-	// 监听服务
-	c.Watch("file", func(value config.Value) {
-		if err := value.Scan(conf); err != nil {
-			log.Printf("business配置变更失败：%s", err.Error())
-		}
-	})
-
-	srv := handler.New(conf)
-
-	// 自定义路由
-	router.Register(hs, srv)
-
-	v1.RegisterServiceHTTPServer(hs, srv)
-	v1.RegisterServiceServer(gs, srv)
+	// 注册服务
+	fileSrv := service.New(conf, hs, gs)
+	router.Register(hs, fileSrv)
 }

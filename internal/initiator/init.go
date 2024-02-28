@@ -5,9 +5,8 @@ import (
 
 	"github.com/limes-cloud/kratosx"
 
-	"github.com/limes-cloud/resource/config"
+	"github.com/limes-cloud/resource/internal/config"
 	"github.com/limes-cloud/resource/internal/initiator/migrate"
-	"github.com/limes-cloud/resource/pkg/pt"
 )
 
 type Initiator struct {
@@ -24,13 +23,8 @@ func New(conf *config.Config) *Initiator {
 func (a *Initiator) Run() error {
 	ctx := kratosx.MustContext(context.Background())
 
-	if migrate.IsInit(ctx) {
-		pt.Cyan("already init server")
-		return nil
-	}
-
 	// 自动迁移
-	migrate.Init(ctx, a.conf)
+	migrate.Run(ctx)
 
 	return nil
 }
