@@ -15,6 +15,7 @@ RUN GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix cgo -o res
 FROM alpine
 WORKDIR /go/build
 
+# 提供给pipeline使用
 ARG APP_VERSION
 ARG APP_NAME
 ARG CONF_HOST
@@ -23,7 +24,7 @@ ENV CONF_HOST=$CONF_HOST
 ENV CONF_TOKEN=$CONF_TOKEN
 ENV APP_NAME=$APP_NAME
 ENV APP_VERSION=$APP_VERSION
-RUN echo ${APP_NAME} $CONF_HOST
+
 COPY ./static/ /go/build/static/
 COPY --from=build /go/build/resource /go/build/resource
 CMD ["./resource"]
