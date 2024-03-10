@@ -190,6 +190,12 @@ func (m *GetFileRequest) validate(all bool) error {
 
 	// no validation rules for Mode
 
+	// no validation rules for IsRange
+
+	// no validation rules for Start
+
+	// no validation rules for End
+
 	if len(errors) > 0 {
 		return GetFileRequestMultiError(errors)
 	}

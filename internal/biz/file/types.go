@@ -43,10 +43,13 @@ type UploadFileReply struct {
 }
 
 type GetFileRequest struct {
-	Src    string `json:"src"`
-	Width  int    `json:"width"`
-	Height int    `json:"height"`
-	Mode   string `json:"mode"`
+	Src     string `json:"src"`
+	Width   int    `json:"width"`
+	Height  int    `json:"height"`
+	Mode    string `json:"mode"`
+	IsRange bool   `json:"is_range"`
+	Start   int64  `json:"start"`
+	End     int64  `json:"end"`
 }
 
 type GetFileResponse struct {

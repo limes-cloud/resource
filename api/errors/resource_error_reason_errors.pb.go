@@ -298,3 +298,19 @@ func ParamsFormat(format string, args ...any) *errors.Error {
 func Params() *errors.Error {
 	return errors.New(200, Reason_Params.String(), "参数错误")
 }
+
+func IsAccessResource(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == Reason_AccessResource.String() && e.Code == 200
+}
+
+func AccessResourceFormat(format string, args ...any) *errors.Error {
+	return errors.New(200, Reason_AccessResource.String(), "访问资源文件异常:"+fmt.Sprintf(format, args...))
+}
+
+func AccessResource() *errors.Error {
+	return errors.New(200, Reason_AccessResource.String(), "访问资源文件异常")
+}

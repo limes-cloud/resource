@@ -27,6 +27,8 @@ enum Reason {
   NotExistDirectory = 15[(errors.message)="文件夹不存在"];
   NotExistResource = 16[(errors.message)="资源不存在"];
   Params = 17[(errors.message)="参数错误"];
+  AccessResource = 18[(errors.message)="访问资源文件异常"];
+
 }
 
 

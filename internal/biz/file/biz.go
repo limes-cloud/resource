@@ -1,8 +1,11 @@
 package file
 
 import (
+	"bytes"
 	"io"
 	"mime"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -103,9 +106,23 @@ func (u *UseCase) GetFile(ctx kratosx.Context, in *GetFileRequest) (*GetFileResp
 	if err != nil {
 		return nil, errors.NotExistResource()
 	}
-	rb, _ := io.ReadAll(reader)
 
-	fileMime := mime.TypeByExtension("." + u.factory.GetType(in.Src))
+	var rb []byte
+	if in.IsRange {
+		file := reader.(*os.File)
+		if _, err := file.Seek(in.Start, io.SeekStart); err != nil {
+			return nil, errors.AccessResourceFormat(err.Error())
+		}
+		tempReader := bytes.NewBuffer([]byte{})
+		if _, err := io.CopyN(tempReader, file, in.End-in.Start+1); err != nil {
+			return nil, errors.AccessResourceFormat(err.Error())
+		}
+		rb, _ = io.ReadAll(tempReader)
+	} else {
+		rb, _ = io.ReadAll(reader)
+	}
+
+	fileMime := mime.TypeByExtension(filepath.Ext(in.Src))
 	if fileMime == "" {
 		fileMime = u.factory.FileMime(rb)
 	}

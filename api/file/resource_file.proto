@@ -22,6 +22,9 @@ message GetFileRequest{
   uint32 width =2;
   uint32 height =3;
   string mode = 4;
+  bool is_range = 5;
+  uint32 start = 6;
+  uint32 end = 7;
 }
 
 message GetFileReply{

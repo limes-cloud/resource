@@ -27,6 +27,10 @@ func NewFile(conf *config.Config) *FileService {
 	}
 }
 
+func (fs *FileService) Config() *config.Config {
+	return fs.conf
+}
+
 // AllDirectory 获取目录
 func (fs *FileService) AllDirectory(ctx context.Context, in *pb.AllDirectoryRequest) (*pb.AllDirectoryReply, error) {
 	list, err := fs.uc.AllDirectoryByParentID(kratosx.MustContext(ctx), in.ParentId, in.App)
