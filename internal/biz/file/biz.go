@@ -26,7 +26,7 @@ type UseCase struct {
 }
 
 func NewUseCase(config *config.Config, repo Repo) *UseCase {
-	return &UseCase{config: config, repo: repo, factory: factory.New(config)}
+	return &UseCase{config: config, repo: repo, factory: factory.New(config), muiOnce: make(map[string]*sync.Once)}
 }
 
 func (u *UseCase) AllDirectoryByParentID(ctx kratosx.Context, pid uint32, app string) ([]*Directory, error) {

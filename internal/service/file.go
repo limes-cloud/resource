@@ -154,8 +154,8 @@ func (fs *FileService) UpdateFile(ctx context.Context, in *pb.UpdateFileRequest)
 	return nil, fs.uc.UpdateFile(kratosx.MustContext(ctx), &req)
 }
 
-// DeleteFiles 删除文件
-func (fs *FileService) DeleteFiles(ctx context.Context, in *pb.DeleteFileRequest) (*empty.Empty, error) {
+// DeleteFile 删除文件
+func (fs *FileService) DeleteFile(ctx context.Context, in *pb.DeleteFileRequest) (*empty.Empty, error) {
 	return nil, fs.uc.DeleteFiles(kratosx.MustContext(ctx), in.DirectoryId, in.Ids)
 }
 
