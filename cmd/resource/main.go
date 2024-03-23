@@ -8,10 +8,10 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	configure "github.com/limes-cloud/configure/client"
+	configure "github.com/limes-cloud/configure/api/client"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/config"
-	"github.com/limes-cloud/kratosx/pkg/util"
+	"github.com/limes-cloud/kratosx/pkg/print"
 	_ "go.uber.org/automaxprocs"
 
 	resourceconf "github.com/limes-cloud/resource/internal/config"
@@ -26,7 +26,7 @@ func main() {
 		kratosx.RegistrarServer(RegisterServer),
 		kratosx.Options(kratos.AfterStart(func(ctx context.Context) error {
 			kt := kratosx.MustContext(ctx)
-			util.PrintArtFont(fmt.Sprintf("Hello %s !", kt.Name()))
+			print.ArtFont(fmt.Sprintf("Hello %s !", kt.Name()))
 			return nil
 		})),
 	)
