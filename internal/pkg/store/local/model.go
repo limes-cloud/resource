@@ -7,11 +7,11 @@ import (
 
 type Chunk struct {
 	types.CreateModel
-	UploadID string `json:"upload_id" gorm:"uniqueIndex:ui;not null;size:128;comment:上传id"`
-	Index    int    `json:"index" gorm:"uniqueIndex:ui;not null;comment:切片下标"`
-	Sha      string `json:"sha" gorm:"not null;size:128;comment:切片sha"`
-	Data     string `json:"data" gorm:"not null;type:mediumblob;comment:切片数据"`
-	Size     int    `json:"size" gorm:"not null;comment:切片大小"`
+	UploadID string `json:"upload_id"`
+	Index    int    `json:"index"`
+	Sha      string `json:"sha"`
+	Data     string `json:"data"`
+	Size     int    `json:"size"`
 }
 
 func (c *Chunk) Copy(db *gorm.DB, uploadId string, index int) error {

@@ -59,6 +59,7 @@ func SrcBlob(srv *service.FileService) thttp.HandlerFunc {
 		// 处理图片裁剪
 		cType := blw.header.Get("Content-Type")
 		if strings.Contains(cType, "image/") && in.Width > 0 && in.Height > 0 {
+			blw.header.Del("Content-Length")
 			tp := strings.Split(cType, "/")[1]
 			rb := blw.body.Bytes()
 			if img, err := image.New(tp, rb); err == nil {
@@ -78,11 +79,10 @@ func SrcBlob(srv *service.FileService) thttp.HandlerFunc {
 			header.Set(key, blw.header.Get(key))
 		}
 
+		ctx.Response().WriteHeader(blw.code)
 		if _, err := ctx.Response().Write(blw.body.Bytes()); err != nil {
 			return errors.System()
 		}
-
-		ctx.Response().WriteHeader(blw.code)
 
 		return nil
 	}

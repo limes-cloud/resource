@@ -15,7 +15,6 @@ import (
 	_ "go.uber.org/automaxprocs"
 
 	resourceconf "github.com/limes-cloud/resource/internal/config"
-	"github.com/limes-cloud/resource/internal/initiator"
 	"github.com/limes-cloud/resource/internal/router"
 	"github.com/limes-cloud/resource/internal/service"
 )
@@ -44,12 +43,6 @@ func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 			panic("file config format error:" + err.Error())
 		}
 	})
-
-	// 初始化逻辑
-	ior := initiator.New(conf)
-	if err := ior.Run(); err != nil {
-		panic("initiator error:" + err.Error())
-	}
 
 	// 注册服务
 	fileSrv := service.New(conf, hs, gs)
