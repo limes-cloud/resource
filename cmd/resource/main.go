@@ -38,9 +38,9 @@ func main() {
 func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 	// 初始化并监听配置变更
 	conf := &resourceconf.Config{}
-	c.ScanWatch("file", func(value config.Value) {
+	c.ScanWatch("business", func(value config.Value) {
 		if err := value.Scan(conf); err != nil {
-			panic("file config format error:" + err.Error())
+			panic("business config format error:" + err.Error())
 		}
 	})
 

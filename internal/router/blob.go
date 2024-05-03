@@ -2,7 +2,9 @@ package router
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -52,8 +54,8 @@ func SrcBlob(srv *service.FileService) thttp.HandlerFunc {
 
 		blw := NewWriter()
 
-		fs := http.FileServer(http.Dir(srv.Config().LocalDir))
-		fs = http.StripPrefix(srv.Config().ServerPath, fs)
+		fs := http.FileServer(http.Dir(srv.Config().Storage.LocalDir))
+		fs = http.StripPrefix(srv.Config().Storage.ServerPath, fs)
 		fs.ServeHTTP(blw, ctx.Request())
 
 		// 处理图片裁剪
@@ -77,6 +79,15 @@ func SrcBlob(srv *service.FileService) thttp.HandlerFunc {
 		header := ctx.Response().Header()
 		for key := range blw.header {
 			header.Set(key, blw.header.Get(key))
+		}
+
+		if in.Download {
+			fn := in.Src
+			if in.SaveName != "" {
+				fn = in.SaveName + filepath.Ext(in.Src)
+			}
+			header.Set("Content-Type", "application/octet-stream")
+			header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
 		}
 
 		ctx.Response().WriteHeader(blw.code)

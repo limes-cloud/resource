@@ -11,7 +11,9 @@ import (
 	pb "github.com/limes-cloud/resource/api/file/v1"
 	biz "github.com/limes-cloud/resource/internal/biz/file"
 	"github.com/limes-cloud/resource/internal/config"
+	"github.com/limes-cloud/resource/internal/data/export"
 	data "github.com/limes-cloud/resource/internal/data/file"
+	"github.com/limes-cloud/resource/internal/factory"
 )
 
 type FileService struct {
@@ -23,7 +25,7 @@ type FileService struct {
 func NewFile(conf *config.Config) *FileService {
 	return &FileService{
 		conf: conf,
-		uc:   biz.NewUseCase(conf, data.NewRepo()),
+		uc:   biz.NewUseCase(conf, data.NewRepo(), factory.New(conf, data.NewRepo(), export.NewRepo())),
 	}
 }
 

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.7.0
 // - protoc             v4.24.4
-// source: resource_service.proto
+// source: resource_file_service.proto
 
 package v1
 
@@ -20,15 +20,15 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationServiceAddDirectory = "/v1.Service/AddDirectory"
-const OperationServiceAllDirectory = "/v1.Service/AllDirectory"
-const OperationServiceDeleteDirectory = "/v1.Service/DeleteDirectory"
-const OperationServiceDeleteFile = "/v1.Service/DeleteFile"
-const OperationServiceGetFileBySha = "/v1.Service/GetFileBySha"
-const OperationServicePageFile = "/v1.Service/PageFile"
-const OperationServicePrepareUploadFile = "/v1.Service/PrepareUploadFile"
-const OperationServiceUpdateDirectory = "/v1.Service/UpdateDirectory"
-const OperationServiceUpdateFile = "/v1.Service/UpdateFile"
+const OperationServiceAddDirectory = "/file.Service/AddDirectory"
+const OperationServiceAllDirectory = "/file.Service/AllDirectory"
+const OperationServiceDeleteDirectory = "/file.Service/DeleteDirectory"
+const OperationServiceDeleteFile = "/file.Service/DeleteFile"
+const OperationServiceGetFileBySha = "/file.Service/GetFileBySha"
+const OperationServicePageFile = "/file.Service/PageFile"
+const OperationServicePrepareUploadFile = "/file.Service/PrepareUploadFile"
+const OperationServiceUpdateDirectory = "/file.Service/UpdateDirectory"
+const OperationServiceUpdateFile = "/file.Service/UpdateFile"
 
 type ServiceHTTPServer interface {
 	AddDirectory(context.Context, *AddDirectoryRequest) (*Directory, error)

@@ -196,6 +196,10 @@ func (m *GetFileRequest) validate(all bool) error {
 
 	// no validation rules for End
 
+	// no validation rules for Download
+
+	// no validation rules for SaveName
+
 	if len(errors) > 0 {
 		return GetFileRequestMultiError(errors)
 	}

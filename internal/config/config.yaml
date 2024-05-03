@@ -1,26 +1,30 @@
+
+env: TEST
 server:
   http:
-    addr: 0.0.0.0:7003
-    timeout: 1s
+    host: 127.0.0.1
+    port: 7003
+    timeout: 10s
     marshal:
       emitUnpopulated: true
       useProtoNames: true
   grpc:
-    addr: 0.0.0.0:8003
-    timeout: 1s
+    host: 127.0.0.1
+    port: 8003
+    timeout: 10s
 log:
-  level: 0 #日志输出等级
+  level: 0
   output:
-    - stdout # stdout:控制台输出，k8s日志收集
-    - file # file:输出到文件
-  file: #output存在file时此配置才可生效
-    name: ./tmp/runtime/output.log #日志存放地址
-    maxSize: 1 #日志文件最大容量,单位m
-    maxBackup: 5 #日志文件最多保存个数
-    maxAge: 1 #保留就文件的最大天数,单位天
-    compress: false #是否进行压缩归档
+    - stdout
+    - file
+  file:
+    name: ./tmp/runtime/output.log
+    maxSize: 1
+    maxBackup: 5
+    maxAge: 1
+    compress: false
 database:
-  system: #数据库实例名称,如有多个数据库可新增
+  system:
     enable: true #是否启用数据库
     drive: mysql #数据库类型
     autoCreate: true #是否自动创建数据库
@@ -29,32 +33,30 @@ database:
       password: root
       host: 127.0.0.1
       port: 3306
-      dbName: resource_test
+      dbName: resource
       option: ?charset=utf8mb4&parseTime=True&loc=Local
     config:
       transformError:
         enable: true
+      initializer:
+        enable: true
+        path: deploy/data.sql
       maxLifetime: 2h #最大生存时间
-      maxOpenConn: 10 #最大连接数量
+      maxOpenConn: 20 #最大连接数量
       maxIdleConn: 10 #最大空闲数量
       logLevel: 4 #日志等级
       slowThreshold: 2s #慢sql阈值
-pool: #并非池配置
-  size: 100000 #最大协程数量
-  expiryDuration: 30s #过期时间
-  preAlloc: true #是否预分配
-  maxBlockingTasks: 1000 #最大的并发任务
-  nonblocking: true #设置为true时maxBlockingTasks讲失效，不限制并发任务
+business:
+  storage:
+    type: local
+    serverPath: /resource/v1/static
+    localDir: static
+    maxSingularSize: 400
+    maxChunkSize: 200
+    maxChunkCount: 200
+    acceptTypes: ["jpg","png","txt","ppt","pptx","mp4"]
+  export:
+    localDir: static/export
+    expire: 3d
 logging:
   enable: true
-  whitelist:
-    "/v1.Service/PrepareUploadFile": true
-    "/v1.Service/UploadFile": true
-file:
-  storage: local
-  serverPath: /resource/v1/static
-  localDir: static
-  maxSingularSize: 1 #单位M
-  maxChunkSize: 1  #单位M
-  maxChunkCount: 20
-  acceptTypes: ["jpg","png","txt","ppt","pptx","mp4"]

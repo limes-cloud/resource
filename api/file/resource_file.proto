@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package v1;
+package file;
 option go_package = "./v1;v1";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
@@ -25,6 +25,8 @@ message GetFileRequest{
   bool is_range = 5;
   uint32 start = 6;
   uint32 end = 7;
+  bool download = 8;
+  string save_name = 9;
 }
 
 message GetFileReply{

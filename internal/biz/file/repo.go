@@ -15,8 +15,10 @@ type Repo interface {
 	DirectoryCountByParentID(ctx kratosx.Context, id uint32) (int64, error)
 
 	CopyFile(ctx kratosx.Context, src *File, did uint32, name string) error
-	FileCountByName(ctx kratosx.Context, did uint32, name string) (int64, error)
+
+	// FileCountByName(ctx kratosx.Context, did uint32, name string) (int64, error)
 	FileCountByDirectoryID(ctx kratosx.Context, id uint32) (int64, error)
+
 	GetFileByID(ctx kratosx.Context, id uint32) (*File, error)
 	GetFileBySha(ctx kratosx.Context, keyword string) (*File, error)
 	GetFileByUploadID(ctx kratosx.Context, uid string) (*File, error)
@@ -24,7 +26,6 @@ type Repo interface {
 	AddFile(ctx kratosx.Context, c *File) error
 	UpdateFile(ctx kratosx.Context, file *File) error
 	UpdateFileSuccess(ctx kratosx.Context, id uint32) error
-
 	DeleteFile(ctx kratosx.Context, id uint32) error
 	DeleteFiles(ctx kratosx.Context, pid uint32, ids []uint32) error
 }

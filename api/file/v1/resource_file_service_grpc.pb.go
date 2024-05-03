@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.24.4
-// source: resource_service.proto
+// source: resource_file_service.proto
 
 package v1
 
@@ -20,15 +20,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Service_AllDirectory_FullMethodName      = "/v1.Service/AllDirectory"
-	Service_AddDirectory_FullMethodName      = "/v1.Service/AddDirectory"
-	Service_UpdateDirectory_FullMethodName   = "/v1.Service/UpdateDirectory"
-	Service_DeleteDirectory_FullMethodName   = "/v1.Service/DeleteDirectory"
-	Service_PrepareUploadFile_FullMethodName = "/v1.Service/PrepareUploadFile"
-	Service_PageFile_FullMethodName          = "/v1.Service/PageFile"
-	Service_GetFileBySha_FullMethodName      = "/v1.Service/GetFileBySha"
-	Service_UpdateFile_FullMethodName        = "/v1.Service/UpdateFile"
-	Service_DeleteFile_FullMethodName        = "/v1.Service/DeleteFile"
+	Service_AllDirectory_FullMethodName      = "/file.Service/AllDirectory"
+	Service_AddDirectory_FullMethodName      = "/file.Service/AddDirectory"
+	Service_UpdateDirectory_FullMethodName   = "/file.Service/UpdateDirectory"
+	Service_DeleteDirectory_FullMethodName   = "/file.Service/DeleteDirectory"
+	Service_PrepareUploadFile_FullMethodName = "/file.Service/PrepareUploadFile"
+	Service_UploadFile_FullMethodName        = "/file.Service/UploadFile"
+	Service_PageFile_FullMethodName          = "/file.Service/PageFile"
+	Service_GetFileBySha_FullMethodName      = "/file.Service/GetFileBySha"
+	Service_UpdateFile_FullMethodName        = "/file.Service/UpdateFile"
+	Service_DeleteFile_FullMethodName        = "/file.Service/DeleteFile"
 )
 
 // ServiceClient is the client API for Service service.
@@ -40,6 +41,7 @@ type ServiceClient interface {
 	UpdateDirectory(ctx context.Context, in *UpdateDirectoryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteDirectory(ctx context.Context, in *DeleteDirectoryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...grpc.CallOption) (*PrepareUploadFileReply, error)
+	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileReply, error)
 	PageFile(ctx context.Context, in *PageFileRequest, opts ...grpc.CallOption) (*PageFileReply, error)
 	GetFileBySha(ctx context.Context, in *GetFileByShaRequest, opts ...grpc.CallOption) (*File, error)
 	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -99,6 +101,15 @@ func (c *serviceClient) PrepareUploadFile(ctx context.Context, in *PrepareUpload
 	return out, nil
 }
 
+func (c *serviceClient) UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileReply, error) {
+	out := new(UploadFileReply)
+	err := c.cc.Invoke(ctx, Service_UploadFile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serviceClient) PageFile(ctx context.Context, in *PageFileRequest, opts ...grpc.CallOption) (*PageFileReply, error) {
 	out := new(PageFileReply)
 	err := c.cc.Invoke(ctx, Service_PageFile_FullMethodName, in, out, opts...)
@@ -144,6 +155,7 @@ type ServiceServer interface {
 	UpdateDirectory(context.Context, *UpdateDirectoryRequest) (*emptypb.Empty, error)
 	DeleteDirectory(context.Context, *DeleteDirectoryRequest) (*emptypb.Empty, error)
 	PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error)
+	UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error)
 	PageFile(context.Context, *PageFileRequest) (*PageFileReply, error)
 	GetFileBySha(context.Context, *GetFileByShaRequest) (*File, error)
 	UpdateFile(context.Context, *UpdateFileRequest) (*emptypb.Empty, error)
@@ -169,6 +181,9 @@ func (UnimplementedServiceServer) DeleteDirectory(context.Context, *DeleteDirect
 }
 func (UnimplementedServiceServer) PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepareUploadFile not implemented")
+}
+func (UnimplementedServiceServer) UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
 func (UnimplementedServiceServer) PageFile(context.Context, *PageFileRequest) (*PageFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PageFile not implemented")
@@ -285,6 +300,24 @@ func _Service_PrepareUploadFile_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).UploadFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Service_UploadFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).UploadFile(ctx, req.(*UploadFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Service_PageFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PageFileRequest)
 	if err := dec(in); err != nil {
@@ -361,7 +394,7 @@ func _Service_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Service_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "v1.Service",
+	ServiceName: "file.Service",
 	HandlerType: (*ServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -385,6 +418,10 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Service_PrepareUploadFile_Handler,
 		},
 		{
+			MethodName: "UploadFile",
+			Handler:    _Service_UploadFile_Handler,
+		},
+		{
 			MethodName: "PageFile",
 			Handler:    _Service_PageFile_Handler,
 		},
@@ -402,5 +439,5 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "resource_service.proto",
+	Metadata: "resource_file_service.proto",
 }

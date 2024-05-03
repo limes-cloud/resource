@@ -16,15 +16,15 @@ func IsNotFound(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_NotFound.String() && e.Code == 200
+	return e.Reason == Reason_NotFound.String() && e.Code == 500
 }
 
 func NotFoundFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_NotFound.String(), "不存在数据:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_NotFound.String(), "不存在数据:"+fmt.Sprintf(format, args...))
 }
 
 func NotFound() *errors.Error {
-	return errors.New(200, Reason_NotFound.String(), "不存在数据")
+	return errors.New(500, Reason_NotFound.String(), "不存在数据")
 }
 
 func IsTransform(err error) bool {
@@ -32,15 +32,15 @@ func IsTransform(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_Transform.String() && e.Code == 200
+	return e.Reason == Reason_Transform.String() && e.Code == 500
 }
 
 func TransformFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_Transform.String(), "数据转换失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_Transform.String(), "数据转换失败:"+fmt.Sprintf(format, args...))
 }
 
 func Transform() *errors.Error {
-	return errors.New(200, Reason_Transform.String(), "数据转换失败")
+	return errors.New(500, Reason_Transform.String(), "数据转换失败")
 }
 
 func IsNoSupportStore(err error) bool {
@@ -48,15 +48,15 @@ func IsNoSupportStore(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_NoSupportStore.String() && e.Code == 200
+	return e.Reason == Reason_NoSupportStore.String() && e.Code == 500
 }
 
 func NoSupportStoreFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_NoSupportStore.String(), "不支持的存储引擎:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_NoSupportStore.String(), "不支持的存储引擎:"+fmt.Sprintf(format, args...))
 }
 
 func NoSupportStore() *errors.Error {
-	return errors.New(200, Reason_NoSupportStore.String(), "不支持的存储引擎")
+	return errors.New(500, Reason_NoSupportStore.String(), "不支持的存储引擎")
 }
 
 func IsSystem(err error) bool {
@@ -64,15 +64,15 @@ func IsSystem(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_System.String() && e.Code == 200
+	return e.Reason == Reason_System.String() && e.Code == 500
 }
 
 func SystemFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_System.String(), "系统错误:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_System.String(), "系统错误:"+fmt.Sprintf(format, args...))
 }
 
 func System() *errors.Error {
-	return errors.New(200, Reason_System.String(), "系统错误")
+	return errors.New(500, Reason_System.String(), "系统错误")
 }
 
 func IsChunkUpload(err error) bool {
@@ -80,15 +80,15 @@ func IsChunkUpload(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_ChunkUpload.String() && e.Code == 200
+	return e.Reason == Reason_ChunkUpload.String() && e.Code == 500
 }
 
 func ChunkUploadFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_ChunkUpload.String(), "分片上传失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_ChunkUpload.String(), "分片上传失败:"+fmt.Sprintf(format, args...))
 }
 
 func ChunkUpload() *errors.Error {
-	return errors.New(200, Reason_ChunkUpload.String(), "分片上传失败")
+	return errors.New(500, Reason_ChunkUpload.String(), "分片上传失败")
 }
 
 func IsDatabase(err error) bool {
@@ -96,15 +96,15 @@ func IsDatabase(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_Database.String() && e.Code == 200
+	return e.Reason == Reason_Database.String() && e.Code == 500
 }
 
 func DatabaseFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_Database.String(), "数据库错误:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_Database.String(), "数据库错误:"+fmt.Sprintf(format, args...))
 }
 
 func Database() *errors.Error {
-	return errors.New(200, Reason_Database.String(), "数据库错误")
+	return errors.New(500, Reason_Database.String(), "数据库错误")
 }
 
 func IsStatusProgress(err error) bool {
@@ -112,15 +112,15 @@ func IsStatusProgress(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_StatusProgress.String() && e.Code == 200
+	return e.Reason == Reason_StatusProgress.String() && e.Code == 500
 }
 
 func StatusProgressFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_StatusProgress.String(), "文件上传中:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_StatusProgress.String(), "文件上传中:"+fmt.Sprintf(format, args...))
 }
 
 func StatusProgress() *errors.Error {
-	return errors.New(200, Reason_StatusProgress.String(), "文件上传中")
+	return errors.New(500, Reason_StatusProgress.String(), "文件上传中")
 }
 
 func IsUploadFile(err error) bool {
@@ -128,15 +128,15 @@ func IsUploadFile(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_UploadFile.String() && e.Code == 200
+	return e.Reason == Reason_UploadFile.String() && e.Code == 500
 }
 
 func UploadFileFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_UploadFile.String(), "文件上传失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_UploadFile.String(), "文件上传失败:"+fmt.Sprintf(format, args...))
 }
 
 func UploadFile() *errors.Error {
-	return errors.New(200, Reason_UploadFile.String(), "文件上传失败")
+	return errors.New(500, Reason_UploadFile.String(), "文件上传失败")
 }
 
 func IsInitStore(err error) bool {
@@ -144,15 +144,15 @@ func IsInitStore(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_InitStore.String() && e.Code == 200
+	return e.Reason == Reason_InitStore.String() && e.Code == 500
 }
 
 func InitStoreFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_InitStore.String(), "存储引擎初始化失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_InitStore.String(), "存储引擎初始化失败:"+fmt.Sprintf(format, args...))
 }
 
 func InitStore() *errors.Error {
-	return errors.New(200, Reason_InitStore.String(), "存储引擎初始化失败")
+	return errors.New(500, Reason_InitStore.String(), "存储引擎初始化失败")
 }
 
 func IsFileFormat(err error) bool {
@@ -160,15 +160,15 @@ func IsFileFormat(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_FileFormat.String() && e.Code == 200
+	return e.Reason == Reason_FileFormat.String() && e.Code == 500
 }
 
 func FileFormatFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_FileFormat.String(), "文件格式错误:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_FileFormat.String(), "文件格式错误:"+fmt.Sprintf(format, args...))
 }
 
 func FileFormat() *errors.Error {
-	return errors.New(200, Reason_FileFormat.String(), "文件格式错误")
+	return errors.New(500, Reason_FileFormat.String(), "文件格式错误")
 }
 
 func IsAddDirectory(err error) bool {
@@ -176,15 +176,15 @@ func IsAddDirectory(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_AddDirectory.String() && e.Code == 200
+	return e.Reason == Reason_AddDirectory.String() && e.Code == 500
 }
 
 func AddDirectoryFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_AddDirectory.String(), "目录创建失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_AddDirectory.String(), "目录创建失败:"+fmt.Sprintf(format, args...))
 }
 
 func AddDirectory() *errors.Error {
-	return errors.New(200, Reason_AddDirectory.String(), "目录创建失败")
+	return errors.New(500, Reason_AddDirectory.String(), "目录创建失败")
 }
 
 func IsUpdateDirectory(err error) bool {
@@ -192,15 +192,15 @@ func IsUpdateDirectory(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_UpdateDirectory.String() && e.Code == 200
+	return e.Reason == Reason_UpdateDirectory.String() && e.Code == 500
 }
 
 func UpdateDirectoryFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_UpdateDirectory.String(), "目录更新失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_UpdateDirectory.String(), "目录更新失败:"+fmt.Sprintf(format, args...))
 }
 
 func UpdateDirectory() *errors.Error {
-	return errors.New(200, Reason_UpdateDirectory.String(), "目录更新失败")
+	return errors.New(500, Reason_UpdateDirectory.String(), "目录更新失败")
 }
 
 func IsDeleteDirectory(err error) bool {
@@ -208,15 +208,15 @@ func IsDeleteDirectory(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_DeleteDirectory.String() && e.Code == 200
+	return e.Reason == Reason_DeleteDirectory.String() && e.Code == 500
 }
 
 func DeleteDirectoryFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_DeleteDirectory.String(), "目录删除失败:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_DeleteDirectory.String(), "目录删除失败:"+fmt.Sprintf(format, args...))
 }
 
 func DeleteDirectory() *errors.Error {
-	return errors.New(200, Reason_DeleteDirectory.String(), "目录删除失败")
+	return errors.New(500, Reason_DeleteDirectory.String(), "目录删除失败")
 }
 
 func IsNotExistFile(err error) bool {
@@ -224,15 +224,15 @@ func IsNotExistFile(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_NotExistFile.String() && e.Code == 200
+	return e.Reason == Reason_NotExistFile.String() && e.Code == 500
 }
 
 func NotExistFileFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_NotExistFile.String(), "文件不存在:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_NotExistFile.String(), "文件不存在:"+fmt.Sprintf(format, args...))
 }
 
 func NotExistFile() *errors.Error {
-	return errors.New(200, Reason_NotExistFile.String(), "文件不存在")
+	return errors.New(500, Reason_NotExistFile.String(), "文件不存在")
 }
 
 func IsAlreadyExistFileName(err error) bool {
@@ -240,15 +240,15 @@ func IsAlreadyExistFileName(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_AlreadyExistFileName.String() && e.Code == 200
+	return e.Reason == Reason_AlreadyExistFileName.String() && e.Code == 500
 }
 
 func AlreadyExistFileNameFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_AlreadyExistFileName.String(), "文件名已存在:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_AlreadyExistFileName.String(), "文件名已存在:"+fmt.Sprintf(format, args...))
 }
 
 func AlreadyExistFileName() *errors.Error {
-	return errors.New(200, Reason_AlreadyExistFileName.String(), "文件名已存在")
+	return errors.New(500, Reason_AlreadyExistFileName.String(), "文件名已存在")
 }
 
 func IsNotExistDirectory(err error) bool {
@@ -256,15 +256,15 @@ func IsNotExistDirectory(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_NotExistDirectory.String() && e.Code == 200
+	return e.Reason == Reason_NotExistDirectory.String() && e.Code == 500
 }
 
 func NotExistDirectoryFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_NotExistDirectory.String(), "文件夹不存在:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_NotExistDirectory.String(), "文件夹不存在:"+fmt.Sprintf(format, args...))
 }
 
 func NotExistDirectory() *errors.Error {
-	return errors.New(200, Reason_NotExistDirectory.String(), "文件夹不存在")
+	return errors.New(500, Reason_NotExistDirectory.String(), "文件夹不存在")
 }
 
 func IsNotExistResource(err error) bool {
@@ -272,15 +272,15 @@ func IsNotExistResource(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_NotExistResource.String() && e.Code == 200
+	return e.Reason == Reason_NotExistResource.String() && e.Code == 500
 }
 
 func NotExistResourceFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_NotExistResource.String(), "资源不存在:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_NotExistResource.String(), "资源不存在:"+fmt.Sprintf(format, args...))
 }
 
 func NotExistResource() *errors.Error {
-	return errors.New(200, Reason_NotExistResource.String(), "资源不存在")
+	return errors.New(500, Reason_NotExistResource.String(), "资源不存在")
 }
 
 func IsParams(err error) bool {
@@ -288,15 +288,15 @@ func IsParams(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_Params.String() && e.Code == 200
+	return e.Reason == Reason_Params.String() && e.Code == 500
 }
 
 func ParamsFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_Params.String(), "参数错误:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_Params.String(), "参数错误:"+fmt.Sprintf(format, args...))
 }
 
 func Params() *errors.Error {
-	return errors.New(200, Reason_Params.String(), "参数错误")
+	return errors.New(500, Reason_Params.String(), "参数错误")
 }
 
 func IsAccessResource(err error) bool {
@@ -304,13 +304,45 @@ func IsAccessResource(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == Reason_AccessResource.String() && e.Code == 200
+	return e.Reason == Reason_AccessResource.String() && e.Code == 500
 }
 
 func AccessResourceFormat(format string, args ...any) *errors.Error {
-	return errors.New(200, Reason_AccessResource.String(), "访问资源文件异常:"+fmt.Sprintf(format, args...))
+	return errors.New(500, Reason_AccessResource.String(), "访问资源文件异常:"+fmt.Sprintf(format, args...))
 }
 
 func AccessResource() *errors.Error {
-	return errors.New(200, Reason_AccessResource.String(), "访问资源文件异常")
+	return errors.New(500, Reason_AccessResource.String(), "访问资源文件异常")
+}
+
+func IsExportFileNameDup(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == Reason_ExportFileNameDup.String() && e.Code == 500
+}
+
+func ExportFileNameDupFormat(format string, args ...any) *errors.Error {
+	return errors.New(500, Reason_ExportFileNameDup.String(), "导出文件重命名重复:"+fmt.Sprintf(format, args...))
+}
+
+func ExportFileNameDup() *errors.Error {
+	return errors.New(500, Reason_ExportFileNameDup.String(), "导出文件重命名重复")
+}
+
+func IsExportTaskProcess(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == Reason_ExportTaskProcess.String() && e.Code == 500
+}
+
+func ExportTaskProcessFormat(format string, args ...any) *errors.Error {
+	return errors.New(500, Reason_ExportTaskProcess.String(), "导出任务正在进行中:"+fmt.Sprintf(format, args...))
+}
+
+func ExportTaskProcess() *errors.Error {
+	return errors.New(500, Reason_ExportTaskProcess.String(), "导出任务正在进行中")
 }

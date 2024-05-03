@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package v1;
+package file;
 option go_package = "./v1;v1";
 import "google/api/annotations.proto";
 import "validate/validate.proto";

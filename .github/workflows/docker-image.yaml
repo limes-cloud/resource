@@ -42,6 +42,7 @@ jobs:  # workflow中的job
           script: | # 重启更新镜像
             docker stop resource
             docker rm resource
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/resource:latest
             # docker login -u 你的github名称 -p 你的github token https://ghcr.io 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/resource
             docker run -d --network host --restart=always  --env APP_NAME=Resource --env CONF_HOST=127.0.0.1:6082 --env CONF_TOKEN=5B655B7D4A51BF79C974C9F27C27D992 --name resource ${{ secrets.DOCKERHUB_USERNAME }}/resource

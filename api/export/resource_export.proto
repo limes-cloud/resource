@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package export;
+option go_package = "./v1;v1";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+message Export{
+  uint32 id = 1;
+  string name = 2;
+  uint32 size = 3;
+  string src = 4;
+  string version = 5;
+  string reason = 6;
+  string status = 7;
+  uint32 created_at = 8;
+  uint32 updated_at = 9;
+}
+
+message PageExportRequest{
+  uint32 page = 1[(validate.rules).uint32 = {gt:0}];
+  uint32 page_size = 2[(validate.rules).uint32 = {gt:0,lte:100}];
+}
+
+message PageExportReply{
+  repeated Export list = 1;
+  optional uint32 total = 2;
+}
+
+
+message AddExportRequest{
+  message ExportFile{
+    string sha = 1;
+    string rename = 2;
+  }
+  string name = 1[(validate.rules).string = {min_len:1}];
+  repeated ExportFile files = 2;
+  repeated uint32 ids = 3;
+}
+message AddExportReply{
+  uint32 id = 1;
+}
+
+message AddExportExcelRequest{
+  message Col{
+    string type = 1[(validate.rules).string = {min_len:1}];
+    string value = 2[(validate.rules).string = {min_len:1}];
+  }
+  message Row{
+    repeated Col cols = 1;
+  }
+  string name = 1[(validate.rules).string = {min_len:1}];
+  repeated Row rows = 2[(validate.rules).repeated = {min_items:1}];
+}
+
+message AddExportExcelReply{
+  uint32 id = 1;
+}
+
+message DeleteExportRequest{
+  uint32 id = 1;
+}

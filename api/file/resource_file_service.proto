@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package v1;
+package file;
 option go_package = "./v1;v1";
 
 import "google/api/annotations.proto";
@@ -45,6 +45,8 @@ service Service {
       }
     };
   }
+
+  rpc UploadFile(UploadFileRequest) returns (UploadFileReply){}
 
   rpc PageFile (PageFileRequest) returns (PageFileReply) {
     option (google.api.http) = {

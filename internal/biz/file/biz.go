@@ -16,20 +16,19 @@ import (
 	"github.com/limes-cloud/resource/api/errors"
 	"github.com/limes-cloud/resource/internal/config"
 	"github.com/limes-cloud/resource/internal/consts"
-	"github.com/limes-cloud/resource/internal/factory"
 	"github.com/limes-cloud/resource/internal/pkg/image"
 )
 
 type UseCase struct {
 	config  *config.Config
 	repo    Repo
-	factory *factory.Factory
+	factory Factory
 	muiOnce map[string]*sync.Once
 	rw      sync.RWMutex
 }
 
-func NewUseCase(config *config.Config, repo Repo) *UseCase {
-	return &UseCase{config: config, repo: repo, factory: factory.New(config), muiOnce: make(map[string]*sync.Once)}
+func NewUseCase(config *config.Config, repo Repo, factory Factory) *UseCase {
+	return &UseCase{config: config, repo: repo, factory: factory, muiOnce: make(map[string]*sync.Once)}
 }
 
 func (u *UseCase) AllDirectoryByParentID(ctx kratosx.Context, pid uint32, app string) ([]*Directory, error) {

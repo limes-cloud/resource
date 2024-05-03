@@ -15,9 +15,7 @@ import (
 func Upload(srv *service.FileService) http.HandlerFunc {
 	return func(ctx http.Context) error {
 		var in pb.UploadFileRequest
-		// if err := ctx.Request().PostForm.Get()(&in); err != nil {
-		//	return err
-		// }
+
 		in.UploadId = ctx.Request().FormValue("upload_id")
 		in.Index = util.ToUint32(ctx.Request().FormValue("index"))
 		file, _, err := ctx.Request().FormFile("data")
