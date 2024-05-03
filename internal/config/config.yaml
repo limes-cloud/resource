@@ -58,5 +58,3 @@ business:
   export:
     localDir: static/export
     expire: 3d
-logging:
-  enable: true
