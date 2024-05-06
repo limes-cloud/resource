@@ -53,7 +53,6 @@ func SrcBlob(srv *service.FileService) thttp.HandlerFunc {
 		}
 
 		blw := NewWriter()
-
 		fs := http.FileServer(http.Dir(srv.Config().Storage.LocalDir))
 		fs = http.StripPrefix(srv.Config().Storage.ServerPath, fs)
 		fs.ServeHTTP(blw, ctx.Request())

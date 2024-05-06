@@ -346,3 +346,19 @@ func ExportTaskProcessFormat(format string, args ...any) *errors.Error {
 func ExportTaskProcess() *errors.Error {
 	return errors.New(500, Reason_ExportTaskProcess.String(), "导出任务正在进行中")
 }
+
+func IsResourceServer(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == Reason_ResourceServer.String() && e.Code == 500
+}
+
+func ResourceServerFormat(format string, args ...any) *errors.Error {
+	return errors.New(500, Reason_ResourceServer.String(), "资源服务异常:"+fmt.Sprintf(format, args...))
+}
+
+func ResourceServer() *errors.Error {
+	return errors.New(500, Reason_ResourceServer.String(), "资源服务异常")
+}

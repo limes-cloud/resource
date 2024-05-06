@@ -30,6 +30,7 @@ enum Reason {
   AccessResource = 18[(errors.message)="访问资源文件异常"];
   ExportFileNameDup = 19[(errors.message)="导出文件重命名重复"];
   ExportTaskProcess = 20[(errors.message)="导出任务正在进行中"];
+  ResourceServer = 21[(errors.message)="资源服务异常"];
 }
 
 

@@ -202,9 +202,7 @@ func (u *UseCase) PrepareUploadFile(ctx kratosx.Context, in *PrepareUploadFileRe
 	if err == nil {
 		// 触发秒传
 		if file.Status == consts.STATUS_COMPLETED {
-			if err := u.repo.CopyFile(ctx, file, directory.ID, in.Name); err != nil {
-				return nil, errors.UploadFileFormat(err.Error())
-			}
+			_ = u.repo.CopyFile(ctx, file, directory.ID, in.Name)
 			return &PrepareUploadFileReply{
 				Uploaded: proto.Bool(true),
 				Src:      proto.String(u.factory.FileSrc(file.Src)),

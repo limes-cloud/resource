@@ -112,7 +112,11 @@ func (f *Factory) FileSrcFormat() string {
 }
 
 func (f *Factory) ExportFileSrc(src string) string {
-	return f.conf.Storage.ServerPath + src[strings.Index(src, "/"):]
+	prefix := f.conf.Export.LocalDir
+	if index := strings.Index(f.conf.Export.LocalDir, "/"); index != -1 {
+		prefix = f.conf.Export.LocalDir[index:]
+	}
+	return f.conf.Storage.ServerPath + prefix + "/" + src
 }
 
 func (f *Factory) FileSrc(src string) string {
@@ -176,6 +180,9 @@ func (f *Factory) ExportFile(ctx kratosx.Context, in *export.AddExportRequest) (
 		}
 	} else {
 		for _, item := range in.Files {
+			if item.Sha == "" {
+				continue
+			}
 			fe, err := f.fileRepo.GetFileBySha(ctx, item.Sha)
 			if err != nil {
 				ctx.Logger().Errorw("msg", "get file error", "err", err.Error())
@@ -267,6 +274,9 @@ func (f *Factory) ExportExcel(ctx kratosx.Context, in *export.AddExportExcelRequ
 		for _, item := range list {
 			switch item.Type {
 			case "image":
+				if item.Value == "" {
+					continue
+				}
 				fe, err := f.fileRepo.GetFileBySha(ctx.Clone(), item.Value)
 				if err != nil {
 					ctx.Logger().Errorw("msg", "get file error", "err", err.Error())

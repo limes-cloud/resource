@@ -1166,16 +1166,7 @@ func (m *AddExportExcelRequest_Col) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetValue()) < 1 {
-		err := AddExportExcelRequest_ColValidationError{
-			field:  "Value",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Value
 
 	if len(errors) > 0 {
 		return AddExportExcelRequest_ColMultiError(errors)
