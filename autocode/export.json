@@ -1,0 +1,189 @@
+{
+  "table":"export",
+  "keyword": "export",
+  "module": "export",
+  "comment": "导出信息",
+  "description": "导出信息",
+  "type": "list",
+  "fields": [
+    {
+      "keyword": "id",
+      "title": "主键",
+      "type": "primaryKey",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": true,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "user_id",
+      "title": "用户id",
+      "type": "foreignKey",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": true,
+        "update": true,
+        "list": true,
+        "get": true
+      },
+      "queryType": "="
+    },
+    {
+      "keyword": "department_id",
+      "title": "部门id",
+      "type": "foreignKey",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": true,
+        "update": true,
+        "list": true,
+        "get": true
+      },
+      "queryType": "="
+    },
+    {
+      "keyword": "scene",
+      "title": "场景",
+      "type": "char",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": true,
+        "update": true,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "name",
+      "title": "名称",
+      "type": "varchar64",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": true,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "size",
+      "title": "大小",
+      "type": "unsignedInteger",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "sha",
+      "title": "大小限额/M",
+      "type": "varchar64",
+      "required": false,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "src",
+      "title": "路径",
+      "type": "varchar128",
+      "required": false,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "status",
+      "title": "打包状态",
+      "type": "char",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "reason",
+      "title": "错误原因",
+      "type": "tinytext",
+      "required": false,
+      "default": "",
+      "operation": {
+        "create": true,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "expired_at",
+      "title": "过期时间",
+      "type": "time",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "created_at",
+      "title": "创建时间",
+      "type": "time",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    },
+    {
+      "keyword": "updated_at",
+      "title": "更新时间",
+      "type": "time",
+      "required": true,
+      "default": "",
+      "operation": {
+        "create": false,
+        "update": false,
+        "list": true,
+        "get": true
+      }
+    }
+  ],
+  "unique": [
+    ["sha"]
+  ],
+  "index": [
+    ["created_at"],
+    ["updated_at"]
+  ],
+  "methods": ["Get","List", "Create", "Update", "Delete"]
+}

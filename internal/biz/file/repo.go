@@ -2,30 +2,44 @@ package file
 
 import (
 	"github.com/limes-cloud/kratosx"
+
+	"github.com/limes-cloud/resource/internal/pkg/store"
 )
 
 type Repo interface {
-	AddDirectory(ctx kratosx.Context, in *Directory) (uint32, error)
-	GetDirectoryByID(ctx kratosx.Context, id uint32) (*Directory, error)
-	GetDirectoryByName(ctx kratosx.Context, id uint32, name string) (*Directory, error)
-	GetDirectoryByPaths(ctx kratosx.Context, app string, paths []string) (*Directory, error)
-	UpdateDirectory(ctx kratosx.Context, in *Directory) error
-	DeleteDirectory(ctx kratosx.Context, id uint32) error
-	AllDirectoryByParentID(ctx kratosx.Context, pid uint32, app string) ([]*Directory, error)
-	DirectoryCountByParentID(ctx kratosx.Context, id uint32) (int64, error)
+	// GetFile 获取指定的文件信息
+	GetFile(ctx kratosx.Context, id uint32) (*File, error)
 
-	CopyFile(ctx kratosx.Context, src *File, did uint32, name string) error
+	// ListFile 获取文件信息列表
+	ListFile(ctx kratosx.Context, req *ListFileRequest) ([]*File, uint32, error)
 
-	// FileCountByName(ctx kratosx.Context, did uint32, name string) (int64, error)
-	FileCountByDirectoryID(ctx kratosx.Context, id uint32) (int64, error)
+	// CreateFile 创建文件信息
+	CreateFile(ctx kratosx.Context, req *File) (uint32, error)
 
-	GetFileByID(ctx kratosx.Context, id uint32) (*File, error)
-	GetFileBySha(ctx kratosx.Context, keyword string) (*File, error)
-	GetFileByUploadID(ctx kratosx.Context, uid string) (*File, error)
-	PageFile(ctx kratosx.Context, req *PageFileRequest) ([]*File, uint32, error)
-	AddFile(ctx kratosx.Context, c *File) error
-	UpdateFile(ctx kratosx.Context, file *File) error
-	UpdateFileSuccess(ctx kratosx.Context, id uint32) error
-	DeleteFile(ctx kratosx.Context, id uint32) error
-	DeleteFiles(ctx kratosx.Context, pid uint32, ids []uint32) error
+	// CopyFile 复制文件信息
+	CopyFile(ctx kratosx.Context, src *File, directoryId uint32, fileName string) error
+
+	// UpdateFile 更新文件信息
+	UpdateFile(ctx kratosx.Context, req *File) error
+
+	// UpdateFileStatus 更新文	件状态
+	UpdateFileStatus(ctx kratosx.Context, id uint32, status string) error
+
+	// DeleteFile 删除文件信息
+	DeleteFile(ctx kratosx.Context, ids []uint32) (uint32, error)
+
+	// GetFileBySha 获取指定的文件信息
+	GetFileBySha(ctx kratosx.Context, sha string) (*File, error)
+
+	// GetFileByUploadId 获取指定的文件信息
+	GetFileByUploadId(ctx kratosx.Context, uid string) (*File, error)
+
+	// GetDirectoryLimitByPath 获取指定的path上传限制信息
+	GetDirectoryLimitByPath(ctx kratosx.Context, paths []string) (*DirectoryLimit, error)
+
+	// GetDirectoryLimitById 获取指定的id上传限制信息
+	GetDirectoryLimitById(ctx kratosx.Context, id uint32) (*DirectoryLimit, error)
+
+	// GetStore 获取上传器
+	GetStore() store.Store
 }

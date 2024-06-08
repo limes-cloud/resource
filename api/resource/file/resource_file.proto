@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package resource.api.resource.file.v1;
+
+option go_package = "./v1;v1";
+option java_multiple_files = true;
+option java_package = "resource.api.resource.file.v1";
+option java_outer_classname = "FileV1";
+
+import "validate/validate.proto";
+
+message StaticFileRequest{
+  string src = 1[(validate.rules).string = {min_len:1}];
+  string expire = 2[(validate.rules).string = {min_len:1}];
+  string sign = 3[(validate.rules).string = {min_len:1}];
+  uint32 width = 4;
+  uint32 height = 5;
+  string mode = 6;
+  bool download = 7;
+  string saveName = 8;
+}
+
+message StaticFileReply{
+  bytes data = 1;
+  string mime = 2;
+}
+
+message GetFileRequest {
+  optional uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
+  optional string sha = 2[(validate.rules).string = {min_len: 1}];
+}
+
+message GetFileReply {
+  uint32 id = 1;
+  uint32 directoryId = 2;
+  string name = 3;
+  string type = 4;
+  uint32 size = 5;
+  string sha = 6;
+  string src = 7;
+  string url = 8;
+  string status = 9;
+  string uploadId = 10;
+  uint32 chunkCount = 11;
+  uint32 createdAt = 12;
+  uint32 updatedAt = 13;
+}
+
+message ListFileRequest {
+  uint32 page = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gt: 0,lte:50}];
+  optional string order = 3[(validate.rules).string = {in: ["asc","desc"]}];
+  optional string orderBy = 4[(validate.rules).string = {in: ["id","created_at","updated_at"]}];
+  optional uint32 directoryId = 5;
+  optional string status = 6[(validate.rules).string = {in: [ "PROGRESS","COMPLETED"]}];
+}
+
+message ListFileReply {
+  message File {
+    uint32 id = 1;
+    uint32 directoryId = 2;
+    string name = 3;
+    string type = 4;
+    uint32 size = 5;
+    string sha = 6;
+    string src = 7;
+    string url = 8;
+    string status = 9;
+    string uploadId = 10;
+    uint32 chunkCount = 11;
+    uint32 createdAt = 12;
+    uint32 updatedAt = 13;
+  }
+
+  uint32 total = 1;
+  repeated File list = 2;
+}
+
+message PrepareUploadFileRequest {
+  optional uint32 directoryId = 1[(validate.rules).uint32 = {gt: 0}];
+  optional string directoryPath = 2[(validate.rules).string = {min_len: 1}];
+  string name = 3[(validate.rules).string = {min_len: 1}];
+  uint32 size = 4[(validate.rules).uint32 = {gt:0}];
+  string sha = 5[(validate.rules).string = {min_len: 1}];
+}
+
+message PrepareUploadFileReply {
+  bool uploaded = 1;
+  optional string src = 2;
+  optional uint32 chunkSize = 3;
+  optional uint32 chunkCount = 4;
+  optional string uploadId = 5;
+  repeated uint32 uploadChunks = 6;
+  optional string sha = 7;
+  optional string url = 8;
+}
+
+message UploadFileRequest{
+  bytes data = 1[(validate.rules).bytes = {min_len:0}];
+  string uploadId = 2[(validate.rules).string = {min_len:1}];
+  uint32 index = 3[(validate.rules).uint32 = {gt:0}];;
+}
+
+message UploadFileReply{
+  string src = 1;
+  string sha = 2;
+  string url = 3;
+}
+
+message UpdateFileRequest {
+  uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 directoryId = 2[(validate.rules).uint32 = {gt: 0}];
+  string name = 3[(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateFileReply {
+}
+
+message DeleteFileRequest {
+  repeated uint32 ids = 1[(validate.rules).repeated = {min_items: 1, unique:true, max_items:50}];
+}
+
+message DeleteFileReply {
+  uint32 total = 1;
+}
+

@@ -3,18 +3,26 @@ package tencent
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/go-redis/redis/v8"
+	"github.com/limes-cloud/kratosx/pkg/lock"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
-	store2 "github.com/limes-cloud/resource/internal/pkg/store"
+	"github.com/limes-cloud/resource/internal/pkg/store"
 )
 
 type tencent struct {
 	client *cos.Client
+	expire time.Duration
+	cache  *redis.Client
+	cdn    string
 }
 
 type upload struct {
@@ -22,8 +30,8 @@ type upload struct {
 	upload *cos.InitiateMultipartUploadResult
 }
 
-func New(conf *store2.Config) (store2.Store, error) {
-	if conf.Endpoint == "" || conf.Secret == "" || conf.Key == "" {
+func New(conf *store.Config) (store.Store, error) {
+	if conf.Endpoint == "" || conf.Secret == "" || conf.Id == "" {
 		return nil, errors.New("upload config error")
 	}
 
@@ -35,12 +43,46 @@ func New(conf *store2.Config) (store2.Store, error) {
 	b := &cos.BaseURL{BucketURL: u}
 	client := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  conf.Secret,
-			SecretKey: conf.Key,
+			SecretID:  conf.Id,
+			SecretKey: conf.Secret,
 		},
 	})
 
-	return &tencent{client: client}, nil
+	return &tencent{client: client, expire: conf.TemporaryExpire, cache: conf.Cache, cdn: conf.ServerURL}, nil
+}
+
+func (s *tencent) GenTemporaryURL(key string) (string, error) {
+	var (
+		err    error
+		target string
+		locker = lock.New(s.cache, key+":lock")
+	)
+	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
+	err = locker.AcquireFunc(context.Background(),
+		func() error {
+			target, err = s.cache.Get(context.Background(), ck).Result()
+			return err
+		},
+		func() error {
+			t := time.Now().Add(s.expire).Format("200601021504")
+			st := s.client.GetCredential().GetSecretKey() + t + "/" + key
+			target = fmt.Sprintf("%s/%s/%s/%s",
+				s.cdn,
+				t,
+				fmt.Sprintf("%x", md5.Sum([]byte(st))),
+				key,
+			)
+			return s.cache.Set(context.Background(), ck, target, s.expire-10*time.Second).Err()
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return target, nil
+}
+
+func (s *tencent) VerifyTemporaryURL(key string, expire string, sign string) error {
+	return nil
 }
 
 func (s *tencent) PutBytes(key string, in []byte) error {
@@ -113,7 +155,7 @@ func httpError(response *cos.Response) error {
 	return errors.New(string(bt))
 }
 
-func (s *tencent) NewPutChunk(key string) (store2.PutChunk, error) {
+func (s *tencent) NewPutChunk(key string) (store.PutChunk, error) {
 	up, _, err := s.client.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		return nil, err
@@ -124,7 +166,7 @@ func (s *tencent) NewPutChunk(key string) (store2.PutChunk, error) {
 	}, nil
 }
 
-func (s *tencent) NewPutChunkByUploadID(key, id string) (store2.PutChunk, error) {
+func (s *tencent) NewPutChunkByUploadID(key, id string) (store.PutChunk, error) {
 	bucket, _, err := s.client.Bucket.Get(context.Background(), nil)
 	if err != nil {
 		return nil, err
@@ -142,11 +184,11 @@ func (s *tencent) NewPutChunkByUploadID(key, id string) (store2.PutChunk, error)
 	}, nil
 }
 
-func (u *upload) UploadedChunkIndex() []int {
-	var arr []int
+func (u *upload) UploadedChunkIndex() []uint32 {
+	var arr []uint32
 	lsRes, _, _ := u.client.Object.ListParts(context.Background(), u.upload.Key, u.upload.UploadID, nil)
 	for _, item := range lsRes.Parts {
-		arr = append(arr, item.PartNumber)
+		arr = append(arr, uint32(item.PartNumber))
 	}
 	return arr
 }

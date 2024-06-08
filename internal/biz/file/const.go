@@ -1,0 +1,6 @@
+package file
+
+const (
+	STATUS_PROGRESS  = "PROGRESS"
+	STATUS_COMPLETED = "COMPLETED"
+)

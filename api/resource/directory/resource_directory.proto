@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package resource.api.resource.directory.v1;
+
+option go_package = "./v1;v1";
+option java_multiple_files = true;
+option java_package = "resource.api.resource.directory.v1";
+option java_outer_classname = "DirectoryV1";
+
+import "validate/validate.proto";
+
+message GetDirectoryRequest {
+  optional uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
+}
+
+message GetDirectoryReply {
+  uint32 id = 1;
+  uint32 parentId = 2;
+  string name = 3;
+  string accept = 4;
+  uint32 maxSize = 5;
+  uint32 createdAt = 6;
+  uint32 updatedAt = 7;
+}
+
+message ListDirectoryRequest {
+  optional string order = 1[(validate.rules).string = {in: ["asc","desc"]}];
+  optional string orderBy = 2[(validate.rules).string = {in: ["id","created_at","updated_at"]}];
+}
+
+message ListDirectoryReply {
+  message Directory {
+    uint32 id = 1;
+    uint32 parentId = 2;
+    string name = 3;
+    string accept = 4;
+    uint32 maxSize = 5;
+    uint32 createdAt = 6;
+    uint32 updatedAt = 7;
+    repeated Directory children = 8;
+  }
+
+  uint32 total = 1;
+  repeated Directory list = 2;
+}
+
+message CreateDirectoryRequest {
+  uint32 parentId = 1[(validate.rules).uint32 = {gt: 0}];
+  string name = 2[(validate.rules).string = {min_len: 1}];
+  string accept = 3[(validate.rules).string = {min_len: 1}];
+  uint32 maxSize = 4[(validate.rules).uint32 = {gte: 1}];
+}
+
+message CreateDirectoryReply {
+  uint32 id = 1;
+}
+
+message UpdateDirectoryRequest {
+  uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 parentId = 2[(validate.rules).uint32 = {gt: 0}];
+  string name = 3[(validate.rules).string = {min_len: 1}];
+  string accept = 4[(validate.rules).string = {min_len: 1}];
+  uint32 maxSize = 5[(validate.rules).uint32 = {gte: 1}];
+}
+
+message UpdateDirectoryReply {
+}
+
+message DeleteDirectoryRequest {
+  repeated uint32 ids = 1[(validate.rules).repeated = {min_items: 1, unique:true, max_items:50}];
+}
+
+message DeleteDirectoryReply {
+  uint32 total = 1;
+}
+

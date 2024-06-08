@@ -2,22 +2,32 @@ package local
 
 import (
 	"bytes"
+	"context"
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 	"unsafe"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/limes-cloud/kratosx/pkg/util"
+	"github.com/limes-cloud/kratosx/pkg/crypto"
+	"github.com/limes-cloud/kratosx/pkg/lock"
 	"gorm.io/gorm"
 
-	store2 "github.com/limes-cloud/resource/internal/pkg/store"
+	"github.com/limes-cloud/resource/internal/pkg/store"
 )
 
 type local struct {
-	dir string
-	db  *gorm.DB
+	dir    string
+	db     *gorm.DB
+	secret string
+	cache  *redis.Client
+	expire time.Duration
+	url    string
 }
 
 type upload struct {
@@ -26,14 +36,66 @@ type upload struct {
 	local *local
 }
 
-func New(conf *store2.Config) (store2.Store, error) {
-	if conf.LocalDir == "" {
-		return nil, errors.New("upload config error")
-	}
+func New(conf *store.Config) (store.Store, error) {
 	return &local{
-		dir: conf.LocalDir,
-		db:  conf.DB,
+		dir:    conf.LocalDir,
+		db:     conf.DB,
+		secret: conf.Secret,
+		expire: conf.TemporaryExpire,
+		cache:  conf.Cache,
+		url:    conf.ServerURL,
 	}, nil
+}
+
+func (s *local) GenTemporaryURL(key string) (string, error) {
+	var (
+		err    error
+		target string
+		locker = lock.New(s.cache, key+":lock")
+	)
+	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
+	err = locker.AcquireFunc(context.Background(),
+		func() error {
+			target, err = s.cache.Get(context.Background(), ck).Result()
+			return err
+		},
+		func() error {
+			t := time.Now().Add(s.expire).Format("200601021504")
+			st := s.secret + t + "/" + key
+			target = fmt.Sprintf("%s/%s/%s/%s",
+				s.url,
+				t,
+				fmt.Sprintf("%x", md5.Sum([]byte(st))),
+				key,
+			)
+			return s.cache.Set(context.Background(), ck, target, s.expire-10*time.Second).Err()
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return target, nil
+}
+
+func (s *local) VerifyTemporaryURL(key string, expire string, sign string) error {
+	t, err := time.Parse("200601021504", expire)
+	if err != nil {
+		return err
+	}
+
+	// 校验时间
+	if time.Now().Unix() > t.Unix() {
+		return errors.New("url is expire")
+	}
+
+	// 重新计算签名
+	st := s.secret + expire + "/" + key
+	oriSign := fmt.Sprintf("%x", md5.Sum([]byte(st)))
+	if oriSign != sign {
+		return errors.New("sign is invoke")
+	}
+
+	return nil
 }
 
 func (s *local) PutBytes(key string, in []byte) error {
@@ -105,7 +167,7 @@ func (s *local) makeDir(path string) error {
 	return nil
 }
 
-func (s *local) NewPutChunk(key string) (store2.PutChunk, error) {
+func (s *local) NewPutChunk(key string) (store.PutChunk, error) {
 	return &upload{
 		uuid:  uuid.NewString(),
 		local: s,
@@ -113,7 +175,7 @@ func (s *local) NewPutChunk(key string) (store2.PutChunk, error) {
 	}, nil
 }
 
-func (s *local) NewPutChunkByUploadID(key, id string) (store2.PutChunk, error) {
+func (s *local) NewPutChunkByUploadID(key, id string) (store.PutChunk, error) {
 	return &upload{
 		uuid:  id,
 		local: s,
@@ -127,12 +189,12 @@ func (u *upload) ChunkCount() int {
 	return len(chunks)
 }
 
-func (u *upload) UploadedChunkIndex() []int {
-	var arr []int
+func (u *upload) UploadedChunkIndex() []uint32 {
+	var arr []uint32
 	chunk := Chunk{}
 	chunks, _ := chunk.Parts(u.local.db, u.uuid)
 	for _, item := range chunks {
-		arr = append(arr, item.Index)
+		arr = append(arr, uint32(item.Index))
 	}
 	return arr
 }
@@ -147,7 +209,7 @@ func (u *upload) Append(r io.Reader, index int) error {
 		return err
 	}
 
-	sha := util.Sha256(all)
+	sha := crypto.Sha256(all)
 
 	oldChunk := Chunk{}
 	// 查询是否已经存在数据
@@ -158,7 +220,7 @@ func (u *upload) Append(r io.Reader, index int) error {
 	chunk := Chunk{
 		UploadID: u.uuid,
 		Index:    index,
-		Sha:      util.Sha256(all),
+		Sha:      crypto.Sha256(all),
 		Size:     len(all),
 		Data:     *(*string)(unsafe.Pointer(&all)),
 	}
@@ -171,7 +233,7 @@ func (u *upload) AppendBytes(r []byte, index int) error {
 		UploadID: u.uuid,
 		Index:    index,
 		Size:     len(r),
-		Sha:      util.Sha256(r),
+		Sha:      crypto.Sha256(r),
 		Data:     *(*string)(unsafe.Pointer(&r)),
 	}
 

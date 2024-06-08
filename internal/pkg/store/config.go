@@ -1,12 +1,20 @@
 package store
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"github.com/go-redis/redis/v8"
+	"gorm.io/gorm"
+)
 
 type Config struct {
-	Endpoint string
-	Key      string
-	Secret   string
-	Bucket   string
-	LocalDir string
-	DB       *gorm.DB
+	Endpoint        string
+	Id              string
+	Secret          string
+	Bucket          string
+	DB              *gorm.DB
+	Cache           *redis.Client
+	LocalDir        string
+	ServerURL       string
+	TemporaryExpire time.Duration
 }

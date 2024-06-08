@@ -2,17 +2,26 @@ package aliyun
 
 import (
 	"bytes"
+	"context"
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/go-redis/redis/v8"
+	"github.com/limes-cloud/kratosx/pkg/lock"
 
-	store2 "github.com/limes-cloud/resource/internal/pkg/store"
+	"github.com/limes-cloud/resource/internal/pkg/store"
 )
 
 type aliyun struct {
 	bucket *oss.Bucket
+	expire time.Duration
+	cache  *redis.Client
+	cdn    string
 }
 
 type upload struct {
@@ -20,12 +29,12 @@ type upload struct {
 	upload oss.InitiateMultipartUploadResult
 }
 
-func New(conf *store2.Config) (store2.Store, error) {
-	if conf.Endpoint == "" || conf.Key == "" || conf.Secret == "" {
+func New(conf *store.Config) (store.Store, error) {
+	if conf.Endpoint == "" || conf.Id == "" || conf.Secret == "" {
 		return nil, errors.New("store config error")
 	}
 
-	client, err := oss.New(conf.Endpoint, conf.Key, conf.Secret)
+	client, err := oss.New(conf.Endpoint, conf.Id, conf.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +46,44 @@ func New(conf *store2.Config) (store2.Store, error) {
 
 	return &aliyun{
 		bucket: bucket,
+		expire: conf.TemporaryExpire,
+		cache:  conf.Cache,
+		cdn:    conf.ServerURL,
 	}, nil
+}
+
+func (s *aliyun) GenTemporaryURL(key string) (string, error) {
+	var (
+		err    error
+		target string
+		locker = lock.New(s.cache, key+":lock")
+	)
+	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
+	err = locker.AcquireFunc(context.Background(),
+		func() error {
+			target, err = s.cache.Get(context.Background(), ck).Result()
+			return err
+		},
+		func() error {
+			t := time.Now().Add(s.expire).Format("200601021504")
+			st := s.bucket.Client.Config.AccessKeySecret + t + "/" + key
+			target = fmt.Sprintf("%s/%s/%s/%s",
+				s.cdn,
+				t,
+				fmt.Sprintf("%x", md5.Sum([]byte(st))),
+				key,
+			)
+			return s.cache.Set(context.Background(), ck, target, s.expire-10*time.Second).Err()
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return target, nil
+}
+
+func (s *aliyun) VerifyTemporaryURL(key string, expire string, sign string) error {
+	return nil
 }
 
 func (s *aliyun) PutBytes(key string, in []byte) error {
@@ -74,7 +120,7 @@ func (s *aliyun) Exists(key string) (bool, error) {
 	return s.bucket.IsObjectExist(key)
 }
 
-func (s *aliyun) NewPutChunk(key string) (store2.PutChunk, error) {
+func (s *aliyun) NewPutChunk(key string) (store.PutChunk, error) {
 	up, err := s.bucket.InitiateMultipartUpload(key)
 	if err != nil {
 		return nil, err
@@ -85,7 +131,7 @@ func (s *aliyun) NewPutChunk(key string) (store2.PutChunk, error) {
 	}, nil
 }
 
-func (s *aliyun) NewPutChunkByUploadID(key, id string) (store2.PutChunk, error) {
+func (s *aliyun) NewPutChunkByUploadID(key, id string) (store.PutChunk, error) {
 	up := oss.InitiateMultipartUploadResult{
 		XMLName:  struct{ Space, Local string }{Space: "", Local: "InitiateMultipartUploadResult"},
 		UploadID: id,
@@ -98,11 +144,11 @@ func (s *aliyun) NewPutChunkByUploadID(key, id string) (store2.PutChunk, error) 
 	}, nil
 }
 
-func (u *upload) UploadedChunkIndex() []int {
-	var arr []int
+func (u *upload) UploadedChunkIndex() []uint32 {
+	var arr []uint32
 	lsRes, _ := u.bucket.ListUploadedParts(u.upload)
 	for _, item := range lsRes.UploadedParts {
-		arr = append(arr, item.PartNumber)
+		arr = append(arr, uint32(item.PartNumber))
 	}
 	return arr
 }

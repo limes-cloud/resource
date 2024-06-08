@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package resource.api.resource.directory.v1;
+
+option go_package = "./v1;v1";
+option java_multiple_files = true;
+option java_package = "resource.api.resource.directory.v1";
+option java_outer_classname = "DirectoryV1";
+
+import "api/resource/directory/resource_directory.proto";
+import "google/api/annotations.proto";
+
+service Directory{
+
+  // GetDirectory 获取指定的文件目录信息
+  rpc GetDirectory (GetDirectoryRequest) returns (GetDirectoryReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/directory",
+    };
+  }
+
+  // ListDirectory 获取文件目录信息列表
+  rpc ListDirectory (ListDirectoryRequest) returns (ListDirectoryReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/directories",
+    };
+  }
+
+  // CreateDirectory 创建文件目录信息
+  rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryReply) {
+    option (google.api.http) = {
+      post: "/resource/api/v1/directory",
+      body: "*"
+    };
+  }
+
+  // UpdateDirectory 更新文件目录信息
+  rpc UpdateDirectory (UpdateDirectoryRequest) returns (UpdateDirectoryReply) {
+    option (google.api.http) = {
+      put: "/resource/api/v1/directory",
+      body: "*"
+    };
+  }
+
+  // DeleteDirectory 删除文件目录信息
+  rpc DeleteDirectory (DeleteDirectoryRequest) returns (DeleteDirectoryReply) {
+    option (google.api.http) = {
+      delete: "/resource/api/v1/directory",
+    };
+  }
+
+}

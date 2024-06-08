@@ -1,25 +1,23 @@
 package file
 
-import "github.com/limes-cloud/kratosx/types"
-
-type Directory struct {
-	types.BaseModel
-	ParentID uint32 `json:"parent_id"`
-	Name     string `json:"name"`
-	App      string `json:"app"`
+type File struct {
+	Id          uint32 `json:"id"`
+	DirectoryId uint32 `json:"directoryId"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Size        uint32 `json:"size"`
+	Sha         string `json:"sha"`
+	Src         string `json:"src"`
+	URL         string `json:"url"`
+	Status      string `json:"status"`
+	UploadId    string `json:"uploadId"`
+	ChunkCount  uint32 `json:"chunkCount"`
+	CreatedAt   int64  `json:"createdAt"`
+	UpdatedAt   int64  `json:"updatedAt"`
 }
 
-type File struct {
-	types.BaseModel
-	DirectoryID uint32     `json:"directory_id"`
-	Name        string     `json:"name"`
-	Type        string     `json:"type"`
-	Size        uint32     `json:"size"`
-	Sha         string     `json:"sha"`
-	Src         string     `json:"src"`
-	UploadID    *string    `json:"upload_id"`
-	ChunkCount  uint32     `json:"chunk_count"`
-	Storage     string     `json:"storage"`
-	Status      string     `json:"status"`
-	Directory   *Directory `json:"directory"`
+type DirectoryLimit struct {
+	DirectoryId uint32   `json:"directoryId"`
+	Accepts     []string `json:"accepts"`
+	MaxSize     uint32   `json:"maxSize"`
 }

@@ -3,181 +3,170 @@ package service
 import (
 	"context"
 
-	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/limes-cloud/kratosx"
-	"github.com/limes-cloud/kratosx/pkg/util"
+	"github.com/limes-cloud/kratosx/pkg/valx"
 
-	"github.com/limes-cloud/resource/api/errors"
-	pb "github.com/limes-cloud/resource/api/file/v1"
-	biz "github.com/limes-cloud/resource/internal/biz/file"
-	"github.com/limes-cloud/resource/internal/config"
-	"github.com/limes-cloud/resource/internal/data/export"
-	data "github.com/limes-cloud/resource/internal/data/file"
-	"github.com/limes-cloud/resource/internal/factory"
+	"github.com/limes-cloud/resource/api/resource/errors"
+	pb "github.com/limes-cloud/resource/api/resource/file/v1"
+	"github.com/limes-cloud/resource/internal/biz/file"
+	"github.com/limes-cloud/resource/internal/conf"
+	"github.com/limes-cloud/resource/internal/data"
 )
 
 type FileService struct {
-	pb.UnimplementedServiceServer
-	uc   *biz.UseCase
-	conf *config.Config
+	pb.UnimplementedFileServer
+	uc   *file.UseCase
+	conf *conf.Config
 }
 
-func NewFile(conf *config.Config) *FileService {
+func NewFileService(conf *conf.Config) *FileService {
 	return &FileService{
+		uc:   file.NewUseCase(conf, data.NewFileRepo(conf)),
 		conf: conf,
-		uc:   biz.NewUseCase(conf, data.NewRepo(), factory.New(conf, data.NewRepo(), export.NewRepo())),
 	}
 }
 
-func (fs *FileService) Config() *config.Config {
-	return fs.conf
+func init() {
+	register(func(c *conf.Config, hs *http.Server, gs *grpc.Server) {
+		srv := NewFileService(c)
+		pb.RegisterFileHTTPServer(hs, srv)
+		pb.RegisterFileServer(gs, srv)
+
+		cr := hs.Route("/")
+		// cr.GET("/resource/v1/static/export/{src}", srv.SrcBlob())
+		cr.GET("/resource/api/v1/static/{expire}/{sign}/{src}", srv.SrcBlob())
+		cr.POST("/resource/api/v1/upload", srv.Upload())
+		cr.POST("/resource/client/v1/upload", srv.Upload())
+	})
 }
 
-// AllDirectory 获取目录
-func (fs *FileService) AllDirectory(ctx context.Context, in *pb.AllDirectoryRequest) (*pb.AllDirectoryReply, error) {
-	list, err := fs.uc.AllDirectoryByParentID(kratosx.MustContext(ctx), in.ParentId, in.App)
+// GetFile 获取指定的文件信息
+func (s *FileService) GetFile(c context.Context, req *pb.GetFileRequest) (*pb.GetFileReply, error) {
+	var (
+		in  = file.GetFileRequest{}
+		ctx = kratosx.MustContext(c)
+	)
+
+	if err := valx.Transform(req, &in); err != nil {
+		ctx.Logger().Warnw("msg", "req transform err", "err", err.Error())
+		return nil, errors.TransformError()
+	}
+
+	result, err := s.uc.GetFile(ctx, &in)
 	if err != nil {
 		return nil, err
 	}
 
-	reply := pb.AllDirectoryReply{}
-	if err := util.Transform(list, &reply.List); err != nil {
-		return nil, errors.TransformFormat(err.Error())
+	reply := pb.GetFileReply{}
+	if err := valx.Transform(result, &reply); err != nil {
+		ctx.Logger().Warnw("msg", "reply transform err", "err", err.Error())
+		return nil, errors.TransformError()
 	}
 	return &reply, nil
 }
 
-// AddDirectory 添加目录
-func (fs *FileService) AddDirectory(ctx context.Context, in *pb.AddDirectoryRequest) (*pb.Directory, error) {
-	req := biz.Directory{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
+// ListFile 获取文件信息列表
+func (s *FileService) ListFile(c context.Context, req *pb.ListFileRequest) (*pb.ListFileReply, error) {
+	var (
+		in  = file.ListFileRequest{}
+		ctx = kratosx.MustContext(c)
+	)
+
+	if err := valx.Transform(req, &in); err != nil {
+		ctx.Logger().Warnw("msg", "req transform err", "err", err.Error())
+		return nil, errors.TransformError()
 	}
-	id, err := fs.uc.AddDirectory(kratosx.MustContext(ctx), &req)
+
+	result, total, err := s.uc.ListFile(ctx, &in)
 	if err != nil {
 		return nil, err
 	}
-	req.ID = id
-	reply := pb.Directory{}
-	if err := util.Transform(req, &reply); err != nil {
-		return nil, errors.TransformFormat(err.Error())
+
+	reply := pb.ListFileReply{Total: total}
+	if err := valx.Transform(result, &reply.List); err != nil {
+		ctx.Logger().Warnw("msg", "reply transform err", "err", err.Error())
+		return nil, errors.TransformError()
 	}
 
 	return &reply, nil
 }
 
-// UpdateDirectory 更新目录
-func (fs *FileService) UpdateDirectory(ctx context.Context, in *pb.UpdateDirectoryRequest) (*empty.Empty, error) {
-	req := biz.Directory{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return nil, fs.uc.UpdateDirectory(kratosx.MustContext(ctx), &req)
-}
+// PrepareUploadFile 预上传文件信息
+func (s *FileService) PrepareUploadFile(c context.Context, req *pb.PrepareUploadFileRequest) (*pb.PrepareUploadFileReply, error) {
+	var (
+		in  = file.PrepareUploadFileRequest{}
+		ctx = kratosx.MustContext(c)
+	)
 
-// DeleteDirectory 删除目录
-func (fs *FileService) DeleteDirectory(ctx context.Context, in *pb.DeleteDirectoryRequest) (*empty.Empty, error) {
-	return nil, fs.uc.DeleteDirectory(kratosx.MustContext(ctx), in.Id, in.App)
-}
-
-// PrepareUploadFile 文件预上传
-func (fs *FileService) PrepareUploadFile(ctx context.Context, in *pb.PrepareUploadFileRequest) (*pb.PrepareUploadFileReply, error) {
-	req := biz.PrepareUploadFileRequest{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
+	if err := valx.Transform(req, &in); err != nil {
+		ctx.Logger().Warnw("msg", "req transform err", "err", err.Error())
+		return nil, errors.TransformError()
 	}
 
-	res, err := fs.uc.PrepareUploadFile(kratosx.MustContext(ctx), &req)
+	if req.DirectoryPath == nil && req.DirectoryId == nil {
+		return nil, errors.ParamsError()
+	}
+
+	res, err := s.uc.PrepareUploadFile(ctx, &in)
 	if err != nil {
 		return nil, err
 	}
 
-	reply := pb.PrepareUploadFileReply{}
-	if err := util.Transform(res, &reply); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return &reply, nil
-}
-
-// UploadFile 文件上传
-func (fs *FileService) UploadFile(ctx context.Context, in *pb.UploadFileRequest) (*pb.UploadFileReply, error) {
-	req := biz.UploadFileRequest{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-
-	res, err := fs.uc.UploadFile(kratosx.MustContext(ctx), &req)
-	if err != nil {
-		return nil, err
-	}
-
-	reply := pb.UploadFileReply{}
-	if err := util.Transform(res, &reply); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return &reply, nil
-}
-
-// GetFileBySha 文件查询
-func (fs *FileService) GetFileBySha(ctx context.Context, in *pb.GetFileByShaRequest) (*pb.File, error) {
-	res, err := fs.uc.GetFileBySha(kratosx.MustContext(ctx), in.Sha)
-	if err != nil {
-		return nil, err
-	}
-
-	reply := pb.File{}
-	if err := util.Transform(res, &reply); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return &reply, nil
-}
-
-// PageFile 文件分野查询
-func (fs *FileService) PageFile(ctx context.Context, in *pb.PageFileRequest) (*pb.PageFileReply, error) {
-	req := biz.PageFileRequest{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-
-	list, total, err := fs.uc.PageFile(kratosx.MustContext(ctx), &req)
-	if err != nil {
-		return nil, err
-	}
-
-	reply := pb.PageFileReply{Total: &total}
-	if err := util.Transform(list, &reply.List); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return &reply, nil
-}
-
-// UpdateFile 修改文件
-func (fs *FileService) UpdateFile(ctx context.Context, in *pb.UpdateFileRequest) (*empty.Empty, error) {
-	req := biz.File{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-	return nil, fs.uc.UpdateFile(kratosx.MustContext(ctx), &req)
-}
-
-// DeleteFile 删除文件
-func (fs *FileService) DeleteFile(ctx context.Context, in *pb.DeleteFileRequest) (*empty.Empty, error) {
-	return nil, fs.uc.DeleteFiles(kratosx.MustContext(ctx), in.DirectoryId, in.Ids)
-}
-
-// GetFile 获取文件
-func (fs *FileService) GetFile(ctx context.Context, in *pb.GetFileRequest) (*pb.GetFileReply, error) {
-	req := biz.GetFileRequest{}
-	if err := util.Transform(in, &req); err != nil {
-		return nil, errors.TransformFormat(err.Error())
-	}
-
-	res, err := fs.uc.GetFile(kratosx.MustContext(ctx), &req)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.GetFileReply{
-		Data: res.Data,
-		Mime: res.Mime,
+	return &pb.PrepareUploadFileReply{
+		Uploaded:     res.Uploaded,
+		Src:          res.Src,
+		ChunkSize:    res.ChunkSize,
+		ChunkCount:   res.ChunkCount,
+		UploadId:     res.UploadId,
+		UploadChunks: res.UploadChunks,
+		Sha:          res.Sha,
+		Url:          res.URL,
 	}, nil
+}
+
+// UploadFile 上传文件信息
+func (s *FileService) UploadFile(c context.Context, req *pb.UploadFileRequest) (*pb.UploadFileReply, error) {
+	reply, err := s.uc.UploadFile(kratosx.MustContext(c), &file.UploadFileRequest{
+		UploadId: req.UploadId,
+		Index:    req.Index,
+		Data:     req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UploadFileReply{
+		Src: reply.Src,
+		Sha: reply.Sha,
+		Url: reply.URL,
+	}, nil
+}
+
+// UpdateFile 更新文件信息
+func (s *FileService) UpdateFile(c context.Context, req *pb.UpdateFileRequest) (*pb.UpdateFileReply, error) {
+	var (
+		in  = file.File{}
+		ctx = kratosx.MustContext(c)
+	)
+
+	if err := valx.Transform(req, &in); err != nil {
+		ctx.Logger().Warnw("msg", "req transform err", "err", err.Error())
+		return nil, errors.TransformError()
+	}
+
+	if err := s.uc.UpdateFile(ctx, &in); err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateFileReply{}, nil
+}
+
+// DeleteFile 删除文件信息
+func (s *FileService) DeleteFile(c context.Context, req *pb.DeleteFileRequest) (*pb.DeleteFileReply, error) {
+	total, err := s.uc.DeleteFile(kratosx.MustContext(c), req.Ids)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteFileReply{Total: total}, nil
 }

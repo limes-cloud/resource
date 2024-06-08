@@ -1,350 +1,259 @@
 package file
 
 import (
-	"bytes"
-	"io"
-	"mime"
-	"os"
-	"path/filepath"
+	oe "errors"
+	"fmt"
+	"math"
 	"strings"
 	"sync"
+	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/pkg/valx"
+	"google.golang.org/protobuf/proto"
+	"gorm.io/gorm"
 
-	"github.com/limes-cloud/resource/api/errors"
-	"github.com/limes-cloud/resource/internal/config"
-	"github.com/limes-cloud/resource/internal/consts"
-	"github.com/limes-cloud/resource/internal/pkg/image"
+	"github.com/limes-cloud/resource/api/resource/errors"
+	"github.com/limes-cloud/resource/internal/conf"
+	"github.com/limes-cloud/resource/internal/pkg/util"
 )
 
 type UseCase struct {
-	config  *config.Config
-	repo    Repo
-	factory Factory
-	muiOnce map[string]*sync.Once
-	rw      sync.RWMutex
+	conf *conf.Config
+	repo Repo
+	rw   sync.RWMutex
+	mui  map[string]*sync.Once
 }
 
-func NewUseCase(config *config.Config, repo Repo, factory Factory) *UseCase {
-	return &UseCase{config: config, repo: repo, factory: factory, muiOnce: make(map[string]*sync.Once)}
+func NewUseCase(config *conf.Config, repo Repo) *UseCase {
+	return &UseCase{conf: config, repo: repo, mui: make(map[string]*sync.Once), rw: sync.RWMutex{}}
 }
 
-func (u *UseCase) AllDirectoryByParentID(ctx kratosx.Context, pid uint32, app string) ([]*Directory, error) {
-	list, err := u.repo.AllDirectoryByParentID(ctx, pid, app)
-	if err != nil {
-		return nil, errors.Database()
-	}
-	return list, nil
-}
+// GetFile 获取指定的文件信息
+func (u *UseCase) GetFile(ctx kratosx.Context, req *GetFileRequest) (*File, error) {
+	var (
+		res *File
+		err error
+	)
 
-func (u *UseCase) AddDirectory(ctx kratosx.Context, in *Directory) (uint32, error) {
-	if in.ParentID != 0 {
-		directory, err := u.repo.GetDirectoryByID(ctx, in.ParentID)
-		if err != nil {
-			return 0, errors.NotExistDirectory()
-		}
-		if directory.App != in.App {
-			return 0, errors.System()
-		}
-	}
-	id, err := u.repo.AddDirectory(ctx, in)
-	if err != nil {
-		return 0, errors.DatabaseFormat(err.Error())
-	}
-	return id, nil
-}
-
-func (u *UseCase) UpdateDirectory(ctx kratosx.Context, in *Directory) error {
-	directory, err := u.repo.GetDirectoryByID(ctx, in.ID)
-	if err != nil {
-		return errors.NotExistDirectory()
-	}
-	if directory.App != in.App {
-		return errors.System()
-	}
-
-	if err := u.repo.UpdateDirectory(ctx, in); err != nil {
-		return errors.DatabaseFormat(err.Error())
-	}
-	return nil
-}
-
-func (u *UseCase) DeleteDirectory(ctx kratosx.Context, id uint32, app string) error {
-	directory, err := u.repo.GetDirectoryByID(ctx, id)
-	if err != nil {
-		return errors.NotExistDirectory()
-	}
-	if directory.App != app {
-		return errors.System()
-	}
-
-	// 是否存在文件
-	if count, _ := u.repo.FileCountByDirectoryID(ctx, id); count != 0 {
-		return errors.DeleteDirectoryFormat("当前目录下存在文件或目录")
-	}
-
-	// 判断是否存在目录
-	if count, _ := u.repo.DirectoryCountByParentID(ctx, id); count != 0 {
-		return errors.DeleteDirectoryFormat("当前目录下存在文件或目录")
-	}
-
-	if err := u.repo.DeleteDirectory(ctx, id); err != nil {
-		return errors.Database()
-	}
-	return nil
-}
-
-func (u *UseCase) GetFile(ctx kratosx.Context, in *GetFileRequest) (*GetFileResponse, error) {
-	store, err := u.factory.Store(ctx)
-	if err != nil {
-		return nil, errors.System()
-	}
-	reader, err := store.Get(in.Src)
-	if err != nil {
-		return nil, errors.NotExistResource()
-	}
-
-	var rb []byte
-	if in.IsRange {
-		file := reader.(*os.File)
-		if _, err := file.Seek(in.Start, io.SeekStart); err != nil {
-			return nil, errors.AccessResourceFormat(err.Error())
-		}
-		tempReader := bytes.NewBuffer([]byte{})
-		if _, err := io.CopyN(tempReader, file, in.End-in.Start+1); err != nil {
-			return nil, errors.AccessResourceFormat(err.Error())
-		}
-		rb, _ = io.ReadAll(tempReader)
+	if req.Id != nil {
+		res, err = u.repo.GetFile(ctx, *req.Id)
+	} else if req.Sha != nil {
+		res, err = u.repo.GetFileBySha(ctx, *req.Sha)
 	} else {
-		rb, _ = io.ReadAll(reader)
+		return nil, errors.ParamsError()
 	}
 
-	fileMime := mime.TypeByExtension(filepath.Ext(in.Src))
-	if fileMime == "" {
-		fileMime = u.factory.FileMime(rb)
-	}
-	// 如果是图片，则进行裁剪
-	if strings.Contains(fileMime, "image/") && in.Width > 0 && in.Height > 0 {
-		tp := strings.Split(fileMime, "/")[1]
-		if img, err := image.New(tp, rb); err == nil {
-			if in.Mode == "" {
-				in.Mode = image.AspectFill
-			}
-			if nrb, err := img.Resize(in.Width, in.Height, in.Mode); err == nil {
-				rb = nrb
-			}
-		}
+	if res.Status != STATUS_COMPLETED {
+		return nil, errors.NotExistFileError()
 	}
 
-	return &GetFileResponse{
-		Data: rb,
-		Mime: fileMime,
-	}, nil
+	if err != nil {
+		return nil, errors.NotExistFileError(err.Error())
+	}
+	return res, nil
 }
 
-func (u *UseCase) GetFileBySha(ctx kratosx.Context, sha string) (*File, error) {
-	file, err := u.repo.GetFileBySha(ctx, sha)
+// ListFile 获取文件信息列表
+func (u *UseCase) ListFile(ctx kratosx.Context, req *ListFileRequest) ([]*File, uint32, error) {
+	list, total, err := u.repo.ListFile(ctx, req)
 	if err != nil {
-		return nil, err
-	}
-	file.Src = u.factory.FileSrc(file.Src)
-	return file, nil
-}
-
-func (u *UseCase) PageFile(ctx kratosx.Context, in *PageFileRequest) ([]*File, uint32, error) {
-	list, total, err := u.repo.PageFile(ctx, in)
-	if err != nil {
-		return nil, 0, errors.DatabaseFormat(err.Error())
-	}
-	for ind, item := range list {
-		list[ind].Src = u.factory.FileSrc(item.Src)
+		return nil, 0, errors.ListError(err.Error())
 	}
 	return list, total, nil
 }
 
-// UpdateFile 修改文件名称
-func (u *UseCase) UpdateFile(ctx kratosx.Context, file *File) error {
-	if err := u.repo.UpdateFile(ctx, file); err != nil {
-		return errors.DatabaseFormat(err.Error())
-	}
-	return nil
-}
-
-// DeleteFiles 删除文件
-func (u *UseCase) DeleteFiles(ctx kratosx.Context, pid uint32, ids []uint32) error {
-	if err := u.repo.DeleteFiles(ctx, pid, ids); err != nil {
-		return errors.DatabaseFormat(err.Error())
-	}
-	return nil
-}
-
-// PrepareUploadFile 预上传文件
-func (u *UseCase) PrepareUploadFile(ctx kratosx.Context, in *PrepareUploadFileRequest) (*PrepareUploadFileReply, error) {
-	if in.DirectoryPath == "" && in.DirectoryId == 0 {
-		return nil, errors.Params()
-	}
-
-	var err error
-	var directory *Directory
-	if in.DirectoryPath != "" {
-		paths := strings.Split(in.DirectoryPath, "/")
-		directory, err = u.repo.GetDirectoryByPaths(ctx, in.App, paths)
+// PrepareUploadFile 预上传文件信息
+func (u *UseCase) PrepareUploadFile(ctx kratosx.Context, req *PrepareUploadFileRequest) (*PrepareUploadFileReply, error) {
+	var (
+		err         error
+		limit       *DirectoryLimit
+		directoryId uint32
+	)
+	if req.DirectoryId != nil {
+		limit, err = u.repo.GetDirectoryLimitById(ctx, *req.DirectoryId)
 	} else {
-		directory, err = u.repo.GetDirectoryByID(ctx, in.DirectoryId)
+		paths := strings.Split(*req.DirectoryPath, "/")
+		limit, err = u.repo.GetDirectoryLimitByPath(ctx, paths)
 	}
 	if err != nil {
-		return nil, errors.DatabaseFormat(err.Error())
+		return nil, errors.DatabaseError(err.Error())
 	}
+	directoryId = limit.DirectoryId
+	chunkSize := util.GetKBSize(u.conf.ChunkSize)
 
-	file, err := u.repo.GetFileBySha(ctx, in.Sha)
+	// 校验是否存在上传记录
+	oldFile, err := u.repo.GetFileBySha(ctx, req.Sha)
+	if err != nil && !oe.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.UpdateError(err.Error())
+	}
 	if err == nil {
 		// 触发秒传
-		if file.Status == consts.STATUS_COMPLETED {
-			_ = u.repo.CopyFile(ctx, file, directory.ID, in.Name)
+		if oldFile.Status == STATUS_COMPLETED {
+			if err := u.repo.CopyFile(ctx, oldFile, directoryId, req.Name); err != nil {
+				return nil, errors.UploadFileError(err.Error())
+			}
 			return &PrepareUploadFileReply{
-				Uploaded: proto.Bool(true),
-				Src:      proto.String(u.factory.FileSrc(file.Src)),
-				Sha:      proto.String(file.Sha),
+				Uploaded: true,
+				Src:      proto.String(oldFile.Src),
+				Sha:      proto.String(oldFile.Sha),
+				URL:      proto.String(oldFile.URL),
 			}, nil
 		}
-
-		var chunks []int
-		if file.ChunkCount > 1 && file.UploadID != nil {
-			store, err := u.factory.Store(ctx)
-			if err != nil {
-				return nil, errors.InitStoreFormat(err.Error())
-			}
-			chunk, err := store.NewPutChunkByUploadID(file.Src, *file.UploadID)
-			if err != nil {
-				return nil, errors.ChunkUpload()
-			}
-			chunks = chunk.UploadedChunkIndex()
+		// 触发断点续传
+		chunkFactory, err := u.repo.GetStore().NewPutChunkByUploadID(oldFile.Sha, oldFile.UploadId)
+		if err != nil {
+			ctx.Logger().Warnf("get upload chunks error:%s", err.Error())
 		}
 		return &PrepareUploadFileReply{
-			Uploaded:     proto.Bool(false),
-			UploadId:     file.UploadID,
-			ChunkSize:    proto.Uint32(uint32(u.factory.MaxChunkSize())),
-			ChunkCount:   proto.Uint32(file.ChunkCount),
-			UploadChunks: chunks,
-			Sha:          proto.String(file.Sha),
+			Uploaded:     false,
+			UploadId:     proto.String(oldFile.UploadId),
+			ChunkSize:    proto.Uint32(chunkSize),
+			ChunkCount:   proto.Uint32(oldFile.ChunkCount),
+			UploadChunks: chunkFactory.UploadedChunkIndex(),
+			Sha:          proto.String(oldFile.Sha),
 		}, nil
 	}
 
-	// 检查文件大小
-	if err := u.factory.CheckSize(int64(in.Size)); err != nil {
-		return nil, err
+	// 校验文件大小
+	if size := util.GetKBSize(limit.MaxSize); size < req.Size {
+		return nil, errors.ExceedMaxSizeError()
 	}
 
-	// 获取文件类型
-	fileType := u.factory.GetType(in.Name)
-
-	// 检查文件后缀
-	if err := u.factory.CheckType(fileType); err != nil {
-		return nil, err
+	// 校验文件类型
+	tp := util.GetFileType(req.Name)
+	if !valx.InList(limit.Accepts, tp) {
+		return nil, errors.NoSupportFileTypeError()
 	}
 
 	// 构建文件对象
-	file = &File{
-		DirectoryID: directory.ID,
-		Size:        in.Size,
-		Sha:         in.Sha,
-		Name:        in.Name,
-		Src:         u.factory.StoreKey(in.Sha, fileType),
-		Status:      consts.STATUS_PROGRESS,
-		Storage:     u.factory.Storage(),
-		Type:        fileType,
-		UploadID:    proto.String(uuid.NewString()),
+	file := &File{
+		DirectoryId: directoryId,
+		Size:        req.Size,
+		Sha:         req.Sha,
+		Name:        req.Name,
+		Src:         fmt.Sprintf("%s.%s", req.Sha, tp),
+		Status:      STATUS_PROGRESS,
+		Type:        tp,
+		UploadId:    uuid.NewString(),
 		ChunkCount:  1,
 	}
 
 	// 判断是否需要切片
-	if u.factory.MaxSingularSize() < int64(in.Size) {
-		store, err := u.factory.Store(ctx)
+	if chunkSize < req.Size {
+		file.ChunkCount = uint32(math.Ceil(float64(req.Size) / float64(chunkSize)))
+		chunkFactory, err := u.repo.GetStore().NewPutChunk(file.Src)
 		if err != nil {
-			return nil, err
+			return nil, errors.UpdateError(err.Error())
 		}
-
-		pc, err := store.NewPutChunk(file.Src)
-		if err != nil {
-			return nil, errors.ChunkUpload()
-		}
-		file.UploadID = proto.String(pc.UploadID())
-		file.ChunkCount = uint32(u.factory.ChunkCount(int64(in.Size)))
+		file.UploadId = chunkFactory.UploadID()
 	}
 
-	if err := u.repo.AddFile(ctx, file); err != nil {
-		return nil, errors.Database()
+	if _, err = u.repo.CreateFile(ctx, file); err != nil {
+		return nil, errors.UpdateError(err.Error())
 	}
 
 	return &PrepareUploadFileReply{
-		Uploaded:     proto.Bool(false),
-		UploadId:     file.UploadID,
-		ChunkSize:    proto.Uint32(uint32(u.factory.MaxChunkSize())),
+		Uploaded:     false,
+		UploadId:     proto.String(file.UploadId),
+		ChunkSize:    proto.Uint32(chunkSize),
 		ChunkCount:   proto.Uint32(file.ChunkCount),
-		UploadChunks: []int{},
+		UploadChunks: nil,
 	}, nil
 }
 
-func (u *UseCase) UploadFile(ctx kratosx.Context, in *UploadFileRequest) (*UploadFileReply, error) {
-	file, err := u.repo.GetFileByUploadID(ctx, in.UploadId)
+// UploadFile 上传文件信息
+func (u *UseCase) UploadFile(ctx kratosx.Context, req *UploadFileRequest) (*UploadFileReply, error) {
+	file, err := u.repo.GetFileByUploadId(ctx, req.UploadId)
 	if err != nil {
-		return nil, errors.UploadFileFormat("上传id不存在")
+		return nil, errors.UpdateError("不存在上传任务")
 	}
-	if file.Status == consts.STATUS_COMPLETED {
-		return nil, errors.UploadFileFormat("请勿重复上传")
+	if file.Status == STATUS_COMPLETED {
+		return nil, errors.UpdateError("请勿重复上传")
 	}
 
-	store, err := u.factory.Store(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.UpdateError(err.Error())
 	}
 
 	// 直接上传
 	if file.ChunkCount == 1 {
-		if err := store.PutBytes(file.Src, in.Data); err != nil {
-			return nil, errors.UploadFileFormat(err.Error())
+		if err = u.repo.GetStore().PutBytes(file.Src, req.Data); err != nil {
+			return nil, err
 		}
-		if err := u.repo.UpdateFileSuccess(ctx, file.ID); err != nil {
-			return nil, errors.UploadFileFormat(err.Error())
+		if err = u.repo.UpdateFileStatus(ctx, file.Id, STATUS_COMPLETED); err != nil {
+			return nil, errors.UploadFileError(err.Error())
 		}
-		return &UploadFileReply{
-			Src: u.factory.FileSrc(file.Src),
-			Sha: file.Sha,
-		}, nil
-	}
-
-	// 切片上传
-	chunk, err := store.NewPutChunkByUploadID(file.Src, in.UploadId)
-	if err != nil {
-		return nil, errors.ChunkUploadFormat(err.Error())
-	}
-
-	if err := chunk.AppendBytes(in.Data, int(in.Index)); err != nil {
-		return nil, errors.ChunkUploadFormat(err.Error())
-	}
-
-	u.rw.Lock()
-	if u.muiOnce[in.UploadId] == nil {
-		u.muiOnce[in.UploadId] = &sync.Once{}
-	}
-	u.rw.Unlock()
-
-	if chunk.ChunkCount() == int(file.ChunkCount) {
-		u.rw.RLock()
-		if u.muiOnce[in.UploadId] != nil {
-			u.muiOnce[in.UploadId].Do(func() {
-				_ = chunk.Complete()
-				_ = u.repo.UpdateFileSuccess(ctx, file.ID)
-			})
+	} else {
+		chunkFactory, err := u.repo.GetStore().NewPutChunkByUploadID(file.Src, req.UploadId)
+		if err != nil {
+			return nil, errors.UpdateError(err.Error())
 		}
-		delete(u.muiOnce, in.UploadId)
-		u.rw.RUnlock()
+		if err = chunkFactory.AppendBytes(req.Data, int(req.Index)); err != nil {
+			return nil, err
+		}
+		u.rw.Lock()
+		if u.mui[req.UploadId] == nil {
+			u.mui[req.UploadId] = &sync.Once{}
+		}
+		u.rw.Unlock()
+
+		// 当前已经上传完成
+		if chunkFactory.ChunkCount() == int(file.ChunkCount) {
+			u.rw.RLock()
+			if u.mui[req.UploadId] != nil {
+				var cErr error
+				u.mui[req.UploadId].Do(func() {
+					if err := chunkFactory.Complete(); err != nil {
+						cErr = err
+						return
+					}
+					if err := u.repo.UpdateFileStatus(ctx, file.Id, STATUS_COMPLETED); err != nil {
+						cErr = err
+					}
+					go func() {
+						time.Sleep(10 * time.Second)
+						delete(u.mui, req.UploadId)
+					}()
+				})
+				if cErr != nil {
+					return nil, errors.UpdateError(err.Error())
+				}
+			}
+
+			u.rw.RUnlock()
+		}
 	}
 
 	return &UploadFileReply{
-		Src: u.factory.FileSrc(file.Src),
+		Src: file.Src,
 		Sha: file.Sha,
+		URL: file.URL,
 	}, nil
+}
+
+// UpdateFile 更新文件信息
+func (u *UseCase) UpdateFile(ctx kratosx.Context, req *File) error {
+	if err := u.repo.UpdateFile(ctx, req); err != nil {
+		return errors.UpdateError(err.Error())
+	}
+	return nil
+}
+
+// DeleteFile 删除文件信息
+func (u *UseCase) DeleteFile(ctx kratosx.Context, ids []uint32) (uint32, error) {
+	total, err := u.repo.DeleteFile(ctx, ids)
+	if err != nil {
+		return 0, errors.DeleteError(err.Error())
+	}
+	return total, nil
+}
+
+// VerifyURL 验证访问url
+func (u *UseCase) VerifyURL(key string, expire string, sign string) error {
+	if err := u.repo.GetStore().VerifyTemporaryURL(key, expire, sign); err != nil {
+		return errors.VerifySignError(err.Error())
+	}
+	return nil
 }

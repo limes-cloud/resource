@@ -1,0 +1,67 @@
+
+env: PROD
+server:
+  http:
+    addr: 127.0.0.1:7003
+    timeout: 60s
+    marshal:
+      emitUnpopulated: true
+      useProtoNames: true
+  grpc:
+    addr: 127.0.0.1:8003
+    timeout: 60s
+log:
+  level: 0
+  output:
+    - stdout
+    - file
+  file:
+    name: ./tmp/runtime/output.log
+    maxSize: 1
+    maxBackup: 5
+    maxAge: 1
+    compress: false
+database:
+  system:
+    enable: true #是否启用数据库
+    drive: mysql #数据库类型
+    autoCreate: true #是否自动创建数据库
+    connect:
+      username: root
+      password: root
+      host: 127.0.0.1
+      port: 3306
+      dbName: resource
+      option: ?charset=utf8mb4&parseTime=True&loc=Local
+    config:
+      transformError:
+        enable: true
+      maxLifetime: 2h #最大生存时间
+      maxOpenConn: 20 #最大连接数量
+      maxIdleConn: 10 #最大空闲数量
+      logLevel: 3 #日志等级
+      slowThreshold: 2s #慢sql阈值
+redis:
+  cache:
+    enable: true
+    host: 127.0.0.1:6379
+    username: ''
+    password: ''
+business:
+  chunkSize: 1
+  defaultMaxSize: 10
+  defaultAcceptTypes: ["jpg","png","txt","ppt","pptx","mp4","pdf"]
+  storage:
+    type: local
+    endpoint: xxx
+    id: xxx
+    secret: xxx
+    bucket: resource-1323879016
+    region: ap-nanjing
+#    serverUrl: http://cos.qlime.cn
+    serverUrl: http://127.0.0.1:7003/resource/api/v1/static
+    localDir: static
+    temporaryExpire: 600s
+  export:
+    ServerPath: ''
+    localDir: static/export

@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package resource.api.resource.export.v1;
+
+option go_package = "./v1;v1";
+option java_multiple_files = true;
+option java_package = "resource.api.resource.export.v1";
+option java_outer_classname = "ExportV1";
+
+import "validate/validate.proto";
+
+message ListExportRequest {
+  uint32 page = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gt: 0,lte:50}];
+  optional string order = 3[(validate.rules).string = {in: ["asc","desc"]}];
+  optional string orderBy = 4[(validate.rules).string = {in: ["id","created_at","updated_at"]}];
+  optional uint32 userId = 5;
+  optional uint32 departmentId = 6;
+}
+
+message ListExportReply {
+  message Export {
+    uint32 id = 1;
+    uint32 userId = 2;
+    uint32 departmentId = 3;
+    string scene = 4;
+    string name = 5;
+    uint32 size = 6;
+    optional string sha = 7;
+    optional string src = 8;
+    string status = 9;
+    optional string reason = 10;
+    uint32 expiredAt = 11;
+    uint32 createdAt = 12;
+    uint32 updatedAt = 13;
+  }
+
+  uint32 total = 1;
+  repeated Export list = 2;
+}
+
+message CreateExportRequest {
+  uint32 userId = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 departmentId = 2[(validate.rules).uint32 = {gt: 0}];
+  string scene = 3[(validate.rules).string = {min_len: 1}];
+  string name = 4[(validate.rules).string = {min_len: 1}];
+  optional string reason = 5;
+}
+
+message CreateExportReply {
+  uint32 id = 1;
+}
+
+message DeleteExportRequest {
+  repeated uint32 ids = 1[(validate.rules).repeated = {min_items: 1, unique:true, max_items:50}];
+}
+
+message DeleteExportReply {
+  uint32 total = 1;
+}
+

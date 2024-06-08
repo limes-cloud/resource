@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package errors;
+
+import "errors/errors.proto";
+option go_package = "./;errors";
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  ParamsError = 0[(errors.message)="参数错误"];
+  DatabaseError = 1[(errors.message)="数据库错误"];
+  TransformError = 2[(errors.message)="数据转换失败"];
+  GetError = 3[(errors.message)="获取数据失败"];
+  ListError = 4[(errors.message)="获取列表数据失败"];
+  CreateError = 5[(errors.message)="创建数据失败"];
+  ImportError = 6[(errors.message)="导入数据失败"];
+  ExportError = 7[(errors.message)="导出数据失败"];
+  UpdateError = 8[(errors.message)="更新数据失败"];
+  DeleteError = 9[(errors.message)="删除数据失败"];
+  GetTrashError = 10[(errors.message)="获取回收站数据失败"];
+  ListTrashError = 11[(errors.message)="获取回收站列表数据失败"];
+  DeleteTrashError = 12[(errors.message)="删除回收站数据失败"];
+  RevertTrashError = 13[(errors.message)="还原回收站数据失败"];
+  NoSupportStoreError = 14[(errors.message)="不支持的存储引擎"];
+  NoSupportFileTypeError = 15[(errors.message)="不支持的文件类型"];
+  VerifySignError = 16[(errors.message)="签名验证失败"];
+  SystemError = 17[(errors.message)="系统错误"];
+  ChunkUploadError = 18[(errors.message)="分片上传失败"];
+  StatusProgressError = 19[(errors.message)="文件上传中"];
+  UploadFileError = 20[(errors.message)="文件上传失败"];
+  InitStoreError = 21[(errors.message)="存储引擎初始化失败"];
+  FileFormatError = 22[(errors.message)="文件格式错误"];
+  NotExistFileError = 23[(errors.message)="文件不存在"];
+  AlreadyExistFileNameError = 24[(errors.message)="文件名已存在"];
+  AccessResourceError = 25[(errors.message)="访问资源文件异常"];
+  ExportFileNameDupError = 26[(errors.message)="导出文件重命名重复"];
+  ExportTaskProcessError = 27[(errors.message)="导出任务正在进行中"];
+  ResourceServerError = 28[(errors.message)="资源服务异常"];
+  ExceedMaxSizeError = 29[(errors.message)="超过允许上传的文件大小"];
+}

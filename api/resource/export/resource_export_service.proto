@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package resource.api.resource.export.v1;
+
+option go_package = "./v1;v1";
+option java_multiple_files = true;
+option java_package = "resource.api.resource.export.v1";
+option java_outer_classname = "ExportV1";
+
+import "api/resource/export/resource_export.proto";
+import "google/api/annotations.proto";
+
+service Export{
+
+  // ListExport 获取导出信息列表
+  rpc ListExport (ListExportRequest) returns (ListExportReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/exports",
+    };
+  }
+
+  // CreateExport 创建导出信息
+  rpc CreateExport (CreateExportRequest) returns (CreateExportReply) {
+    option (google.api.http) = {
+      post: "/resource/api/v1/export",
+      body: "*"
+    };
+  }
+
+  // DeleteExport 删除导出信息
+  rpc DeleteExport (DeleteExportRequest) returns (DeleteExportReply) {
+    option (google.api.http) = {
+      delete: "/resource/api/v1/export",
+    };
+  }
+
+}

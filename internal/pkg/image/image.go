@@ -9,9 +9,8 @@ import (
 	"image/png"
 	"strings"
 
-	"golang.org/x/image/bmp"
-
 	"github.com/nfnt/resize"
+	"golang.org/x/image/bmp"
 )
 
 const (

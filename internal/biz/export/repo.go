@@ -5,11 +5,12 @@ import (
 )
 
 type Repo interface {
-	PageExport(ctx kratosx.Context, req *PageExportRequest) ([]*Export, uint32, error)
-	AddExport(ctx kratosx.Context, c *Export) (uint32, error)
-	GetExportByVersion(ctx kratosx.Context, uid uint32, version string) (*Export, error)
-	GetExport(ctx kratosx.Context, id uint32) (*Export, error)
-	UpdateExport(ctx kratosx.Context, c *Export) error
-	DeleteExport(ctx kratosx.Context, uid, id uint32) error
-	UpdateExportExpire(ctx kratosx.Context, t int64) error
+	// ListExport 获取导出信息列表
+	ListExport(ctx kratosx.Context, req *ListExportRequest) ([]*Export, uint32, error)
+
+	// CreateExport 创建导出信息
+	CreateExport(ctx kratosx.Context, req *Export) (uint32, error)
+
+	// DeleteExport 删除导出信息
+	DeleteExport(ctx kratosx.Context, ids []uint32) (uint32, error)
 }
