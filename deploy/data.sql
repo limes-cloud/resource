@@ -1,21 +1,3 @@
-/*
- Navicat Premium Data Transfer
-
- Source Server         : dev
- Source Server Type    : MySQL
- Source Server Version : 80200
- Source Host           : localhost:3306
- Source Schema         : resource
-
- Target Server Type    : MySQL
- Target Server Version : 80200
- File Encoding         : 65001
-
- Date: 11/06/2024 23:22:33
-*/
-
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
 -- Table structure for chunk
@@ -33,7 +15,7 @@ CREATE TABLE `chunk` (
   UNIQUE KEY `upload_id` (`upload_id`,`index`),
   UNIQUE KEY `ui` (`upload_id`,`index`),
   KEY `idx_chunk_created_at` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of chunk
@@ -57,7 +39,7 @@ CREATE TABLE `directory` (
   UNIQUE KEY `pna` (`parent_id`,`name`),
   KEY `idx_directory_created_at` (`created_at`),
   KEY `idx_directory_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='目录信息';
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT='目录信息';
 
 -- ----------------------------
 -- Records of directory
@@ -80,7 +62,7 @@ CREATE TABLE `directory_closure` (
   KEY `children` (`children`),
   CONSTRAINT `directory_closure_ibfk_1` FOREIGN KEY (`children`) REFERENCES `directory` (`id`) ON DELETE CASCADE,
   CONSTRAINT `directory_closure_ibfk_2` FOREIGN KEY (`parent`) REFERENCES `directory` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='目录层级信息';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='目录层级信息';
 
 -- ----------------------------
 -- Records of directory_closure
@@ -108,7 +90,7 @@ CREATE TABLE `export` (
   `updated_at` bigint unsigned DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sha` (`sha`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='导出任务';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COMMENT='导出任务';
 
 -- ----------------------------
 -- Records of export
@@ -141,7 +123,7 @@ CREATE TABLE `file` (
   KEY `deleted_at` (`deleted_at`),
   KEY `directory_id` (`directory_id`),
   CONSTRAINT `file_ibfk_1` FOREIGN KEY (`directory_id`) REFERENCES `directory` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of file
@@ -164,7 +146,7 @@ CREATE TABLE `gorm_init` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `init` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of gorm_init
@@ -172,5 +154,3 @@ CREATE TABLE `gorm_init` (
 BEGIN;
 INSERT INTO `gorm_init` VALUES (1, 1);
 COMMIT;
-
-SET FOREIGN_KEY_CHECKS = 1;
