@@ -571,10 +571,10 @@ func (m *CreateDirectoryRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetParentId() <= 0 {
+	if m.GetParentId() < 0 {
 		err := CreateDirectoryRequestValidationError{
 			field:  "ParentId",
-			reason: "value must be greater than 0",
+			reason: "value must be greater than or equal to 0",
 		}
 		if !all {
 			return err
@@ -832,10 +832,10 @@ func (m *UpdateDirectoryRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetParentId() <= 0 {
+	if m.GetParentId() < 0 {
 		err := UpdateDirectoryRequestValidationError{
 			field:  "ParentId",
-			reason: "value must be greater than 0",
+			reason: "value must be greater than or equal to 0",
 		}
 		if !all {
 			return err

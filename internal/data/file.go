@@ -1,8 +1,6 @@
 package data
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -10,16 +8,11 @@ import (
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/pkg/valx"
 	"google.golang.org/protobuf/proto"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	biz "github.com/limes-cloud/resource/internal/biz/file"
 	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/data/model"
 	"github.com/limes-cloud/resource/internal/pkg/store"
-	"github.com/limes-cloud/resource/internal/pkg/store/aliyun"
-	"github.com/limes-cloud/resource/internal/pkg/store/local"
-	"github.com/limes-cloud/resource/internal/pkg/store/tencent"
 )
 
 type fileRepo struct {
@@ -27,38 +20,7 @@ type fileRepo struct {
 	store store.Store
 }
 
-func NewFileRepo(conf *conf.Config) biz.Repo {
-	ctx := kratosx.MustContext(context.Background())
-	cfg := &store.Config{
-		Endpoint: conf.Storage.Endpoint,
-		Id:       conf.Storage.Id,
-		Secret:   conf.Storage.Secret,
-		Bucket:   conf.Storage.Bucket,
-		LocalDir: conf.Storage.LocalDir,
-		DB: ctx.DB().Session(&gorm.Session{
-			Logger: logger.Default.LogMode(logger.Silent),
-		}),
-		Cache:           ctx.Redis(),
-		TemporaryExpire: conf.Storage.TemporaryExpire,
-		ServerURL:       conf.Storage.ServerURL,
-	}
-	var (
-		err error
-		st  store.Store
-	)
-	switch conf.Storage.Type {
-	case store.STORE_ALIYUN:
-		st, err = aliyun.New(cfg)
-	case store.STORE_TENCENT:
-		st, err = tencent.New(cfg)
-	case store.STORE_LOCAL:
-		st, err = local.New(cfg)
-	default:
-		err = errors.New("not support storage:" + conf.Storage.Type)
-	}
-	if err != nil {
-		panic(err)
-	}
+func NewFileRepo(conf *conf.Config, st store.Store) biz.Repo {
 	return &fileRepo{
 		conf:  conf,
 		store: st,
@@ -75,13 +37,14 @@ func (r fileRepo) ToFileEntity(ctx kratosx.Context, m *model.File) *biz.File {
 		Size:        m.Size,
 		Sha:         m.Sha,
 		Src:         m.Src,
+		Key:         m.Key,
 		Status:      m.Status,
 		UploadId:    m.UploadId,
 		ChunkCount:  m.ChunkCount,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
 	}
-	accessURL, err := r.store.GenTemporaryURL(m.Src)
+	accessURL, err := r.store.GenTemporaryURL(m.Key)
 	if err != nil {
 		ctx.Logger().Warnf("gen template url error:%s", err.Error())
 	} else {
@@ -105,6 +68,20 @@ func (r fileRepo) GetFileBySha(ctx kratosx.Context, sha string) (*biz.File, erro
 	)
 	db := ctx.DB().Select(fs)
 	if err := db.Where("sha = ?", sha).First(&m).Error; err != nil {
+		return nil, err
+	}
+
+	return r.ToFileEntity(ctx, &m), nil
+}
+
+// GetFileBySrc 获取指定数据
+func (r fileRepo) GetFileBySrc(ctx kratosx.Context, src string) (*biz.File, error) {
+	var (
+		m  = model.File{}
+		fs = []string{"*"}
+	)
+	db := ctx.DB().Select(fs)
+	if err := db.Where("src = ?", src).First(&m).Error; err != nil {
 		return nil, err
 	}
 
@@ -142,6 +119,9 @@ func (r fileRepo) ListFile(ctx kratosx.Context, req *biz.ListFileRequest) ([]*bi
 	if req.Status != nil {
 		db = db.Where("status = ?", *req.Status)
 	}
+	if req.Name != nil && *req.Name != "" {
+		db = db.Where("name like ", *req.Name+"%")
+	}
 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -172,12 +152,15 @@ func (r fileRepo) ListFile(ctx kratosx.Context, req *biz.ListFileRequest) ([]*bi
 // CreateFile 创建数据
 func (r fileRepo) CreateFile(ctx kratosx.Context, req *biz.File) (uint32, error) {
 	m := r.ToFileModel(req)
+	m.Src = fmt.Sprintf("%d/%s", m.DirectoryId, m.Key)
 	return m.Id, ctx.DB().Create(m).Error
 }
 
 // UpdateFile 更新数据
 func (r fileRepo) UpdateFile(ctx kratosx.Context, req *biz.File) error {
-	return ctx.DB().Updates(r.ToFileModel(req)).Error
+	m := r.ToFileModel(req)
+	m.Src = fmt.Sprintf("%d/%s", m.DirectoryId, m.Key)
+	return ctx.DB().Updates(m).Error
 }
 
 // DeleteFile 删除数据
@@ -189,9 +172,9 @@ func (r fileRepo) DeleteFile(ctx kratosx.Context, ids []uint32) (uint32, error) 
 
 	for _, item := range files {
 		if item.Status == biz.STATUS_COMPLETED {
-			_ = r.store.Delete(item.Src)
+			_ = r.store.Delete(item.Key)
 		} else {
-			chunk, err := r.store.NewPutChunkByUploadID(item.Src, item.UploadId)
+			chunk, err := r.store.NewPutChunkByUploadID(item.Key, item.UploadId)
 			if err == nil {
 				_ = chunk.Abort()
 			}
@@ -209,7 +192,8 @@ func (r fileRepo) CopyFile(ctx kratosx.Context, src *biz.File, directoryId uint3
 	uids := strings.Split(uuid.NewString(), "-")
 	file := model.File{
 		DirectoryId: directoryId,
-		Src:         src.Src,
+		Key:         src.Key,
+		Src:         fmt.Sprintf("%d/%s", directoryId, src.Key),
 		Name:        fileName,
 		Status:      src.Status,
 		UploadId:    src.UploadId + "_copy_" + uids[0],

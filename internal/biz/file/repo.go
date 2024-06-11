@@ -10,6 +10,15 @@ type Repo interface {
 	// GetFile 获取指定的文件信息
 	GetFile(ctx kratosx.Context, id uint32) (*File, error)
 
+	// GetFileBySha 获取指定的文件信息
+	GetFileBySha(ctx kratosx.Context, sha string) (*File, error)
+
+	// GetFileByUploadId 获取指定的文件信息
+	GetFileByUploadId(ctx kratosx.Context, uid string) (*File, error)
+
+	// GetFileBySrc 获取指定的文件信息
+	GetFileBySrc(ctx kratosx.Context, src string) (*File, error)
+
 	// ListFile 获取文件信息列表
 	ListFile(ctx kratosx.Context, req *ListFileRequest) ([]*File, uint32, error)
 
@@ -27,12 +36,6 @@ type Repo interface {
 
 	// DeleteFile 删除文件信息
 	DeleteFile(ctx kratosx.Context, ids []uint32) (uint32, error)
-
-	// GetFileBySha 获取指定的文件信息
-	GetFileBySha(ctx kratosx.Context, sha string) (*File, error)
-
-	// GetFileByUploadId 获取指定的文件信息
-	GetFileByUploadId(ctx kratosx.Context, uid string) (*File, error)
 
 	// GetDirectoryLimitByPath 获取指定的path上传限制信息
 	GetDirectoryLimitByPath(ctx kratosx.Context, paths []string) (*DirectoryLimit, error)

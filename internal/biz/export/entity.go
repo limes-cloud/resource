@@ -7,8 +7,9 @@ type Export struct {
 	Scene        string  `json:"scene"`
 	Name         string  `json:"name"`
 	Size         uint32  `json:"size"`
-	Sha          *string `json:"sha"`
-	Src          *string `json:"src"`
+	Sha          string  `json:"sha"`
+	Src          string  `json:"src"`
+	URL          string  `json:"url"`
 	Status       string  `json:"status"`
 	Reason       *string `json:"reason"`
 	ExpiredAt    int64   `json:"expiredAt"`

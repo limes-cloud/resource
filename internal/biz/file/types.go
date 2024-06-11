@@ -3,6 +3,7 @@ package file
 type GetFileRequest struct {
 	Id  *uint32 `json:"id"`
 	Sha *string `json:"sha"`
+	Src *string `json:"src"`
 }
 
 type ListFileRequest struct {
@@ -12,6 +13,7 @@ type ListFileRequest struct {
 	OrderBy     *string `json:"orderBy"`
 	DirectoryId *uint32 `json:"directoryId"`
 	Status      *string `json:"status"`
+	Name        *string `json:"name"`
 }
 
 type PrepareUploadFileRequest struct {

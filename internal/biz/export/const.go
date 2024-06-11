@@ -1,0 +1,8 @@
+package export
+
+const (
+	STATUS_FAIL      = "FAIL"
+	STATUS_PROGRESS  = "PROGRESS"
+	STATUS_COMPLETED = "COMPLETED"
+	STATUS_EXPIRED   = "EXPIRED"
+)

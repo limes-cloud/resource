@@ -25,9 +25,22 @@ message StaticFileReply{
   string mime = 2;
 }
 
+message DownloadFileRequest{
+  string src = 1[(validate.rules).string = {min_len:1}];
+  string expire = 2[(validate.rules).string = {min_len:1}];
+  string sign = 3[(validate.rules).string = {min_len:1}];
+  string saveName = 4;
+}
+
+message DownloadFileReply{
+  bytes data = 1;
+  string mime = 2;
+}
+
 message GetFileRequest {
   optional uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
   optional string sha = 2[(validate.rules).string = {min_len: 1}];
+  optional string src = 3[(validate.rules).string = {min_len: 1}];
 }
 
 message GetFileReply {
@@ -53,6 +66,7 @@ message ListFileRequest {
   optional string orderBy = 4[(validate.rules).string = {in: ["id","created_at","updated_at"]}];
   optional uint32 directoryId = 5;
   optional string status = 6[(validate.rules).string = {in: [ "PROGRESS","COMPLETED"]}];
+  optional string name = 7;
 }
 
 message ListFileReply {

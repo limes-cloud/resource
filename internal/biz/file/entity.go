@@ -7,6 +7,7 @@ type File struct {
 	Type        string `json:"type"`
 	Size        uint32 `json:"size"`
 	Sha         string `json:"sha"`
+	Key         string `json:"key"`
 	Src         string `json:"src"`
 	URL         string `json:"url"`
 	Status      string `json:"status"`

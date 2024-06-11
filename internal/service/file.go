@@ -23,7 +23,7 @@ type FileService struct {
 
 func NewFileService(conf *conf.Config) *FileService {
 	return &FileService{
-		uc:   file.NewUseCase(conf, data.NewFileRepo(conf)),
+		uc:   file.NewUseCase(conf, data.NewFileRepo(conf, globalStore)),
 		conf: conf,
 	}
 }
@@ -35,7 +35,6 @@ func init() {
 		pb.RegisterFileServer(gs, srv)
 
 		cr := hs.Route("/")
-		// cr.GET("/resource/v1/static/export/{src}", srv.SrcBlob())
 		cr.GET("/resource/api/v1/static/{expire}/{sign}/{src}", srv.SrcBlob())
 		cr.POST("/resource/api/v1/upload", srv.Upload())
 		cr.POST("/resource/client/v1/upload", srv.Upload())

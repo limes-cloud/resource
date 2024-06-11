@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	Export_GetExport_FullMethodName    = "/resource.api.resource.export.v1.Export/GetExport"
 	Export_ListExport_FullMethodName   = "/resource.api.resource.export.v1.Export/ListExport"
-	Export_CreateExport_FullMethodName = "/resource.api.resource.export.v1.Export/CreateExport"
+	Export_ExportFile_FullMethodName   = "/resource.api.resource.export.v1.Export/ExportFile"
+	Export_ExportExcel_FullMethodName  = "/resource.api.resource.export.v1.Export/ExportExcel"
 	Export_DeleteExport_FullMethodName = "/resource.api.resource.export.v1.Export/DeleteExport"
 )
 
@@ -28,10 +30,14 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ExportClient interface {
+	// GetExport 获取指定的导出信息
+	GetExport(ctx context.Context, in *GetExportRequest, opts ...grpc.CallOption) (*GetExportReply, error)
 	// ListExport 获取导出信息列表
 	ListExport(ctx context.Context, in *ListExportRequest, opts ...grpc.CallOption) (*ListExportReply, error)
-	// CreateExport 创建导出信息
-	CreateExport(ctx context.Context, in *CreateExportRequest, opts ...grpc.CallOption) (*CreateExportReply, error)
+	// ExportFile 创建导出信息
+	ExportFile(ctx context.Context, in *ExportFileRequest, opts ...grpc.CallOption) (*ExportFileReply, error)
+	// ExportExcel 创建导出表格信息
+	ExportExcel(ctx context.Context, in *ExportExcelRequest, opts ...grpc.CallOption) (*ExportExcelReply, error)
 	// DeleteExport 删除导出信息
 	DeleteExport(ctx context.Context, in *DeleteExportRequest, opts ...grpc.CallOption) (*DeleteExportReply, error)
 }
@@ -44,6 +50,15 @@ func NewExportClient(cc grpc.ClientConnInterface) ExportClient {
 	return &exportClient{cc}
 }
 
+func (c *exportClient) GetExport(ctx context.Context, in *GetExportRequest, opts ...grpc.CallOption) (*GetExportReply, error) {
+	out := new(GetExportReply)
+	err := c.cc.Invoke(ctx, Export_GetExport_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exportClient) ListExport(ctx context.Context, in *ListExportRequest, opts ...grpc.CallOption) (*ListExportReply, error) {
 	out := new(ListExportReply)
 	err := c.cc.Invoke(ctx, Export_ListExport_FullMethodName, in, out, opts...)
@@ -53,9 +68,18 @@ func (c *exportClient) ListExport(ctx context.Context, in *ListExportRequest, op
 	return out, nil
 }
 
-func (c *exportClient) CreateExport(ctx context.Context, in *CreateExportRequest, opts ...grpc.CallOption) (*CreateExportReply, error) {
-	out := new(CreateExportReply)
-	err := c.cc.Invoke(ctx, Export_CreateExport_FullMethodName, in, out, opts...)
+func (c *exportClient) ExportFile(ctx context.Context, in *ExportFileRequest, opts ...grpc.CallOption) (*ExportFileReply, error) {
+	out := new(ExportFileReply)
+	err := c.cc.Invoke(ctx, Export_ExportFile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exportClient) ExportExcel(ctx context.Context, in *ExportExcelRequest, opts ...grpc.CallOption) (*ExportExcelReply, error) {
+	out := new(ExportExcelReply)
+	err := c.cc.Invoke(ctx, Export_ExportExcel_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,10 +99,14 @@ func (c *exportClient) DeleteExport(ctx context.Context, in *DeleteExportRequest
 // All implementations must embed UnimplementedExportServer
 // for forward compatibility
 type ExportServer interface {
+	// GetExport 获取指定的导出信息
+	GetExport(context.Context, *GetExportRequest) (*GetExportReply, error)
 	// ListExport 获取导出信息列表
 	ListExport(context.Context, *ListExportRequest) (*ListExportReply, error)
-	// CreateExport 创建导出信息
-	CreateExport(context.Context, *CreateExportRequest) (*CreateExportReply, error)
+	// ExportFile 创建导出信息
+	ExportFile(context.Context, *ExportFileRequest) (*ExportFileReply, error)
+	// ExportExcel 创建导出表格信息
+	ExportExcel(context.Context, *ExportExcelRequest) (*ExportExcelReply, error)
 	// DeleteExport 删除导出信息
 	DeleteExport(context.Context, *DeleteExportRequest) (*DeleteExportReply, error)
 	mustEmbedUnimplementedExportServer()
@@ -88,11 +116,17 @@ type ExportServer interface {
 type UnimplementedExportServer struct {
 }
 
+func (UnimplementedExportServer) GetExport(context.Context, *GetExportRequest) (*GetExportReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExport not implemented")
+}
 func (UnimplementedExportServer) ListExport(context.Context, *ListExportRequest) (*ListExportReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListExport not implemented")
 }
-func (UnimplementedExportServer) CreateExport(context.Context, *CreateExportRequest) (*CreateExportReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateExport not implemented")
+func (UnimplementedExportServer) ExportFile(context.Context, *ExportFileRequest) (*ExportFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportFile not implemented")
+}
+func (UnimplementedExportServer) ExportExcel(context.Context, *ExportExcelRequest) (*ExportExcelReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportExcel not implemented")
 }
 func (UnimplementedExportServer) DeleteExport(context.Context, *DeleteExportRequest) (*DeleteExportReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteExport not implemented")
@@ -108,6 +142,24 @@ type UnsafeExportServer interface {
 
 func RegisterExportServer(s grpc.ServiceRegistrar, srv ExportServer) {
 	s.RegisterService(&Export_ServiceDesc, srv)
+}
+
+func _Export_GetExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExportServer).GetExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Export_GetExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExportServer).GetExport(ctx, req.(*GetExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Export_ListExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -128,20 +180,38 @@ func _Export_ListExport_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Export_CreateExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateExportRequest)
+func _Export_ExportFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ExportServer).CreateExport(ctx, in)
+		return srv.(ExportServer).ExportFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Export_CreateExport_FullMethodName,
+		FullMethod: Export_ExportFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExportServer).CreateExport(ctx, req.(*CreateExportRequest))
+		return srv.(ExportServer).ExportFile(ctx, req.(*ExportFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Export_ExportExcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportExcelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExportServer).ExportExcel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Export_ExportExcel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExportServer).ExportExcel(ctx, req.(*ExportExcelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -172,12 +242,20 @@ var Export_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ExportServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetExport",
+			Handler:    _Export_GetExport_Handler,
+		},
+		{
 			MethodName: "ListExport",
 			Handler:    _Export_ListExport_Handler,
 		},
 		{
-			MethodName: "CreateExport",
-			Handler:    _Export_CreateExport_Handler,
+			MethodName: "ExportFile",
+			Handler:    _Export_ExportFile_Handler,
+		},
+		{
+			MethodName: "ExportExcel",
+			Handler:    _Export_ExportExcel_Handler,
 		},
 		{
 			MethodName: "DeleteExport",

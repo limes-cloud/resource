@@ -10,8 +10,8 @@ type Export struct {
 	Scene        string  `json:"scene" gorm:"column:scene"`
 	Name         string  `json:"name" gorm:"column:name"`
 	Size         uint32  `json:"size" gorm:"column:size"`
-	Sha          *string `json:"sha" gorm:"column:sha"`
-	Src          *string `json:"src" gorm:"column:src"`
+	Sha          string  `json:"sha" gorm:"column:sha"`
+	Src          string  `json:"src" gorm:"column:src"`
 	Status       string  `json:"status" gorm:"column:status"`
 	Reason       *string `json:"reason" gorm:"column:reason"`
 	ExpiredAt    int64   `json:"expiredAt" gorm:"column:expired_at"`

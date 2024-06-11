@@ -10,8 +10,9 @@ type Config struct {
 	DefaultAcceptTypes []string
 	ChunkSize          uint32
 	Export             struct {
-		LocalDir string
-		Expire   time.Duration
+		ServerURL string
+		LocalDir  string
+		Expire    time.Duration
 	}
 	Storage struct {
 		Type            string

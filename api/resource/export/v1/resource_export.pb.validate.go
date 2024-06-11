@@ -35,6 +35,259 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on GetExportRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetExportRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetExportRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetExportRequestMultiError, or nil if none found.
+func (m *GetExportRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetExportRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.Id != nil {
+
+		if m.GetId() <= 0 {
+			err := GetExportRequestValidationError{
+				field:  "Id",
+				reason: "value must be greater than 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.Sha != nil {
+		// no validation rules for Sha
+	}
+
+	if len(errors) > 0 {
+		return GetExportRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetExportRequestMultiError is an error wrapping multiple validation errors
+// returned by GetExportRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetExportRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetExportRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetExportRequestMultiError) AllErrors() []error { return m }
+
+// GetExportRequestValidationError is the validation error returned by
+// GetExportRequest.Validate if the designated constraints aren't met.
+type GetExportRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetExportRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetExportRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetExportRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetExportRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetExportRequestValidationError) ErrorName() string { return "GetExportRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetExportRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetExportRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetExportRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetExportRequestValidationError{}
+
+// Validate checks the field values on GetExportReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GetExportReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetExportReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GetExportReplyMultiError,
+// or nil if none found.
+func (m *GetExportReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetExportReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for UserId
+
+	// no validation rules for DepartmentId
+
+	// no validation rules for Scene
+
+	// no validation rules for Name
+
+	// no validation rules for Size
+
+	// no validation rules for Status
+
+	// no validation rules for ExpiredAt
+
+	// no validation rules for CreatedAt
+
+	// no validation rules for UpdatedAt
+
+	// no validation rules for Url
+
+	if m.Sha != nil {
+		// no validation rules for Sha
+	}
+
+	if m.Src != nil {
+		// no validation rules for Src
+	}
+
+	if m.Reason != nil {
+		// no validation rules for Reason
+	}
+
+	if len(errors) > 0 {
+		return GetExportReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetExportReplyMultiError is an error wrapping multiple validation errors
+// returned by GetExportReply.ValidateAll() if the designated constraints
+// aren't met.
+type GetExportReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetExportReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetExportReplyMultiError) AllErrors() []error { return m }
+
+// GetExportReplyValidationError is the validation error returned by
+// GetExportReply.Validate if the designated constraints aren't met.
+type GetExportReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetExportReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetExportReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetExportReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetExportReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetExportReplyValidationError) ErrorName() string { return "GetExportReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetExportReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetExportReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetExportReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetExportReplyValidationError{}
+
 // Validate checks the field values on ListExportRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -79,6 +332,8 @@ func (m *ListExportRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for All
+
 	if m.Order != nil {
 
 		if _, ok := _ListExportRequest_Order_InLookup[m.GetOrder()]; !ok {
@@ -107,14 +362,6 @@ func (m *ListExportRequest) validate(all bool) error {
 			errors = append(errors, err)
 		}
 
-	}
-
-	if m.UserId != nil {
-		// no validation rules for UserId
-	}
-
-	if m.DepartmentId != nil {
-		// no validation rules for DepartmentId
 	}
 
 	if len(errors) > 0 {
@@ -344,22 +591,22 @@ var _ interface {
 	ErrorName() string
 } = ListExportReplyValidationError{}
 
-// Validate checks the field values on CreateExportRequest with the rules
+// Validate checks the field values on ExportExcelRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CreateExportRequest) Validate() error {
+func (m *ExportExcelRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CreateExportRequest with the rules
+// ValidateAll checks the field values on ExportExcelRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// CreateExportRequestMultiError, or nil if none found.
-func (m *CreateExportRequest) ValidateAll() error {
+// ExportExcelRequestMultiError, or nil if none found.
+func (m *ExportExcelRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CreateExportRequest) validate(all bool) error {
+func (m *ExportExcelRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -367,7 +614,7 @@ func (m *CreateExportRequest) validate(all bool) error {
 	var errors []error
 
 	if m.GetUserId() <= 0 {
-		err := CreateExportRequestValidationError{
+		err := ExportExcelRequestValidationError{
 			field:  "UserId",
 			reason: "value must be greater than 0",
 		}
@@ -378,7 +625,7 @@ func (m *CreateExportRequest) validate(all bool) error {
 	}
 
 	if m.GetDepartmentId() <= 0 {
-		err := CreateExportRequestValidationError{
+		err := ExportExcelRequestValidationError{
 			field:  "DepartmentId",
 			reason: "value must be greater than 0",
 		}
@@ -389,7 +636,7 @@ func (m *CreateExportRequest) validate(all bool) error {
 	}
 
 	if utf8.RuneCountInString(m.GetScene()) < 1 {
-		err := CreateExportRequestValidationError{
+		err := ExportExcelRequestValidationError{
 			field:  "Scene",
 			reason: "value length must be at least 1 runes",
 		}
@@ -400,7 +647,7 @@ func (m *CreateExportRequest) validate(all bool) error {
 	}
 
 	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := CreateExportRequestValidationError{
+		err := ExportExcelRequestValidationError{
 			field:  "Name",
 			reason: "value length must be at least 1 runes",
 		}
@@ -410,24 +657,65 @@ func (m *CreateExportRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.Reason != nil {
-		// no validation rules for Reason
+	if len(m.GetRows()) < 1 {
+		err := ExportExcelRequestValidationError{
+			field:  "Rows",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetRows() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ExportExcelRequestValidationError{
+						field:  fmt.Sprintf("Rows[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ExportExcelRequestValidationError{
+						field:  fmt.Sprintf("Rows[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ExportExcelRequestValidationError{
+					field:  fmt.Sprintf("Rows[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
-		return CreateExportRequestMultiError(errors)
+		return ExportExcelRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// CreateExportRequestMultiError is an error wrapping multiple validation
-// errors returned by CreateExportRequest.ValidateAll() if the designated
-// constraints aren't met.
-type CreateExportRequestMultiError []error
+// ExportExcelRequestMultiError is an error wrapping multiple validation errors
+// returned by ExportExcelRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ExportExcelRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CreateExportRequestMultiError) Error() string {
+func (m ExportExcelRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -436,11 +724,11 @@ func (m CreateExportRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CreateExportRequestMultiError) AllErrors() []error { return m }
+func (m ExportExcelRequestMultiError) AllErrors() []error { return m }
 
-// CreateExportRequestValidationError is the validation error returned by
-// CreateExportRequest.Validate if the designated constraints aren't met.
-type CreateExportRequestValidationError struct {
+// ExportExcelRequestValidationError is the validation error returned by
+// ExportExcelRequest.Validate if the designated constraints aren't met.
+type ExportExcelRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -448,24 +736,24 @@ type CreateExportRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateExportRequestValidationError) Field() string { return e.field }
+func (e ExportExcelRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateExportRequestValidationError) Reason() string { return e.reason }
+func (e ExportExcelRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateExportRequestValidationError) Cause() error { return e.cause }
+func (e ExportExcelRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateExportRequestValidationError) Key() bool { return e.key }
+func (e ExportExcelRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateExportRequestValidationError) ErrorName() string {
-	return "CreateExportRequestValidationError"
+func (e ExportExcelRequestValidationError) ErrorName() string {
+	return "ExportExcelRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CreateExportRequestValidationError) Error() string {
+func (e ExportExcelRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -477,14 +765,14 @@ func (e CreateExportRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateExportRequest.%s: %s%s",
+		"invalid %sExportExcelRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateExportRequestValidationError{}
+var _ error = ExportExcelRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -492,24 +780,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateExportRequestValidationError{}
+} = ExportExcelRequestValidationError{}
 
-// Validate checks the field values on CreateExportReply with the rules defined
+// Validate checks the field values on ExportExcelReply with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *CreateExportReply) Validate() error {
+func (m *ExportExcelReply) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CreateExportReply with the rules
+// ValidateAll checks the field values on ExportExcelReply with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// CreateExportReplyMultiError, or nil if none found.
-func (m *CreateExportReply) ValidateAll() error {
+// ExportExcelReplyMultiError, or nil if none found.
+func (m *ExportExcelReply) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CreateExportReply) validate(all bool) error {
+func (m *ExportExcelReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -519,19 +807,19 @@ func (m *CreateExportReply) validate(all bool) error {
 	// no validation rules for Id
 
 	if len(errors) > 0 {
-		return CreateExportReplyMultiError(errors)
+		return ExportExcelReplyMultiError(errors)
 	}
 
 	return nil
 }
 
-// CreateExportReplyMultiError is an error wrapping multiple validation errors
-// returned by CreateExportReply.ValidateAll() if the designated constraints
+// ExportExcelReplyMultiError is an error wrapping multiple validation errors
+// returned by ExportExcelReply.ValidateAll() if the designated constraints
 // aren't met.
-type CreateExportReplyMultiError []error
+type ExportExcelReplyMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CreateExportReplyMultiError) Error() string {
+func (m ExportExcelReplyMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -540,11 +828,11 @@ func (m CreateExportReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CreateExportReplyMultiError) AllErrors() []error { return m }
+func (m ExportExcelReplyMultiError) AllErrors() []error { return m }
 
-// CreateExportReplyValidationError is the validation error returned by
-// CreateExportReply.Validate if the designated constraints aren't met.
-type CreateExportReplyValidationError struct {
+// ExportExcelReplyValidationError is the validation error returned by
+// ExportExcelReply.Validate if the designated constraints aren't met.
+type ExportExcelReplyValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -552,24 +840,22 @@ type CreateExportReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateExportReplyValidationError) Field() string { return e.field }
+func (e ExportExcelReplyValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateExportReplyValidationError) Reason() string { return e.reason }
+func (e ExportExcelReplyValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateExportReplyValidationError) Cause() error { return e.cause }
+func (e ExportExcelReplyValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateExportReplyValidationError) Key() bool { return e.key }
+func (e ExportExcelReplyValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateExportReplyValidationError) ErrorName() string {
-	return "CreateExportReplyValidationError"
-}
+func (e ExportExcelReplyValidationError) ErrorName() string { return "ExportExcelReplyValidationError" }
 
 // Error satisfies the builtin error interface
-func (e CreateExportReplyValidationError) Error() string {
+func (e ExportExcelReplyValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -581,14 +867,14 @@ func (e CreateExportReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateExportReply.%s: %s%s",
+		"invalid %sExportExcelReply.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateExportReplyValidationError{}
+var _ error = ExportExcelReplyValidationError{}
 
 var _ interface {
 	Field() string
@@ -596,7 +882,289 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateExportReplyValidationError{}
+} = ExportExcelReplyValidationError{}
+
+// Validate checks the field values on ExportFileRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ExportFileRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportFileRequestMultiError, or nil if none found.
+func (m *ExportFileRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportFileRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetUserId() <= 0 {
+		err := ExportFileRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetDepartmentId() <= 0 {
+		err := ExportFileRequestValidationError{
+			field:  "DepartmentId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetScene()) < 1 {
+		err := ExportFileRequestValidationError{
+			field:  "Scene",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := ExportFileRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetFiles() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ExportFileRequestValidationError{
+						field:  fmt.Sprintf("Files[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ExportFileRequestValidationError{
+						field:  fmt.Sprintf("Files[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ExportFileRequestValidationError{
+					field:  fmt.Sprintf("Files[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ExportFileRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportFileRequestMultiError is an error wrapping multiple validation errors
+// returned by ExportFileRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ExportFileRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportFileRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportFileRequestMultiError) AllErrors() []error { return m }
+
+// ExportFileRequestValidationError is the validation error returned by
+// ExportFileRequest.Validate if the designated constraints aren't met.
+type ExportFileRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportFileRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportFileRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportFileRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportFileRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportFileRequestValidationError) ErrorName() string {
+	return "ExportFileRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExportFileRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportFileRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportFileRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportFileRequestValidationError{}
+
+// Validate checks the field values on ExportFileReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ExportFileReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportFileReplyMultiError, or nil if none found.
+func (m *ExportFileReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportFileReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return ExportFileReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportFileReplyMultiError is an error wrapping multiple validation errors
+// returned by ExportFileReply.ValidateAll() if the designated constraints
+// aren't met.
+type ExportFileReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportFileReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportFileReplyMultiError) AllErrors() []error { return m }
+
+// ExportFileReplyValidationError is the validation error returned by
+// ExportFileReply.Validate if the designated constraints aren't met.
+type ExportFileReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportFileReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportFileReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportFileReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportFileReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportFileReplyValidationError) ErrorName() string { return "ExportFileReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ExportFileReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportFileReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportFileReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportFileReplyValidationError{}
 
 // Validate checks the field values on DeleteExportRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -878,6 +1446,8 @@ func (m *ListExportReply_Export) validate(all bool) error {
 
 	// no validation rules for UpdatedAt
 
+	// no validation rules for Url
+
 	if m.Sha != nil {
 		// no validation rules for Sha
 	}
@@ -969,3 +1539,361 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListExportReply_ExportValidationError{}
+
+// Validate checks the field values on ExportExcelRequest_Col with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExportExcelRequest_Col) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportExcelRequest_Col with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportExcelRequest_ColMultiError, or nil if none found.
+func (m *ExportExcelRequest_Col) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportExcelRequest_Col) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetType()) < 1 {
+		err := ExportExcelRequest_ColValidationError{
+			field:  "Type",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Value
+
+	if len(errors) > 0 {
+		return ExportExcelRequest_ColMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportExcelRequest_ColMultiError is an error wrapping multiple validation
+// errors returned by ExportExcelRequest_Col.ValidateAll() if the designated
+// constraints aren't met.
+type ExportExcelRequest_ColMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportExcelRequest_ColMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportExcelRequest_ColMultiError) AllErrors() []error { return m }
+
+// ExportExcelRequest_ColValidationError is the validation error returned by
+// ExportExcelRequest_Col.Validate if the designated constraints aren't met.
+type ExportExcelRequest_ColValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportExcelRequest_ColValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportExcelRequest_ColValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportExcelRequest_ColValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportExcelRequest_ColValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportExcelRequest_ColValidationError) ErrorName() string {
+	return "ExportExcelRequest_ColValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExportExcelRequest_ColValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportExcelRequest_Col.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportExcelRequest_ColValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportExcelRequest_ColValidationError{}
+
+// Validate checks the field values on ExportExcelRequest_Row with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExportExcelRequest_Row) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportExcelRequest_Row with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportExcelRequest_RowMultiError, or nil if none found.
+func (m *ExportExcelRequest_Row) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportExcelRequest_Row) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetCols() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ExportExcelRequest_RowValidationError{
+						field:  fmt.Sprintf("Cols[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ExportExcelRequest_RowValidationError{
+						field:  fmt.Sprintf("Cols[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ExportExcelRequest_RowValidationError{
+					field:  fmt.Sprintf("Cols[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ExportExcelRequest_RowMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportExcelRequest_RowMultiError is an error wrapping multiple validation
+// errors returned by ExportExcelRequest_Row.ValidateAll() if the designated
+// constraints aren't met.
+type ExportExcelRequest_RowMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportExcelRequest_RowMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportExcelRequest_RowMultiError) AllErrors() []error { return m }
+
+// ExportExcelRequest_RowValidationError is the validation error returned by
+// ExportExcelRequest_Row.Validate if the designated constraints aren't met.
+type ExportExcelRequest_RowValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportExcelRequest_RowValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportExcelRequest_RowValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportExcelRequest_RowValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportExcelRequest_RowValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportExcelRequest_RowValidationError) ErrorName() string {
+	return "ExportExcelRequest_RowValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExportExcelRequest_RowValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportExcelRequest_Row.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportExcelRequest_RowValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportExcelRequest_RowValidationError{}
+
+// Validate checks the field values on ExportFileRequest_ExportFile with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExportFileRequest_ExportFile) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportFileRequest_ExportFile with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportFileRequest_ExportFileMultiError, or nil if none found.
+func (m *ExportFileRequest_ExportFile) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportFileRequest_ExportFile) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Value
+
+	// no validation rules for Rename
+
+	if len(errors) > 0 {
+		return ExportFileRequest_ExportFileMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportFileRequest_ExportFileMultiError is an error wrapping multiple
+// validation errors returned by ExportFileRequest_ExportFile.ValidateAll() if
+// the designated constraints aren't met.
+type ExportFileRequest_ExportFileMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportFileRequest_ExportFileMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportFileRequest_ExportFileMultiError) AllErrors() []error { return m }
+
+// ExportFileRequest_ExportFileValidationError is the validation error returned
+// by ExportFileRequest_ExportFile.Validate if the designated constraints
+// aren't met.
+type ExportFileRequest_ExportFileValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportFileRequest_ExportFileValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportFileRequest_ExportFileValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportFileRequest_ExportFileValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportFileRequest_ExportFileValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportFileRequest_ExportFileValidationError) ErrorName() string {
+	return "ExportFileRequest_ExportFileValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExportFileRequest_ExportFileValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportFileRequest_ExportFile.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportFileRequest_ExportFileValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportFileRequest_ExportFileValidationError{}

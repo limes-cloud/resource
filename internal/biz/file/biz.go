@@ -41,6 +41,8 @@ func (u *UseCase) GetFile(ctx kratosx.Context, req *GetFileRequest) (*File, erro
 		res, err = u.repo.GetFile(ctx, *req.Id)
 	} else if req.Sha != nil {
 		res, err = u.repo.GetFileBySha(ctx, *req.Sha)
+	} else if req.Src != nil {
+		res, err = u.repo.GetFileBySha(ctx, *req.Src)
 	} else {
 		return nil, errors.ParamsError()
 	}
@@ -133,7 +135,7 @@ func (u *UseCase) PrepareUploadFile(ctx kratosx.Context, req *PrepareUploadFileR
 		Size:        req.Size,
 		Sha:         req.Sha,
 		Name:        req.Name,
-		Src:         fmt.Sprintf("%s.%s", req.Sha, tp),
+		Key:         fmt.Sprintf("%s.%s", req.Sha, tp),
 		Status:      STATUS_PROGRESS,
 		Type:        tp,
 		UploadId:    uuid.NewString(),
@@ -143,7 +145,7 @@ func (u *UseCase) PrepareUploadFile(ctx kratosx.Context, req *PrepareUploadFileR
 	// 判断是否需要切片
 	if chunkSize < req.Size {
 		file.ChunkCount = uint32(math.Ceil(float64(req.Size) / float64(chunkSize)))
-		chunkFactory, err := u.repo.GetStore().NewPutChunk(file.Src)
+		chunkFactory, err := u.repo.GetStore().NewPutChunk(file.Key)
 		if err != nil {
 			return nil, errors.UpdateError(err.Error())
 		}
@@ -179,14 +181,14 @@ func (u *UseCase) UploadFile(ctx kratosx.Context, req *UploadFileRequest) (*Uplo
 
 	// 直接上传
 	if file.ChunkCount == 1 {
-		if err = u.repo.GetStore().PutBytes(file.Src, req.Data); err != nil {
+		if err = u.repo.GetStore().PutBytes(file.Key, req.Data); err != nil {
 			return nil, err
 		}
 		if err = u.repo.UpdateFileStatus(ctx, file.Id, STATUS_COMPLETED); err != nil {
 			return nil, errors.UploadFileError(err.Error())
 		}
 	} else {
-		chunkFactory, err := u.repo.GetStore().NewPutChunkByUploadID(file.Src, req.UploadId)
+		chunkFactory, err := u.repo.GetStore().NewPutChunkByUploadID(file.Key, req.UploadId)
 		if err != nil {
 			return nil, errors.UpdateError(err.Error())
 		}

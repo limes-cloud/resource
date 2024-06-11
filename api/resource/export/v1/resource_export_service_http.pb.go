@@ -19,24 +19,51 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationExportCreateExport = "/resource.api.resource.export.v1.Export/CreateExport"
 const OperationExportDeleteExport = "/resource.api.resource.export.v1.Export/DeleteExport"
+const OperationExportExportExcel = "/resource.api.resource.export.v1.Export/ExportExcel"
+const OperationExportExportFile = "/resource.api.resource.export.v1.Export/ExportFile"
+const OperationExportGetExport = "/resource.api.resource.export.v1.Export/GetExport"
 const OperationExportListExport = "/resource.api.resource.export.v1.Export/ListExport"
 
 type ExportHTTPServer interface {
-	// CreateExport CreateExport 创建导出信息
-	CreateExport(context.Context, *CreateExportRequest) (*CreateExportReply, error)
 	// DeleteExport DeleteExport 删除导出信息
 	DeleteExport(context.Context, *DeleteExportRequest) (*DeleteExportReply, error)
+	// ExportExcel ExportExcel 创建导出表格信息
+	ExportExcel(context.Context, *ExportExcelRequest) (*ExportExcelReply, error)
+	// ExportFile ExportFile 创建导出信息
+	ExportFile(context.Context, *ExportFileRequest) (*ExportFileReply, error)
+	// GetExport GetExport 获取指定的导出信息
+	GetExport(context.Context, *GetExportRequest) (*GetExportReply, error)
 	// ListExport ListExport 获取导出信息列表
 	ListExport(context.Context, *ListExportRequest) (*ListExportReply, error)
 }
 
 func RegisterExportHTTPServer(s *http.Server, srv ExportHTTPServer) {
 	r := s.Route("/")
+	r.GET("/resource/api/v1/export", _Export_GetExport0_HTTP_Handler(srv))
 	r.GET("/resource/api/v1/exports", _Export_ListExport0_HTTP_Handler(srv))
-	r.POST("/resource/api/v1/export", _Export_CreateExport0_HTTP_Handler(srv))
+	r.POST("/resource/api/v1/export/file", _Export_ExportFile0_HTTP_Handler(srv))
+	r.POST("/resource/api/v1/export/excel", _Export_ExportExcel0_HTTP_Handler(srv))
 	r.DELETE("/resource/api/v1/export", _Export_DeleteExport0_HTTP_Handler(srv))
+}
+
+func _Export_GetExport0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetExportRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationExportGetExport)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.GetExport(ctx, req.(*GetExportRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetExportReply)
+		return ctx.Result(200, reply)
+	}
 }
 
 func _Export_ListExport0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Context) error {
@@ -58,24 +85,46 @@ func _Export_ListExport0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Contex
 	}
 }
 
-func _Export_CreateExport0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Context) error {
+func _Export_ExportFile0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in CreateExportRequest
+		var in ExportFileRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationExportCreateExport)
+		http.SetOperation(ctx, OperationExportExportFile)
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
-			return srv.CreateExport(ctx, req.(*CreateExportRequest))
+			return srv.ExportFile(ctx, req.(*ExportFileRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*CreateExportReply)
+		reply := out.(*ExportFileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Export_ExportExcel0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ExportExcelRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationExportExportExcel)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.ExportExcel(ctx, req.(*ExportExcelRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ExportExcelReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -100,8 +149,10 @@ func _Export_DeleteExport0_HTTP_Handler(srv ExportHTTPServer) func(ctx http.Cont
 }
 
 type ExportHTTPClient interface {
-	CreateExport(ctx context.Context, req *CreateExportRequest, opts ...http.CallOption) (rsp *CreateExportReply, err error)
 	DeleteExport(ctx context.Context, req *DeleteExportRequest, opts ...http.CallOption) (rsp *DeleteExportReply, err error)
+	ExportExcel(ctx context.Context, req *ExportExcelRequest, opts ...http.CallOption) (rsp *ExportExcelReply, err error)
+	ExportFile(ctx context.Context, req *ExportFileRequest, opts ...http.CallOption) (rsp *ExportFileReply, err error)
+	GetExport(ctx context.Context, req *GetExportRequest, opts ...http.CallOption) (rsp *GetExportReply, err error)
 	ListExport(ctx context.Context, req *ListExportRequest, opts ...http.CallOption) (rsp *ListExportReply, err error)
 }
 
@@ -113,11 +164,24 @@ func NewExportHTTPClient(client *http.Client) ExportHTTPClient {
 	return &ExportHTTPClientImpl{client}
 }
 
-func (c *ExportHTTPClientImpl) CreateExport(ctx context.Context, in *CreateExportRequest, opts ...http.CallOption) (*CreateExportReply, error) {
-	var out CreateExportReply
+func (c *ExportHTTPClientImpl) DeleteExport(ctx context.Context, in *DeleteExportRequest, opts ...http.CallOption) (*DeleteExportReply, error) {
+	var out DeleteExportReply
 	pattern := "/resource/api/v1/export"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationExportDeleteExport))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *ExportHTTPClientImpl) ExportExcel(ctx context.Context, in *ExportExcelRequest, opts ...http.CallOption) (*ExportExcelReply, error) {
+	var out ExportExcelReply
+	pattern := "/resource/api/v1/export/excel"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationExportCreateExport))
+	opts = append(opts, http.Operation(OperationExportExportExcel))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -126,13 +190,26 @@ func (c *ExportHTTPClientImpl) CreateExport(ctx context.Context, in *CreateExpor
 	return &out, err
 }
 
-func (c *ExportHTTPClientImpl) DeleteExport(ctx context.Context, in *DeleteExportRequest, opts ...http.CallOption) (*DeleteExportReply, error) {
-	var out DeleteExportReply
+func (c *ExportHTTPClientImpl) ExportFile(ctx context.Context, in *ExportFileRequest, opts ...http.CallOption) (*ExportFileReply, error) {
+	var out ExportFileReply
+	pattern := "/resource/api/v1/export/file"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationExportExportFile))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *ExportHTTPClientImpl) GetExport(ctx context.Context, in *GetExportRequest, opts ...http.CallOption) (*GetExportReply, error) {
+	var out GetExportReply
 	pattern := "/resource/api/v1/export"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationExportDeleteExport))
+	opts = append(opts, http.Operation(OperationExportGetExport))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

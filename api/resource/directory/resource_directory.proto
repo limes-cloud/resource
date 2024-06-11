@@ -45,7 +45,7 @@ message ListDirectoryReply {
 }
 
 message CreateDirectoryRequest {
-  uint32 parentId = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 parentId = 1[(validate.rules).uint32 = {gte: 0}];
   string name = 2[(validate.rules).string = {min_len: 1}];
   string accept = 3[(validate.rules).string = {min_len: 1}];
   uint32 maxSize = 4[(validate.rules).uint32 = {gte: 1}];
@@ -57,7 +57,7 @@ message CreateDirectoryReply {
 
 message UpdateDirectoryRequest {
   uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
-  uint32 parentId = 2[(validate.rules).uint32 = {gt: 0}];
+  uint32 parentId = 2[(validate.rules).uint32 = {gte: 0}];
   string name = 3[(validate.rules).string = {min_len: 1}];
   string accept = 4[(validate.rules).string = {min_len: 1}];
   uint32 maxSize = 5[(validate.rules).uint32 = {gte: 1}];

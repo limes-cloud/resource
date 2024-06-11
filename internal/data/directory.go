@@ -90,7 +90,10 @@ func (r directoryRepo) CreateDirectory(ctx kratosx.Context, req *biz.Directory) 
 		if err := ctx.DB().Create(m).Error; err != nil {
 			return err
 		}
-		return r.appendDirectoryChildren(ctx, req.ParentId, m.Id)
+		if m.ParentId != 0 {
+			return r.appendDirectoryChildren(ctx, req.ParentId, m.Id)
+		}
+		return nil
 	})
 }
 

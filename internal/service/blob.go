@@ -67,8 +67,6 @@ func (s *FileService) SrcBlob() thttp.HandlerFunc {
 		fs = s.LocalPath(fs, req.Src)
 		fs.ServeHTTP(blw, ctx.Request())
 
-		// http.Redirect(w, r, "https://taadis.com", http.StatusMovedPermanently)
-
 		// 处理图片裁剪
 		cType := blw.header.Get("Content-Type")
 		if strings.Contains(cType, "image/") && req.Width > 0 && req.Height > 0 {
