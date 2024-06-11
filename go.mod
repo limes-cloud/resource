@@ -8,7 +8,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.7.3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/limes-cloud/kratosx v1.0.39
+	github.com/limes-cloud/kratosx v1.0.42
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.49
 	go.uber.org/automaxprocs v1.5.3
@@ -147,5 +147,3 @@ require (
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.29.8 // indirect
 )
-
-replace github.com/limes-cloud/kratosx v1.0.39 => ../../framework/kratosx
