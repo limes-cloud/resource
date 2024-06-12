@@ -34,6 +34,9 @@ database:
       dbName: resource
       option: ?charset=utf8mb4&parseTime=True&loc=Local
     config:
+      initializer:
+        enable: true
+        path: deploy/data.sql
       transformError:
         enable: true
       maxLifetime: 2h #最大生存时间
