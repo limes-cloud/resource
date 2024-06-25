@@ -30,7 +30,11 @@ service File{
   rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
     option (google.api.http) = {
       post: "/resource/api/v1/file/prepare_upload",
-      body: "*"
+      body: "*",
+      additional_bindings:{
+        post: "/resource/client/v1/file/prepare_upload",
+        body: "*",
+      }
     };
   }
 

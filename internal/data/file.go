@@ -202,7 +202,11 @@ func (r fileRepo) CopyFile(ctx kratosx.Context, src *biz.File, directoryId uint3
 		ChunkCount:  src.ChunkCount,
 		Sha:         src.Sha,
 	}
-	return ctx.DB().Create(&file).Error
+
+	if err := ctx.DB().Create(&file).Error; err != nil {
+		ctx.Logger().Warnw("msg", "copy file error", "err", err)
+	}
+	return nil
 }
 
 func (r fileRepo) UpdateFileStatus(ctx kratosx.Context, id uint32, status string) error {

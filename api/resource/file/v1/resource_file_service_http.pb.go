@@ -42,7 +42,8 @@ func RegisterFileHTTPServer(s *http.Server, srv FileHTTPServer) {
 	r := s.Route("/")
 	r.GET("/resource/api/v1/file", _File_GetFile0_HTTP_Handler(srv))
 	r.GET("/resource/api/v1/files", _File_ListFile0_HTTP_Handler(srv))
-	r.POST("/resource/api/v1/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/client/v1/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/api/v1/file/prepare_upload", _File_PrepareUploadFile1_HTTP_Handler(srv))
 	r.PUT("/resource/api/v1/file", _File_UpdateFile0_HTTP_Handler(srv))
 	r.DELETE("/resource/api/v1/file", _File_DeleteFile0_HTTP_Handler(srv))
 }
@@ -86,6 +87,28 @@ func _File_ListFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) err
 }
 
 func _File_PrepareUploadFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in PrepareUploadFileRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationFilePrepareUploadFile)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.PrepareUploadFile(ctx, req.(*PrepareUploadFileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*PrepareUploadFileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _File_PrepareUploadFile1_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in PrepareUploadFileRequest
 		if err := ctx.Bind(&in); err != nil {
