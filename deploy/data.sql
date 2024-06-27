@@ -154,7 +154,7 @@ INSERT INTO `file` (`id`, `directory_id`, `name`, `type`, `size`, `sha`, `key`, 
 --
 -- 表的结构 `gorm_init`
 --
-
+DROP TABLE IF EXISTS `gorm_init`;
 CREATE TABLE `gorm_init` (
                              `id` int(10) UNSIGNED NOT NULL,
                              `init` tinyint(1) DEFAULT NULL
