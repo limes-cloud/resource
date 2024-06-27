@@ -1568,6 +1568,7 @@ github.com/limes-cloud/configure v1.0.35 h1:GS3VqDhSTWLH+A7CC2A+2260+8p8sAqhEGE/
 github.com/limes-cloud/configure v1.0.35/go.mod h1:Yf6rQdxJhbHbUeax4Ix4WrC1HlZNN06Cs5gDerjktCQ=
 github.com/limes-cloud/kratosx v1.0.44 h1:tQhWL6um+3P41y7XMHvJ8L8IJnH8DeXs5LzWre+cqAY=
 github.com/limes-cloud/kratosx v1.0.44/go.mod h1:b+EkbsoRm0w6261odWdPmTUyL5F5NMiA19OZpHQjaM4=
+github.com/limes-cloud/kratosx v1.0.45/go.mod h1:b+EkbsoRm0w6261odWdPmTUyL5F5NMiA19OZpHQjaM4=
 github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3/go.mod h1:3r6x7q95whyfWQpmGZTu3gk3v2YkMi05HEzl7Tf7YEo=
 github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0/go.mod h1:zJYVVT2jmtg6P3p1VtQj7WsuWi/y4VnjVBn7F8KPB3I=
 github.com/lufia/plan9stats v0.0.0-20240408141607-282e7b5d6b74 h1:1KuuSOy4ZNgW0KA2oYIngXVFhQcXxhLqCVK7cBcldkk=
