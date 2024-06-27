@@ -8,7 +8,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.7.3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/limes-cloud/configure v1.0.35
+	github.com/limes-cloud/configure v1.0.39
 	github.com/limes-cloud/kratosx v1.0.45
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.49
