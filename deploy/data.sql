@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 --
 -- 表的结构 `chunk`
 --
-
+DROP TABLE IF EXISTS `chunk`;
 CREATE TABLE `chunk` (
                          `id` bigint(20) NOT NULL COMMENT '分片id',
                          `upload_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '上传id',
@@ -34,7 +34,7 @@ CREATE TABLE `chunk` (
 --
 -- 表的结构 `directory`
 --
-
+DROP TABLE IF EXISTS `directory`;
 CREATE TABLE `directory` (
                              `id` bigint(20) UNSIGNED NOT NULL COMMENT '主键ID',
                              `parent_id` bigint(20) UNSIGNED NOT NULL COMMENT '父id',
@@ -65,7 +65,7 @@ INSERT INTO `directory` (`id`, `parent_id`, `name`, `accept`, `max_size`, `creat
 --
 -- 表的结构 `directory_closure`
 --
-
+DROP TABLE IF EXISTS `directory_closure`;
 CREATE TABLE `directory_closure` (
                                      `id` bigint(20) UNSIGNED NOT NULL COMMENT '主键ID',
                                      `parent` bigint(20) UNSIGNED NOT NULL COMMENT '目录id',
@@ -77,7 +77,7 @@ CREATE TABLE `directory_closure` (
 --
 -- 表的结构 `export`
 --
-
+DROP TABLE IF EXISTS `export`;
 CREATE TABLE `export` (
                           `id` bigint(20) NOT NULL COMMENT '主键ID',
                           `scene` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '场景',
@@ -106,7 +106,7 @@ INSERT INTO `export` (`id`, `scene`, `name`, `size`, `sha`, `src`, `reason`, `st
 --
 -- 表的结构 `file`
 --
-
+DROP TABLE IF EXISTS `file`;
 CREATE TABLE `file` (
                         `id` bigint(20) UNSIGNED NOT NULL COMMENT '主键ID',
                         `directory_id` bigint(20) UNSIGNED NOT NULL COMMENT '目录id',
