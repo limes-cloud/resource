@@ -46,6 +46,9 @@ func (u *UseCase) GetFile(ctx kratosx.Context, req *GetFileRequest) (*File, erro
 	} else {
 		return nil, errors.ParamsError()
 	}
+	if err != nil {
+		return nil, errors.GetError(err.Error())
+	}
 
 	if res.Status != STATUS_COMPLETED {
 		return nil, errors.NotExistFileError()
