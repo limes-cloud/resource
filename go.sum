@@ -1564,6 +1564,8 @@ github.com/lestrrat-go/option v1.0.0/go.mod h1:5ZHFbivi4xwXxhxY9XHDe2FHo6/Z7WWmt
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.10.6 h1:jbk+ZieJ0D7EVGJYpL9QTz7/YW6UHbmdnZWYyK5cdBs=
 github.com/lib/pq v1.10.6/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
+github.com/limes-cloud/configure v1.0.35 h1:GS3VqDhSTWLH+A7CC2A+2260+8p8sAqhEGE/3c0mQks=
+github.com/limes-cloud/configure v1.0.35/go.mod h1:Yf6rQdxJhbHbUeax4Ix4WrC1HlZNN06Cs5gDerjktCQ=
 github.com/limes-cloud/kratosx v1.0.44 h1:tQhWL6um+3P41y7XMHvJ8L8IJnH8DeXs5LzWre+cqAY=
 github.com/limes-cloud/kratosx v1.0.44/go.mod h1:b+EkbsoRm0w6261odWdPmTUyL5F5NMiA19OZpHQjaM4=
 github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3/go.mod h1:3r6x7q95whyfWQpmGZTu3gk3v2YkMi05HEzl7Tf7YEo=
