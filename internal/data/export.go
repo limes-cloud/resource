@@ -330,7 +330,7 @@ func (r exportRepo) clearExportFile() {
 
 	for _, item := range files {
 		var count int64
-		if err := ctx.DB().Where("sha=?", item.Sha).Count(&count).Error; err != nil {
+		if err := ctx.DB().Model(model.File{}).Where("sha=?", item.Sha).Count(&count).Error; err != nil {
 			ctx.Logger().Warnw("msg", "get expire export file count error", "err", err.Error())
 			return
 		}
