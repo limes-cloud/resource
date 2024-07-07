@@ -165,6 +165,39 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /resource/client/v1/file:
+        get:
+            tags:
+                - File
+            description: GetFile 获取指定的文件信息
+            operationId: File_GetFile
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: sha
+                  in: query
+                  schema:
+                    type: string
+                - name: src
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetFileReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /resource/client/v1/file/prepare_upload:
         post:
             tags:

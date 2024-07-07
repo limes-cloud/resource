@@ -16,6 +16,9 @@ service File{
   rpc GetFile (GetFileRequest) returns (GetFileReply) {
     option (google.api.http) = {
       get: "/resource/api/v1/file",
+      additional_bindings:{
+        get: "/resource/client/v1/file",
+      }
     };
   }
 
