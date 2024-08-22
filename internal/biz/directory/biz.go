@@ -36,16 +36,12 @@ func (u *UseCase) GetDirectory(ctx kratosx.Context, req *GetDirectoryRequest) (*
 }
 
 // ListDirectory 获取文件目录信息列表树
-func (u *UseCase) ListDirectory(ctx kratosx.Context, req *ListDirectoryRequest) ([]tree.Tree, uint32, error) {
+func (u *UseCase) ListDirectory(ctx kratosx.Context, req *ListDirectoryRequest) ([]*Directory, uint32, error) {
 	list, total, err := u.repo.ListDirectory(ctx, req)
 	if err != nil {
 		return nil, 0, errors.ListError(err.Error())
 	}
-	var ts []tree.Tree
-	for _, item := range list {
-		ts = append(ts, item)
-	}
-	return tree.BuildArrayTree(ts), total, nil
+	return tree.BuildArrayTree(list), total, nil
 }
 
 // CreateDirectory 创建文件目录信息

@@ -1,9 +1,5 @@
 package directory
 
-import (
-	"github.com/limes-cloud/kratosx/pkg/tree"
-)
-
 type Directory struct {
 	Id        uint32       `json:"id"`
 	ParentId  uint32       `json:"parentId"`
@@ -26,14 +22,13 @@ func (m *Directory) Parent() uint32 {
 }
 
 // AppendChildren 添加子节点
-func (m *Directory) AppendChildren(child any) {
-	menu := child.(*Directory)
-	m.Children = append(m.Children, menu)
+func (m *Directory) AppendChildren(child *Directory) {
+	m.Children = append(m.Children, child)
 }
 
 // ChildrenNode 获取子节点
-func (m *Directory) ChildrenNode() []tree.Tree {
-	var list []tree.Tree
+func (m *Directory) ChildrenNode() []*Directory {
+	var list []*Directory
 	for _, item := range m.Children {
 		list = append(list, item)
 	}
