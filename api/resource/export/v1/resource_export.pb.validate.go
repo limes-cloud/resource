@@ -188,6 +188,10 @@ func (m *GetExportReply) validate(all bool) error {
 
 	// no validation rules for Size
 
+	// no validation rules for Sha
+
+	// no validation rules for Src
+
 	// no validation rules for Status
 
 	// no validation rules for ExpiredAt
@@ -197,14 +201,6 @@ func (m *GetExportReply) validate(all bool) error {
 	// no validation rules for UpdatedAt
 
 	// no validation rules for Url
-
-	if m.Sha != nil {
-		// no validation rules for Sha
-	}
-
-	if m.Src != nil {
-		// no validation rules for Src
-	}
 
 	if m.Reason != nil {
 		// no validation rules for Reason
@@ -1438,6 +1434,10 @@ func (m *ListExportReply_Export) validate(all bool) error {
 
 	// no validation rules for Size
 
+	// no validation rules for Sha
+
+	// no validation rules for Src
+
 	// no validation rules for Status
 
 	// no validation rules for ExpiredAt
@@ -1447,14 +1447,6 @@ func (m *ListExportReply_Export) validate(all bool) error {
 	// no validation rules for UpdatedAt
 
 	// no validation rules for Url
-
-	if m.Sha != nil {
-		// no validation rules for Sha
-	}
-
-	if m.Src != nil {
-		// no validation rules for Src
-	}
 
 	if m.Reason != nil {
 		// no validation rules for Reason

@@ -21,8 +21,8 @@ message GetExportReply {
   string scene = 4;
   string name = 5;
   uint32 size = 6;
-  optional string sha = 7;
-  optional string src = 8;
+  string sha = 7;
+  string src = 8;
   string status = 9;
   optional string reason = 10;
   uint32 expiredAt = 11;
@@ -49,8 +49,8 @@ message ListExportReply {
     string scene = 4;
     string name = 5;
     uint32 size = 6;
-    optional string sha = 7;
-    optional string src = 8;
+    string sha = 7;
+    string src = 8;
     string status = 9;
     optional string reason = 10;
     uint32 expiredAt = 11;

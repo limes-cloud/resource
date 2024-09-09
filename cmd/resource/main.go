@@ -16,12 +16,12 @@ import (
 	"github.com/limes-cloud/kratosx/pkg/printx"
 	_ "go.uber.org/automaxprocs"
 
+	"github.com/limes-cloud/resource/internal/app"
 	"github.com/limes-cloud/resource/internal/conf"
-	"github.com/limes-cloud/resource/internal/service"
 )
 
 func main() {
-	app := kratosx.New(
+	server := kratosx.New(
 		kratosx.Config(client.NewFromEnv()),
 		kratosx.RegistrarServer(RegisterServer),
 		kratosx.Options(kratos.AfterStart(func(ctx context.Context) error {
@@ -30,7 +30,7 @@ func main() {
 			return nil
 		})),
 	)
-	if err := app.Run(); err != nil {
+	if err := server.Run(); err != nil {
 		log.Fatal("run service fail", err)
 	}
 }
@@ -48,5 +48,5 @@ func RegisterServer(c config.Config, hs *http.Server, gs *grpc.Server) {
 		_ = os.MkdirAll(cfg.Export.LocalDir+"/tmp", 0777)
 	}
 
-	service.New(cfg, hs, gs)
+	app.New(cfg, hs, gs)
 }

@@ -10,7 +10,7 @@ option java_outer_classname = "DirectoryV1";
 import "validate/validate.proto";
 
 message GetDirectoryRequest {
-  optional uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
+  uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
 }
 
 message GetDirectoryReply {

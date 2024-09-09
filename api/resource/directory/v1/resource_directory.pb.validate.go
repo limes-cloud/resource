@@ -57,19 +57,15 @@ func (m *GetDirectoryRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.Id != nil {
-
-		if m.GetId() <= 0 {
-			err := GetDirectoryRequestValidationError{
-				field:  "Id",
-				reason: "value must be greater than 0",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if m.GetId() <= 0 {
+		err := GetDirectoryRequestValidationError{
+			field:  "Id",
+			reason: "value must be greater than 0",
 		}
-
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {
