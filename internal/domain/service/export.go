@@ -12,9 +12,6 @@ import (
 	"time"
 
 	thttp "github.com/go-kratos/kratos/v2/transport/http"
-	pb "github.com/limes-cloud/resource/api/resource/file/v1"
-	"github.com/limes-cloud/resource/internal/pkg"
-
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
@@ -25,9 +22,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/limes-cloud/resource/api/resource/errors"
+	pb "github.com/limes-cloud/resource/api/resource/file/v1"
 	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
+	"github.com/limes-cloud/resource/internal/pkg"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -73,6 +72,7 @@ func NewExport(
 func (u *Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error) {
 	list, total, err := u.repo.ListExport(ctx, req)
 	if err != nil {
+		ctx.Logger().Warnw("msg", "list directory error", "err", err.Error())
 		return nil, 0, errors.ListError(err.Error())
 	}
 	for ind, item := range list {
@@ -121,6 +121,7 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 		Status:       STATUS_PROGRESS,
 	})
 	if err != nil {
+		ctx.Logger().Warnw("msg", "create export error", "err", err.Error())
 		return nil, errors.DatabaseError(err.Error())
 	}
 

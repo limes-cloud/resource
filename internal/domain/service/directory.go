@@ -30,6 +30,7 @@ func NewDirectory(
 func (u *Directory) GetDirectory(ctx kratosx.Context, id uint32) (*entity.Directory, error) {
 	res, err := u.repo.GetDirectory(ctx, id)
 	if err != nil {
+		ctx.Logger().Warnw("msg", "get directory error", "err", err.Error())
 		return nil, errors.GetError(err.Error())
 	}
 	return res, nil
@@ -39,6 +40,7 @@ func (u *Directory) GetDirectory(ctx kratosx.Context, id uint32) (*entity.Direct
 func (u *Directory) ListDirectory(ctx kratosx.Context, req *types.ListDirectoryRequest) ([]*entity.Directory, uint32, error) {
 	list, total, err := u.repo.ListDirectory(ctx, req)
 	if err != nil {
+		ctx.Logger().Warnw("msg", "list directory error", "err", err.Error())
 		return nil, 0, errors.ListError(err.Error())
 	}
 	return tree.BuildArrayTree(list), total, nil
@@ -48,6 +50,7 @@ func (u *Directory) ListDirectory(ctx kratosx.Context, req *types.ListDirectoryR
 func (u *Directory) CreateDirectory(ctx kratosx.Context, req *entity.Directory) (uint32, error) {
 	id, err := u.repo.CreateDirectory(ctx, req)
 	if err != nil {
+		ctx.Logger().Warnw("msg", "create directory error", "err", err.Error())
 		return 0, errors.CreateError(err.Error())
 	}
 	return id, nil
@@ -56,6 +59,7 @@ func (u *Directory) CreateDirectory(ctx kratosx.Context, req *entity.Directory) 
 // UpdateDirectory 更新文件目录信息
 func (u *Directory) UpdateDirectory(ctx kratosx.Context, req *entity.Directory) error {
 	if err := u.repo.UpdateDirectory(ctx, req); err != nil {
+		ctx.Logger().Warnw("msg", "update directory error", "err", err.Error())
 		return errors.UpdateError(err.Error())
 	}
 	return nil
@@ -65,6 +69,7 @@ func (u *Directory) UpdateDirectory(ctx kratosx.Context, req *entity.Directory) 
 func (u *Directory) DeleteDirectory(ctx kratosx.Context, ids []uint32) (uint32, error) {
 	total, err := u.repo.DeleteDirectory(ctx, ids)
 	if err != nil {
+		ctx.Logger().Warnw("msg", "delete directory error", "err", err.Error())
 		return 0, errors.DeleteError(err.Error())
 	}
 	return total, nil
