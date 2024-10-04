@@ -112,7 +112,6 @@ func (r File) CreateFile(ctx kratosx.Context, file *entity.File) (uint32, error)
 
 // UpdateFile 更新数据
 func (r File) UpdateFile(ctx kratosx.Context, file *entity.File) error {
-	file.Src = fmt.Sprintf("%d/%s", file.DirectoryId, file.Key)
 	return ctx.DB().Where("id = ?", file.Id).Updates(file).Error
 }
 
