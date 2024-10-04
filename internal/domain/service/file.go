@@ -11,11 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/limes-cloud/resource/internal/pkg/image"
-
 	thttp "github.com/go-kratos/kratos/v2/transport/http"
-	pb "github.com/limes-cloud/resource/api/resource/file/v1"
-
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
@@ -25,10 +21,12 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/limes-cloud/resource/api/resource/errors"
+	pb "github.com/limes-cloud/resource/api/resource/file/v1"
 	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
 	"github.com/limes-cloud/resource/internal/pkg"
+	"github.com/limes-cloud/resource/internal/pkg/image"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -150,6 +148,26 @@ func (u *File) PrepareUploadFile(ctx kratosx.Context, req *types.PrepareUploadFi
 		if err != nil {
 			ctx.Logger().Warnf("get upload chunks error:%s", err.Error())
 		}
+		// 判断是否完成，完成则合并
+		if len(chunkFactory.UploadedChunkIndex()) == int(oldFile.ChunkCount) {
+			if err := chunkFactory.Complete(); err != nil {
+				return nil, errors.SystemError(err.Error())
+			}
+			if err := u.repo.UpdateFile(ctx, &entity.File{
+				BaseModel: ktypes.BaseModel{Id: oldFile.Id},
+				Status:    STATUS_COMPLETED,
+			}); err != nil {
+				return nil, errors.SystemError(err.Error())
+			}
+			url, _ := u.store.GenTemporaryURL(oldFile.Key)
+			return &types.PrepareUploadFileReply{
+				Uploaded: true,
+				Src:      proto.String(oldFile.Src),
+				Sha:      proto.String(oldFile.Sha),
+				Url:      proto.String(url),
+			}, nil
+		}
+
 		return &types.PrepareUploadFileReply{
 			Uploaded:     false,
 			UploadId:     proto.String(oldFile.UploadId),
