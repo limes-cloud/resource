@@ -16,8 +16,8 @@ import (
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
 	"github.com/limes-cloud/kratosx/pkg/filex"
-	"github.com/limes-cloud/kratosx/pkg/xlsx"
 	ktypes "github.com/limes-cloud/kratosx/types"
+	"github.com/xuri/excelize/v2"
 	"google.golang.org/protobuf/proto"
 	"gorm.io/gorm"
 
@@ -91,8 +91,9 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 	sha := crypto.MD5(b)
 	export, err := u.repo.GetExportBySha(ctx, sha)
 	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
+		return nil, errors.SystemError(err.Error())
 	}
+
 	if err == nil {
 		if export.Status == STATUS_PROGRESS && export.UserId == req.UserId {
 			return nil, errors.ExportTaskProcessError()
@@ -110,14 +111,13 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 		return &types.ExportExcelReply{Id: id, Sha: sha}, nil
 	}
 
-	src := fmt.Sprintf("%s.xlsx", sha)
 	id, err := u.repo.CreateExport(ctx, &entity.Export{
 		UserId:       req.UserId,
 		DepartmentId: req.DepartmentId,
 		Scene:        req.Scene,
 		Name:         req.Name,
 		Sha:          sha,
-		Src:          src,
+		Src:          fmt.Sprintf("%s.zip", sha),
 		Status:       STATUS_PROGRESS,
 	})
 	if err != nil {
@@ -127,7 +127,7 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 
 	go func() {
 		kCtx := ctx.Clone()
-		size, err := u.exportExcel(kCtx, src, req.Rows)
+		size, err := u.exportExcel(kCtx, sha, req)
 		exp := &entity.Export{
 			BaseModel: ktypes.BaseModel{Id: id},
 			Status:    STATUS_COMPLETED,
@@ -144,7 +144,7 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 		}
 	}()
 
-	return &types.ExportExcelReply{Id: id, Sha: sha, Src: src}, nil
+	return &types.ExportExcelReply{Id: id, Sha: sha, Src: fmt.Sprintf("%s.zip", sha)}, nil
 }
 
 func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, error) {
@@ -179,34 +179,74 @@ func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, er
 	return file, nil
 }
 
-func (u *Export) exportExcel(ctx kratosx.Context, src string, rows [][]*types.ExportExcelCol) (uint32, error) {
-	path := u.conf.Export.LocalDir + "/" + src
-	xlsxFile := xlsx.New(path).Writer()
-	for _, cols := range rows {
-		var temp []any
-		for _, item := range cols {
-			switch item.Type {
-			case "image":
-				if item.Value == "" {
-					continue
-				}
-				file, err := u.getFileByValue(ctx, item.Value)
-				if err != nil {
-					ctx.Logger().Errorw("msg", "get file error", "err", err.Error())
-					continue
-				}
-				temp = append(temp, file)
-			default:
-				temp = append(temp, item.Value)
-			}
-		}
-		if err := xlsxFile.WriteRow(temp); err != nil {
-			ctx.Logger().Errorw("msg", "write xlsx row error", "err", err.Error())
-		}
-	}
-	if err := xlsxFile.Save(); err != nil {
+func (u *Export) exportExcel(ctx kratosx.Context, sha string, req *types.ExportExcelRequest) (uint32, error) {
+	// 存储地址
+	path := u.conf.Export.LocalDir + "/" + fmt.Sprintf("%s.zip", sha)
+
+	// 表格保存地址
+	excelPath := u.conf.Export.LocalDir + "/" + fmt.Sprintf("%s.xlsx", sha)
+	defer func() {
+		// 移除生成的excel文件
+		_ = os.Remove(excelPath)
+	}()
+
+	// 创建excel文件
+	file := excelize.NewFile()
+	writer, err := file.NewStreamWriter("sheet1")
+	if err != nil {
 		return 0, err
 	}
+
+	// headers 转 row
+	transHeader := func(rows []string) []any {
+		var res []any
+		for _, item := range rows {
+			res = append(res, item)
+		}
+		return res
+	}
+
+	// 写入标题
+	if err := writer.SetRow("A1", transHeader(req.Headers)); err != nil {
+		return 0, err
+	}
+
+	// 写入行数据
+	for ind, item := range req.Rows {
+		var rows []any
+		for _, col := range item {
+			rows = append(rows, col.Value)
+		}
+		if err := writer.SetRow(fmt.Sprintf("A%d", ind+2), rows); err != nil {
+			return 0, err
+		}
+	}
+
+	// 保存数据
+	if err := writer.Flush(); err != nil {
+		return 0, err
+	}
+
+	// 存储到磁盘
+	if err := file.SaveAs(excelPath); err != nil {
+		return 0, err
+	}
+
+	// 打包文件
+	exports, err := u.fetchFile(ctx, req.Files)
+	if err != nil {
+		return 0, err
+	}
+
+	// 挂载xlsx
+	exports[excelPath] = req.Name + ".xlsx"
+
+	// 打包文件
+	if err := filex.ZipFiles(path, exports); err != nil {
+		return 0, err
+	}
+
+	// 获取文件大小
 	stat, err := os.Stat(path)
 	if err != nil {
 		return 0, err
@@ -214,7 +254,8 @@ func (u *Export) exportExcel(ctx kratosx.Context, src string, rows [][]*types.Ex
 	return uint32(stat.Size() / 1000), nil
 }
 
-func (u *Export) exportFile(ctx kratosx.Context, src string, list []*types.ExportFileItem) (uint32, error) {
+// fetchFile 拉取文件, 返回文件路径和文件名
+func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (map[string]string, error) {
 	getKeyFunc := func(ctx kratosx.Context, value string) (string, error) {
 		var key = value
 		if strings.Contains(value, "/") {
@@ -268,6 +309,15 @@ func (u *Export) exportFile(ctx kratosx.Context, src string, list []*types.Expor
 		}
 
 		oriExports[path] = rename
+	}
+
+	return oriExports, nil
+}
+
+func (u *Export) exportFile(ctx kratosx.Context, src string, list []*types.ExportFileItem) (uint32, error) {
+	oriExports, err := u.fetchFile(ctx, list)
+	if err != nil {
+		return 0, err
 	}
 
 	src = u.conf.Export.LocalDir + "/" + src

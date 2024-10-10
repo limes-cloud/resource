@@ -72,11 +72,17 @@ message ExportExcelRequest{
   message Row{
     repeated Col cols = 1;
   }
+  message ExportFile{
+    string value = 1;
+    string rename = 2;
+  }
   uint32 userId = 1[(validate.rules).uint32 = {gt: 0}];
   uint32 departmentId = 2[(validate.rules).uint32 = {gt: 0}];
   string scene = 3[(validate.rules).string = {min_len: 1}];
   string name = 4[(validate.rules).string = {min_len:1}];
-  repeated Row rows = 5[(validate.rules).repeated = {min_items:1}];
+  repeated string headers = 5[(validate.rules).repeated = {min_items:1}];
+  repeated Row rows = 6[(validate.rules).repeated = {min_items:1}];
+  repeated ExportFile files = 7;
 }
 
 message ExportExcelReply{

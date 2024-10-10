@@ -12,6 +12,7 @@ require (
 	github.com/limes-cloud/kratosx v1.0.56
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.49
+	github.com/xuri/excelize/v2 v2.8.1
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/image v0.15.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240429193739-8cf5692501f6
@@ -115,7 +116,6 @@ require (
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
 	github.com/tklauser/numcpus v0.8.0 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
-	github.com/xuri/excelize/v2 v2.8.1 // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/otel v1.26.0 // indirect

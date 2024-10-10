@@ -98,15 +98,13 @@ func (s *Export) ExportFile(c context.Context, req *pb.ExportFileRequest) (*pb.E
 
 // ExportExcel 创建导出excel文件
 func (s *Export) ExportExcel(c context.Context, req *pb.ExportExcelRequest) (*pb.ExportExcelReply, error) {
-	var (
-		in = types.ExportExcelRequest{
-			Name:         req.Name,
-			UserId:       req.UserId,
-			DepartmentId: req.DepartmentId,
-			Scene:        req.Scene,
-		}
-		ctx = kratosx.MustContext(c)
-	)
+	var in = types.ExportExcelRequest{
+		Name:         req.Name,
+		UserId:       req.UserId,
+		DepartmentId: req.DepartmentId,
+		Scene:        req.Scene,
+		Headers:      req.Headers,
+	}
 
 	for _, row := range req.Rows {
 		var temp []*types.ExportExcelCol
@@ -119,7 +117,16 @@ func (s *Export) ExportExcel(c context.Context, req *pb.ExportExcelRequest) (*pb
 		in.Rows = append(in.Rows, temp)
 	}
 
-	res, err := s.srv.ExportExcel(ctx, &in)
+	var files []*types.ExportFileItem
+	for _, item := range req.Files {
+		files = append(files, &types.ExportFileItem{
+			Value:  item.Value,
+			Rename: item.Rename,
+		})
+	}
+	in.Files = files
+
+	res, err := s.srv.ExportExcel(kratosx.MustContext(c), &in)
 	if err != nil {
 		return nil, err
 	}

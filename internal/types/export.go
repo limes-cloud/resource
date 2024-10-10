@@ -25,6 +25,8 @@ type ExportExcelRequest struct {
 	DepartmentId uint32              `json:"department_id"`
 	Scene        string              `json:"scene"`
 	Name         string              `json:"name"`
+	Files        []*ExportFileItem   `json:"files"`
+	Headers      []string            `json:"headers"`
 	Rows         [][]*ExportExcelCol `json:"rows"`
 }
 
@@ -42,7 +44,7 @@ type CopyExportRequest struct {
 }
 
 type ExportFileItem struct {
-	Value  string `json:"sha"`
+	Value  string `json:"value"`
 	Rename string `json:"rename"`
 }
 
