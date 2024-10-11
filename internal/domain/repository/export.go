@@ -14,9 +14,6 @@ type Export interface {
 	// ListExport 获取导出信息列表
 	ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error)
 
-	// ListExpiredExport 获取已经超时了的导出信息列表
-	ListExpiredExport(ctx kratosx.Context) ([]*entity.Export, error)
-
 	// DeleteExport 删除导出信息
 	DeleteExport(ctx kratosx.Context, ids []uint32) (uint32, error)
 
@@ -32,6 +29,6 @@ type Export interface {
 	// GetExportBySha 获取指定的导出信息
 	GetExportBySha(ctx kratosx.Context, sha string) (*entity.Export, error)
 
-	// IsAllowRemove 是否允许删除
-	IsAllowRemove(ctx kratosx.Context, sha string) bool
+	// GetExportFileCount 获取导出文件数量
+	GetExportFileCount(ctx kratosx.Context, req *types.GetExportFileCountRequest) (int64, error)
 }

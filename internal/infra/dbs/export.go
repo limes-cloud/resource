@@ -77,6 +77,15 @@ func (r Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([
 			db = db.Where("department_ids in ?", req.DepartmentIds)
 		}
 	}
+	if req.Name != nil {
+		db = db.Where("name like ?", *req.Name+"%")
+	}
+	if req.Status != nil {
+		db = db.Where("status = ?", *req.Status)
+	}
+	if req.ExpiredAt != nil {
+		db = db.Where("expired_at <= ?", *req.ExpiredAt)
+	}
 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -140,15 +149,10 @@ func (r Export) GetExportFileKeyById(ctx kratosx.Context, id uint32) (string, er
 	return key, nil
 }
 
-func (r Export) ListExpiredExport(ctx kratosx.Context) ([]*entity.Export, error) {
-	var list []*entity.Export
-	return list, ctx.DB().Where("expired_at <= ?", time.Now().Unix()).Find(&list).Error
-}
-
-func (r Export) IsAllowRemove(ctx kratosx.Context, sha string) bool {
+func (r Export) GetExportFileCount(ctx kratosx.Context, req *types.GetExportFileCountRequest) (int64, error) {
 	var count int64
-	if err := ctx.DB().Model(entity.Export{}).Where("sha=?", sha).Count(&count).Error; err != nil {
-		return false
-	}
-	return count <= 1
+	return count, ctx.DB().Model(entity.Export{}).
+		Where("sha=?", req.Sha).
+		Where("status=?", req.Status).
+		Count(&count).Error
 }

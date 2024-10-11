@@ -5,9 +5,17 @@ type ListExportRequest struct {
 	PageSize      uint32   `json:"pageSize"`
 	Order         *string  `json:"order"`
 	OrderBy       *string  `json:"orderBy"`
+	Name          *string  `json:"name"`
+	Status        *string  `json:"status"`
+	ExpiredAt     *int64   `json:"expired_at"`
 	All           bool     `json:"all"`
 	UserIds       []uint32 `json:"userIds"`
 	DepartmentIds []uint32 `json:"departmentIds"`
+}
+
+type GetExportFileCountRequest struct {
+	Sha    string `json:"sha"`
+	Status string `json:"status"`
 }
 
 type GetExportRequest struct {

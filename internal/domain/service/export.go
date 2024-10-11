@@ -360,27 +360,52 @@ func (u *Export) clearExportFile(ctx kratosx.Context) {
 		return
 	}
 
-	// 获取已经超时的文件
-	files, err := u.repo.ListExpiredExport(ctx)
-	if err != nil {
-		ctx.Logger().Warnw("msg", "get expire export file error", "err", err.Error())
-		return
-	}
+	var (
+		page     uint32 = 1
+		pageSize uint32 = 100
+	)
 
-	for _, item := range files {
-		if err := u.repo.UpdateExport(ctx, &entity.Export{
-			BaseModel: ktypes.BaseModel{Id: item.Id},
-			Status:    EXPORT_STATUS_EXPIRED,
-		}); err != nil {
-			ctx.Logger().Warnw("msg", "update expire export file status error", "err", err.Error())
+	for {
+		// 获取已经超时的文件
+		files, _, err := u.repo.ListExport(ctx, &types.ListExportRequest{
+			Page:      page,
+			PageSize:  pageSize,
+			Status:    proto.String(EXPORT_STATUS_COMPLETED),
+			ExpiredAt: proto.Int64(time.Now().Unix()),
+		})
+		if err != nil {
+			ctx.Logger().Warnw("msg", "get expire export file error", "err", err.Error())
 			return
 		}
 
-		if u.repo.IsAllowRemove(ctx, item.Sha) {
-			if err = os.RemoveAll(dir + "/" + item.Sha); err != nil {
-				ctx.Logger().Warnw("msg", "remove export file status error", "err", err.Error())
+		for _, item := range files {
+			if err := u.repo.UpdateExport(ctx, &entity.Export{
+				BaseModel: ktypes.BaseModel{Id: item.Id},
+				Status:    EXPORT_STATUS_EXPIRED,
+			}); err != nil {
+				ctx.Logger().Warnw("msg", "update expire export file status error", "err", err.Error())
+				return
+			}
+
+			count, err := u.repo.GetExportFileCount(ctx, &types.GetExportFileCountRequest{
+				Sha:    item.Sha,
+				Status: EXPORT_STATUS_COMPLETED,
+			})
+			if err != nil {
+				ctx.Logger().Warnw("msg", "get export file count error", "err", err.Error())
+			}
+			if count == 0 {
+				if err = os.RemoveAll(dir + "/" + item.Src); err != nil {
+					ctx.Logger().Warnw("msg", "remove export file status error", "err", err.Error())
+				}
 			}
 		}
+
+		// 判断是否还有数据
+		if uint32(len(files)) < pageSize {
+			break
+		}
+		page++
 	}
 }
 
