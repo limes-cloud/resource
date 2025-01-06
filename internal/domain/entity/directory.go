@@ -43,8 +43,6 @@ func (m *Directory) AppendChildren(child *Directory) {
 // ChildrenNode 获取子节点
 func (m *Directory) ChildrenNode() []*Directory {
 	var list []*Directory
-	for _, item := range m.Children {
-		list = append(list, item)
-	}
+	list = append(list, m.Children...)
 	return list
 }

@@ -115,7 +115,7 @@ func (s *Local) Put(key string, r io.Reader) error {
 	}
 	defer saveFile.Close()
 	_, err = io.Copy(saveFile, r)
-	return nil
+	return err
 }
 
 func (s *Local) PutFromLocal(key string, LocalPath string) error {

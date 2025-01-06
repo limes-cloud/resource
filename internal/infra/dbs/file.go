@@ -9,13 +9,11 @@ import (
 	"github.com/limes-cloud/kratosx"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
 type File struct {
-	conf *conf.Config
 }
 
 var (

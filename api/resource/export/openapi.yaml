@@ -3,8 +3,374 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: Export API
     version: 0.0.1
-paths: {}
+paths:
+    /resource/api/v1/export:
+        get:
+            tags:
+                - Export
+            description: GetExport 获取指定的导出信息
+            operationId: Export_GetExport
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: sha
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetExportReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Export
+            description: DeleteExport 删除导出信息
+            operationId: Export_DeleteExport
+            parameters:
+                - name: ids
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteExportReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /resource/api/v1/export/excel:
+        post:
+            tags:
+                - Export
+            description: ExportExcel 创建导出表格信息
+            operationId: Export_ExportExcel
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExportExcelRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExportExcelReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /resource/api/v1/export/file:
+        post:
+            tags:
+                - Export
+            description: ExportFile 创建导出信息
+            operationId: Export_ExportFile
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExportFileRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExportFileReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /resource/api/v1/exports:
+        get:
+            tags:
+                - Export
+            description: ListExport 获取导出信息列表
+            operationId: Export_ListExport
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: order
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: all
+                  in: query
+                  schema:
+                    type: boolean
+                - name: userIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: departmentIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListExportReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
-    schemas: {}
+    schemas:
+        DeleteExportReply:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: uint32
+        ExportExcelReply:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+        ExportExcelRequest:
+            type: object
+            properties:
+                userId:
+                    type: integer
+                    format: uint32
+                departmentId:
+                    type: integer
+                    format: uint32
+                scene:
+                    type: string
+                name:
+                    type: string
+                headers:
+                    type: array
+                    items:
+                        type: string
+                rows:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ExportExcelRequest_Row'
+                files:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ExportExcelRequest_ExportFile'
+        ExportExcelRequest_Col:
+            type: object
+            properties:
+                type:
+                    type: string
+                value:
+                    type: string
+        ExportExcelRequest_ExportFile:
+            type: object
+            properties:
+                value:
+                    type: string
+                rename:
+                    type: string
+        ExportExcelRequest_Row:
+            type: object
+            properties:
+                cols:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ExportExcelRequest_Col'
+        ExportFileReply:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+        ExportFileRequest:
+            type: object
+            properties:
+                userId:
+                    type: integer
+                    format: uint32
+                departmentId:
+                    type: integer
+                    format: uint32
+                scene:
+                    type: string
+                name:
+                    type: string
+                files:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ExportFileRequest_ExportFile'
+                ids:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+        ExportFileRequest_ExportFile:
+            type: object
+            properties:
+                value:
+                    type: string
+                rename:
+                    type: string
+        GetExportReply:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                userId:
+                    type: integer
+                    format: uint32
+                departmentId:
+                    type: integer
+                    format: uint32
+                scene:
+                    type: string
+                name:
+                    type: string
+                size:
+                    type: integer
+                    format: uint32
+                sha:
+                    type: string
+                src:
+                    type: string
+                status:
+                    type: string
+                reason:
+                    type: string
+                expiredAt:
+                    type: integer
+                    format: uint32
+                createdAt:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: integer
+                    format: uint32
+                url:
+                    type: string
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListExportReply:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: uint32
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ListExportReply_Export'
+        ListExportReply_Export:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                userId:
+                    type: integer
+                    format: uint32
+                departmentId:
+                    type: integer
+                    format: uint32
+                scene:
+                    type: string
+                name:
+                    type: string
+                size:
+                    type: integer
+                    format: uint32
+                sha:
+                    type: string
+                src:
+                    type: string
+                status:
+                    type: string
+                reason:
+                    type: string
+                expiredAt:
+                    type: integer
+                    format: uint32
+                createdAt:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: integer
+                    format: uint32
+                url:
+                    type: string
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: Export

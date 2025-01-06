@@ -31,8 +31,9 @@ import (
 )
 
 const (
-	EXPORT_STATUS_FAIL      = "FAIL"
-	EXPORT_STATUS_PROGRESS  = "PROGRESS"
+	EXPORT_STATUS_FAIL = "FAIL"
+
+	// EXPORT_STATUS_PROGRESS  = "PROGRESS"
 	EXPORT_STATUS_COMPLETED = "COMPLETED"
 	EXPORT_STATUS_EXPIRED   = "EXPIRED"
 )
@@ -147,6 +148,7 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 	return &types.ExportExcelReply{Id: id, Sha: sha, Src: fmt.Sprintf("%s.zip", sha)}, nil
 }
 
+// nolint
 func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, error) {
 	key := value
 	if strings.Contains(value, "/") {
@@ -526,6 +528,10 @@ func (s *Export) LocalPath(next http.Handler, src string) http.Handler {
 
 func (s *Export) Download() thttp.HandlerFunc {
 	return func(ctx thttp.Context) error {
+		go func() {
+			<-ctx.Done()
+			fmt.Println("download file", time.Now().UnixNano())
+		}()
 		var req pb.DownloadFileRequest
 		if err := ctx.BindQuery(&req); err != nil {
 			return err
@@ -550,7 +556,6 @@ func (s *Export) Download() thttp.HandlerFunc {
 		}
 		header.Set("Content-Type", "application/octet-stream")
 		header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
-
 		ctx.Response().WriteHeader(blw.Code())
 		if _, err := ctx.Response().Write(blw.Body()); err != nil {
 			return errors.SystemError()
