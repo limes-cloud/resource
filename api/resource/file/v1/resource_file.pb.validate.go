@@ -797,6 +797,223 @@ var _ interface {
 	ErrorName() string
 } = GetFileReplyValidationError{}
 
+// Validate checks the field values on GetFileBytesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetFileBytesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetFileBytesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetFileBytesRequestMultiError, or nil if none found.
+func (m *GetFileBytesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetFileBytesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetSha()) < 1 {
+		err := GetFileBytesRequestValidationError{
+			field:  "Sha",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetFileBytesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetFileBytesRequestMultiError is an error wrapping multiple validation
+// errors returned by GetFileBytesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetFileBytesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetFileBytesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetFileBytesRequestMultiError) AllErrors() []error { return m }
+
+// GetFileBytesRequestValidationError is the validation error returned by
+// GetFileBytesRequest.Validate if the designated constraints aren't met.
+type GetFileBytesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetFileBytesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetFileBytesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetFileBytesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetFileBytesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetFileBytesRequestValidationError) ErrorName() string {
+	return "GetFileBytesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetFileBytesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetFileBytesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetFileBytesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetFileBytesRequestValidationError{}
+
+// Validate checks the field values on GetFileBytesReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetFileBytesReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetFileBytesReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetFileBytesReplyMultiError, or nil if none found.
+func (m *GetFileBytesReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetFileBytesReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return GetFileBytesReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetFileBytesReplyMultiError is an error wrapping multiple validation errors
+// returned by GetFileBytesReply.ValidateAll() if the designated constraints
+// aren't met.
+type GetFileBytesReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetFileBytesReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetFileBytesReplyMultiError) AllErrors() []error { return m }
+
+// GetFileBytesReplyValidationError is the validation error returned by
+// GetFileBytesReply.Validate if the designated constraints aren't met.
+type GetFileBytesReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetFileBytesReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetFileBytesReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetFileBytesReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetFileBytesReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetFileBytesReplyValidationError) ErrorName() string {
+	return "GetFileBytesReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetFileBytesReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetFileBytesReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetFileBytesReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetFileBytesReplyValidationError{}
+
 // Validate checks the field values on ListFileRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.

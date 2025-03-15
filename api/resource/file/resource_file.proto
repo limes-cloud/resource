@@ -59,6 +59,14 @@ message GetFileReply {
   uint32 updatedAt = 13;
 }
 
+message GetFileBytesRequest {
+  string sha = 2[(validate.rules).string = {min_len: 1}];
+}
+
+message GetFileBytesReply{
+  bytes data = 1;
+}
+
 message ListFileRequest {
   uint32 page = 1[(validate.rules).uint32 = {gt: 0}];
   uint32 pageSize = 2[(validate.rules).uint32 = {gt: 0,lte:50}];
@@ -67,6 +75,7 @@ message ListFileRequest {
   optional uint32 directoryId = 5;
   optional string status = 6[(validate.rules).string = {in: [ "PROGRESS","COMPLETED"]}];
   optional string name = 7;
+  repeated string shaList = 8;
 }
 
 message ListFileReply {

@@ -82,6 +82,9 @@ func (r File) ListFile(ctx kratosx.Context, req *types.ListFileRequest) ([]*enti
 	if req.Name != nil && *req.Name != "" {
 		db = db.Where("name like ", *req.Name+"%")
 	}
+	if len(req.ShaList) != 0 {
+		db = db.Where("sha in ?", req.ShaList)
+	}
 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err

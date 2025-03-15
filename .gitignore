@@ -38,3 +38,4 @@ bin/
 *.swp
 web_ts/
 autocode/
+.env

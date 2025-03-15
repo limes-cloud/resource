@@ -1,5 +1,13 @@
 package types
 
+type GetFileBytesRequest struct {
+	Id  *uint32 `json:"id"`
+	Sha *string `json:"sha"`
+	Src *string `json:"src"`
+}
+
+type GetFileBytesFunc func([]byte) error
+
 type GetFileRequest struct {
 	Id  *uint32 `json:"id"`
 	Sha *string `json:"sha"`
@@ -7,13 +15,14 @@ type GetFileRequest struct {
 }
 
 type ListFileRequest struct {
-	Page        uint32  `json:"page"`
-	PageSize    uint32  `json:"pageSize"`
-	Order       *string `json:"order"`
-	OrderBy     *string `json:"orderBy"`
-	DirectoryId *uint32 `json:"directoryId"`
-	Status      *string `json:"status"`
-	Name        *string `json:"name"`
+	Page        uint32   `json:"page"`
+	PageSize    uint32   `json:"pageSize"`
+	Order       *string  `json:"order"`
+	OrderBy     *string  `json:"orderBy"`
+	DirectoryId *uint32  `json:"directoryId"`
+	Status      *string  `json:"status"`
+	Name        *string  `json:"name"`
+	ShaList     []string `json:"shaList"`
 }
 
 type PrepareUploadFileRequest struct {

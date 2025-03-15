@@ -4,11 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/limes-cloud/kratosx/pkg/valx"
-
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/pkg/valx"
 	ktypes "github.com/limes-cloud/kratosx/types"
 
 	"github.com/limes-cloud/resource/api/resource/errors"
@@ -72,6 +71,18 @@ func (s *File) GetFile(c context.Context, req *pb.GetFileRequest) (*pb.GetFileRe
 	}, nil
 }
 
+func (s *File) GetFileBytes(req *pb.GetFileBytesRequest, reply pb.File_GetFileBytesServer) error {
+	return s.srv.GetFileBytes(
+		kratosx.MustContext(reply.Context()),
+		req.Sha,
+		func(bytes []byte) error {
+			return reply.Send(&pb.GetFileBytesReply{
+				Data: bytes,
+			})
+		},
+	)
+}
+
 // ListFile 获取文件信息列表
 func (s *File) ListFile(c context.Context, req *pb.ListFileRequest) (*pb.ListFileReply, error) {
 	list, total, err := s.srv.ListFile(kratosx.MustContext(c), &types.ListFileRequest{
@@ -82,6 +93,7 @@ func (s *File) ListFile(c context.Context, req *pb.ListFileRequest) (*pb.ListFil
 		DirectoryId: req.DirectoryId,
 		Status:      req.Status,
 		Name:        req.Name,
+		ShaList:     req.ShaList,
 	})
 	if err != nil {
 		return nil, err

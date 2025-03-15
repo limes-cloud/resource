@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	File_GetFile_FullMethodName           = "/resource.api.resource.file.v1.File/GetFile"
+	File_GetFileBytes_FullMethodName      = "/resource.api.resource.file.v1.File/GetFileBytes"
 	File_ListFile_FullMethodName          = "/resource.api.resource.file.v1.File/ListFile"
 	File_PrepareUploadFile_FullMethodName = "/resource.api.resource.file.v1.File/PrepareUploadFile"
 	File_UploadFile_FullMethodName        = "/resource.api.resource.file.v1.File/UploadFile"
@@ -33,6 +34,8 @@ const (
 type FileClient interface {
 	// GetFile 获取指定的文件信息
 	GetFile(ctx context.Context, in *GetFileRequest, opts ...grpc.CallOption) (*GetFileReply, error)
+	// GetFile 获取指定的文件信息
+	GetFileBytes(ctx context.Context, in *GetFileBytesRequest, opts ...grpc.CallOption) (File_GetFileBytesClient, error)
 	// ListFile 获取文件信息列表
 	ListFile(ctx context.Context, in *ListFileRequest, opts ...grpc.CallOption) (*ListFileReply, error)
 	// PrepareUploadFile 预上传文件信息
@@ -60,6 +63,38 @@ func (c *fileClient) GetFile(ctx context.Context, in *GetFileRequest, opts ...gr
 		return nil, err
 	}
 	return out, nil
+}
+
+func (c *fileClient) GetFileBytes(ctx context.Context, in *GetFileBytesRequest, opts ...grpc.CallOption) (File_GetFileBytesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &File_ServiceDesc.Streams[0], File_GetFileBytes_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &fileGetFileBytesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type File_GetFileBytesClient interface {
+	Recv() (*GetFileBytesReply, error)
+	grpc.ClientStream
+}
+
+type fileGetFileBytesClient struct {
+	grpc.ClientStream
+}
+
+func (x *fileGetFileBytesClient) Recv() (*GetFileBytesReply, error) {
+	m := new(GetFileBytesReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *fileClient) ListFile(ctx context.Context, in *ListFileRequest, opts ...grpc.CallOption) (*ListFileReply, error) {
@@ -113,6 +148,8 @@ func (c *fileClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts
 type FileServer interface {
 	// GetFile 获取指定的文件信息
 	GetFile(context.Context, *GetFileRequest) (*GetFileReply, error)
+	// GetFile 获取指定的文件信息
+	GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error
 	// ListFile 获取文件信息列表
 	ListFile(context.Context, *ListFileRequest) (*ListFileReply, error)
 	// PrepareUploadFile 预上传文件信息
@@ -132,6 +169,9 @@ type UnimplementedFileServer struct {
 
 func (UnimplementedFileServer) GetFile(context.Context, *GetFileRequest) (*GetFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedFileServer) GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetFileBytes not implemented")
 }
 func (UnimplementedFileServer) ListFile(context.Context, *ListFileRequest) (*ListFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListFile not implemented")
@@ -177,6 +217,27 @@ func _File_GetFile_Handler(srv interface{}, ctx context.Context, dec func(interf
 		return srv.(FileServer).GetFile(ctx, req.(*GetFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _File_GetFileBytes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetFileBytesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FileServer).GetFileBytes(m, &fileGetFileBytesServer{stream})
+}
+
+type File_GetFileBytesServer interface {
+	Send(*GetFileBytesReply) error
+	grpc.ServerStream
+}
+
+type fileGetFileBytesServer struct {
+	grpc.ServerStream
+}
+
+func (x *fileGetFileBytesServer) Send(m *GetFileBytesReply) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _File_ListFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -301,6 +362,12 @@ var File_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _File_DeleteFile_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetFileBytes",
+			Handler:       _File_GetFileBytes_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "api/resource/file/resource_file_service.proto",
 }

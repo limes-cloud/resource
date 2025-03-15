@@ -22,6 +22,9 @@ service File{
     };
   }
 
+  // GetFile 获取指定的文件信息
+  rpc GetFileBytes (GetFileBytesRequest) returns (stream GetFileBytesReply) {}
+
   // ListFile 获取文件信息列表
   rpc ListFile (ListFileRequest) returns (ListFileReply) {
     option (google.api.http) = {

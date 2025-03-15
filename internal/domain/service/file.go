@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math"
 	"net/http"
 	"path/filepath"
@@ -77,16 +78,40 @@ func (u *File) GetFile(ctx kratosx.Context, req *types.GetFileRequest) (*entity.
 		return nil, errors.ParamsError()
 	}
 	if err != nil {
-		return nil, errors.GetError(err.Error())
+		return nil, errors.NotExistFileError(err.Error())
 	}
 	if res.Status != STATUS_COMPLETED {
 		return nil, errors.NotExistFileError()
 	}
-	if err != nil {
-		return nil, errors.NotExistFileError(err.Error())
-	}
 	res.Url, _ = u.store.GenTemporaryURL(res.Key)
 	return res, nil
+}
+
+func (u *File) GetFileBytes(ctx kratosx.Context, sha string, reply types.GetFileBytesFunc) error {
+	// 获取key
+	file, err := u.repo.GetFileBySha(ctx, sha)
+	if err != nil {
+		return errors.NotExistFileError()
+	}
+
+	reader, err := u.store.Get(file.Key)
+	if err != nil {
+		return errors.GetError(err.Error())
+	}
+	buf := make([]byte, 2048)
+	for {
+		nr, er := reader.Read(buf)
+		if er != nil && er != io.EOF {
+			return er
+		}
+		if nr > 0 {
+			return reply(buf[:nr])
+		}
+		if er == io.EOF {
+			break
+		}
+	}
+	return nil
 }
 
 // ListFile 获取文件信息列表
