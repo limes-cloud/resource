@@ -25,6 +25,12 @@ message StaticFileReply{
   string mime = 2;
 }
 
+message DownloadTargetFileRequest{
+  string src = 1[(validate.rules).string = {min_len:1}];
+  string saveName = 4;
+}
+
+
 message DownloadFileRequest{
   string src = 1[(validate.rules).string = {min_len:1}];
   string expire = 2[(validate.rules).string = {min_len:1}];

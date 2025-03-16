@@ -36,6 +36,8 @@ func init() {
 
 		cr := hs.Route("/")
 		cr.GET("/resource/api/v1/download/{expire}/{sign}/{src}", app.srv.Download())
+
+		cr.GET("/resource/api/v1/target/{src}", app.srv.DownloadTarget())
 	})
 }
 

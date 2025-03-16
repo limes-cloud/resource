@@ -24,12 +24,6 @@ func main() {
 	server := kratosx.New(
 		kratosx.Config(client.NewFromEnv()),
 		kratosx.RegistrarServer(RegisterServer),
-		// kratosx.HttpServerOptions(func(server *http.Server) {
-		//	http.Filter(func(handler stdhttp.Handler) stdhttp.Handler {
-		//		handler.ServeHTTP()
-		//		return handler
-		//	})
-		// }),
 		kratosx.Options(kratos.AfterStart(func(ctx context.Context) error {
 			kt := kratosx.MustContext(ctx)
 			printx.ArtFont(fmt.Sprintf("Hello %s !", kt.Name()))

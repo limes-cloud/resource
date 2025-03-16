@@ -528,10 +528,6 @@ func (s *Export) LocalPath(next http.Handler, src string) http.Handler {
 
 func (s *Export) Download() thttp.HandlerFunc {
 	return func(ctx thttp.Context) error {
-		go func() {
-			<-ctx.Done()
-			fmt.Println("download file", time.Now().UnixNano())
-		}()
 		var req pb.DownloadFileRequest
 		if err := ctx.BindQuery(&req); err != nil {
 			return err
@@ -546,6 +542,37 @@ func (s *Export) Download() thttp.HandlerFunc {
 
 		blw := pkg.NewWriter()
 		fs := http.FileServer(http.Dir(s.conf.Export.LocalDir))
+		fs = s.LocalPath(fs, req.Src)
+		fs.ServeHTTP(blw, ctx.Request())
+
+		header := ctx.Response().Header()
+		fn := req.Src
+		if req.SaveName != "" {
+			fn = req.SaveName + filepath.Ext(req.Src)
+		}
+		header.Set("Content-Type", "application/octet-stream")
+		header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
+		ctx.Response().WriteHeader(blw.Code())
+		if _, err := ctx.Response().Write(blw.Body()); err != nil {
+			return errors.SystemError()
+		}
+
+		return nil
+	}
+}
+
+func (s *Export) DownloadTarget() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
+		var req pb.DownloadTargetFileRequest
+		if err := ctx.BindQuery(&req); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&req); err != nil {
+			return err
+		}
+
+		blw := pkg.NewWriter()
+		fs := http.FileServer(http.Dir(s.conf.Storage.LocalDir))
 		fs = s.LocalPath(fs, req.Src)
 		fs.ServeHTTP(blw, ctx.Request())
 
