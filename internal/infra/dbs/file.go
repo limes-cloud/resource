@@ -138,6 +138,7 @@ func (r File) CopyFile(ctx kratosx.Context, src *entity.File, directoryId uint32
 	uids := strings.Split(uuid.NewString(), "-")
 	file := entity.File{
 		DirectoryId: directoryId,
+		Store:       src.Store,
 		Key:         src.Key,
 		Src:         fmt.Sprintf("%d/%s", directoryId, src.Key),
 		Name:        fileName,
