@@ -2,7 +2,16 @@ package types
 
 import "io"
 
+type Stores interface {
+	GetDefaultStore() Store
+	GetExportStore() Store
+	GetStore(key string) (Store, error)
+}
+
 type Store interface {
+	// GetKeyword 获取当前关键词
+	GetKeyword() string
+
 	// GenTemporaryURL 生成临时访问路径
 	GenTemporaryURL(key string) (string, error)
 

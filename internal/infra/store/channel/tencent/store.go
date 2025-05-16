@@ -20,10 +20,12 @@ import (
 )
 
 type Tencent struct {
-	client *cos.Client
-	expire time.Duration
-	cache  *redis.Client
-	cdn    string
+	keyword   string
+	client    *cos.Client
+	expire    time.Duration
+	cache     *redis.Client
+	cdn       string
+	antiTheft bool
 }
 
 type upload struct {
@@ -33,7 +35,7 @@ type upload struct {
 
 func New(conf *config.Config) (*Tencent, error) {
 	if conf.Endpoint == "" || conf.Secret == "" || conf.Id == "" {
-		return nil, errors.New("upload config error")
+		return nil, errors.New("store config error")
 	}
 
 	u, err := url.Parse(conf.Endpoint)
@@ -49,10 +51,24 @@ func New(conf *config.Config) (*Tencent, error) {
 		},
 	})
 
-	return &Tencent{client: client, expire: conf.TemporaryExpire, cache: conf.Cache, cdn: conf.ServerURL}, nil
+	return &Tencent{
+		keyword:   conf.Keyword,
+		client:    client,
+		expire:    conf.TemporaryExpire,
+		cache:     conf.Cache,
+		cdn:       conf.Endpoint,
+		antiTheft: conf.AntiTheft,
+	}, nil
+}
+
+func (s *Tencent) GetKeyword() string {
+	return s.keyword
 }
 
 func (s *Tencent) GenTemporaryURL(key string) (string, error) {
+	if !s.antiTheft {
+		return s.cdn + "/" + key, nil
+	}
 	var (
 		err    error
 		target string

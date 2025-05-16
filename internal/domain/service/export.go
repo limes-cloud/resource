@@ -77,7 +77,7 @@ func (u *Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) (
 		return nil, 0, errors.ListError(err.Error())
 	}
 	for ind, item := range list {
-		url, err := u.store.GenTemporaryURL(item.Src)
+		url, err := u.store.GetExportStore().GenTemporaryURL(item.Src)
 		if err != nil {
 			continue
 		}
@@ -166,7 +166,7 @@ func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, er
 		return os.Open(fileName)
 	}
 
-	reader, err := u.store.Get(key)
+	reader, err := u.store.GetExportStore().Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +299,21 @@ func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (m
 			continue
 		}
 
-		reader, err := u.store.Get(key)
+		// 获取存储器
+		sha := strings.Split(key, ".")[0]
+		file, err := u.file.GetFileBySha(ctx, sha)
+		if err != nil {
+			ctx.Logger().Errorw("msg", "get file error", "key", key, "err", err.Error())
+			continue
+		}
+
+		store, err := u.store.GetStore(file.Store)
+		if err != nil {
+			ctx.Logger().Errorw("msg", "get file store error", "key", key, "err", err.Error())
+			continue
+		}
+
+		reader, err := store.Get(key)
 		if err != nil {
 			ctx.Logger().Errorw("msg", "get remote file error", "key", key, "err", err.Error())
 			continue
@@ -510,13 +524,13 @@ func (u *Export) GetExport(ctx kratosx.Context, req *types.GetExportRequest) (*e
 		return nil, errors.GetError(err.Error())
 	}
 
-	res.Url, _ = u.store.GenTemporaryURL(res.Src)
+	res.Url, _ = u.store.GetExportStore().GenTemporaryURL(res.Src)
 	return res, nil
 }
 
 // VerifyURL 验证url
 func (u *Export) VerifyURL(key, expire, sign string) error {
-	return u.store.VerifyTemporaryURL(key, expire, sign)
+	return u.store.GetExportStore().VerifyTemporaryURL(key, expire, sign)
 }
 
 func (s *Export) LocalPath(next http.Handler, src string) http.Handler {
@@ -572,7 +586,7 @@ func (s *Export) DownloadTarget() thttp.HandlerFunc {
 		}
 
 		blw := pkg.NewWriter()
-		fs := http.FileServer(http.Dir(s.conf.Storage.LocalDir))
+		fs := http.FileServer(http.Dir(s.conf.GetLocalStorage().LocalDir))
 		fs = s.LocalPath(fs, req.Src)
 		fs.ServeHTTP(blw, ctx.Request())
 

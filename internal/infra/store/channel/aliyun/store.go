@@ -19,10 +19,12 @@ import (
 )
 
 type Aliyun struct {
-	bucket *oss.Bucket
-	expire time.Duration
-	cache  *redis.Client
-	cdn    string
+	keyword   string
+	bucket    *oss.Bucket
+	expire    time.Duration
+	cache     *redis.Client
+	cdn       string
+	antiTheft bool
 }
 
 type upload struct {
@@ -46,14 +48,24 @@ func New(conf *config.Config) (*Aliyun, error) {
 	}
 
 	return &Aliyun{
-		bucket: bucket,
-		expire: conf.TemporaryExpire,
-		cache:  conf.Cache,
-		cdn:    conf.ServerURL,
+		keyword:   conf.Keyword,
+		bucket:    bucket,
+		expire:    conf.TemporaryExpire,
+		cache:     conf.Cache,
+		cdn:       conf.ServerURL,
+		antiTheft: conf.AntiTheft,
 	}, nil
 }
 
+func (s *Aliyun) GetKeyword() string {
+	return s.keyword
+}
+
 func (s *Aliyun) GenTemporaryURL(key string) (string, error) {
+	if !s.antiTheft {
+		return s.cdn + "/" + key, nil
+	}
+
 	var (
 		err    error
 		target string

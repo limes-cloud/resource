@@ -6,6 +6,7 @@ import (
 
 type File struct {
 	DirectoryId uint32 `json:"directoryId" gorm:"column:directory_id"`
+	Store       string `json:"store" gorm:"column:store"`
 	Name        string `json:"name" gorm:"column:name"`
 	Type        string `json:"type" gorm:"column:type"`
 	Size        uint32 `json:"size" gorm:"column:size"`

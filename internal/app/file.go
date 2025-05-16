@@ -39,6 +39,7 @@ func init() {
 
 		cr := hs.Route("/")
 		cr.GET("/resource/api/v1/static/{expire}/{sign}/{src}", app.srv.SrcBlob())
+		cr.GET("/resource/api/v1/static/{src}", app.srv.SrcBlob())
 		cr.POST("/resource/api/v1/upload", app.Upload())
 		cr.POST("/resource/client/v1/upload", app.Upload())
 	})
@@ -132,6 +133,7 @@ func (s *File) PrepareUploadFile(c context.Context, req *pb.PrepareUploadFileReq
 		Name:          req.Name,
 		Size:          req.Size,
 		Sha:           req.Sha,
+		Store:         req.Store,
 	})
 	if err != nil {
 		return nil, err

@@ -24,7 +24,7 @@ type Export struct {
 
 func NewExport(conf *conf.Config) *Export {
 	return &Export{
-		srv: service.NewExport(conf, dbs.NewExport(conf), dbs.NewFile(), store.NewExportStore(conf)),
+		srv: service.NewExport(conf, dbs.NewExport(conf), dbs.NewFile(), store.NewStore(conf)),
 	}
 }
 
@@ -36,6 +36,7 @@ func init() {
 
 		cr := hs.Route("/")
 		cr.GET("/resource/api/v1/download/{expire}/{sign}/{src}", app.srv.Download())
+		cr.GET("/resource/api/v1/download/{src}", app.srv.Download())
 
 		cr.GET("/resource/api/v1/target", app.srv.DownloadTarget())
 	})

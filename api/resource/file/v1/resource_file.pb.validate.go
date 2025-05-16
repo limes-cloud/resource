@@ -68,27 +68,9 @@ func (m *StaticFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetExpire()) < 1 {
-		err := StaticFileRequestValidationError{
-			field:  "Expire",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Expire
 
-	if utf8.RuneCountInString(m.GetSign()) < 1 {
-		err := StaticFileRequestValidationError{
-			field:  "Sign",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Sign
 
 	// no validation rules for Width
 
@@ -432,27 +414,9 @@ func (m *DownloadFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetExpire()) < 1 {
-		err := DownloadFileRequestValidationError{
-			field:  "Expire",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Expire
 
-	if utf8.RuneCountInString(m.GetSign()) < 1 {
-		err := DownloadFileRequestValidationError{
-			field:  "Sign",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Sign
 
 	// no validation rules for SaveName
 
@@ -1531,6 +1495,21 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
 			err := PrepareUploadFileRequestValidationError{
 				field:  "DirectoryPath",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.Store != nil {
+
+		if utf8.RuneCountInString(m.GetStore()) < 1 {
+			err := PrepareUploadFileRequestValidationError{
+				field:  "Store",
 				reason: "value length must be at least 1 runes",
 			}
 			if !all {

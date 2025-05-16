@@ -23,12 +23,14 @@ import (
 )
 
 type Local struct {
-	dir    string
-	db     *gorm.DB
-	secret string
-	cache  *redis.Client
-	expire time.Duration
-	url    string
+	antiTheft bool
+	keyword   string
+	dir       string
+	db        *gorm.DB
+	secret    string
+	cache     *redis.Client
+	expire    time.Duration
+	url       string
 }
 
 type upload struct {
@@ -39,16 +41,25 @@ type upload struct {
 
 func New(conf *config.Config) (*Local, error) {
 	return &Local{
-		dir:    conf.LocalDir,
-		db:     conf.DB,
-		secret: conf.Secret,
-		expire: conf.TemporaryExpire,
-		cache:  conf.Cache,
-		url:    conf.ServerURL,
+		keyword:   conf.Keyword,
+		dir:       conf.LocalDir,
+		db:        conf.DB,
+		secret:    conf.Secret,
+		expire:    conf.TemporaryExpire,
+		cache:     conf.Cache,
+		url:       conf.ServerURL,
+		antiTheft: conf.AntiTheft,
 	}, nil
 }
 
+func (s *Local) GetKeyword() string {
+	return s.keyword
+}
+
 func (s *Local) GenTemporaryURL(key string) (string, error) {
+	if !s.antiTheft {
+		return s.url + "/" + key, nil
+	}
 	var (
 		err    error
 		target string
@@ -79,6 +90,9 @@ func (s *Local) GenTemporaryURL(key string) (string, error) {
 }
 
 func (s *Local) VerifyTemporaryURL(key string, expire string, sign string) error {
+	if !s.antiTheft {
+		return nil
+	}
 	t, err := time.Parse("200601021504", expire)
 	if err != nil {
 		return err

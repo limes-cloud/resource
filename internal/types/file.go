@@ -26,6 +26,7 @@ type ListFileRequest struct {
 }
 
 type PrepareUploadFileRequest struct {
+	Store         *string `json:"store"`
 	DirectoryId   *uint32 `json:"directoryId"`
 	DirectoryPath *string `json:"directoryPath"`
 	Name          string  `json:"name"`

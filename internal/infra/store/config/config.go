@@ -8,6 +8,8 @@ import (
 )
 
 type Config struct {
+	AntiTheft       bool
+	Keyword         string
 	Endpoint        string
 	Id              string
 	Secret          string
