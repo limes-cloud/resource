@@ -94,6 +94,7 @@ message ListFileReply {
     string sha = 6;
     string src = 7;
     string url = 8;
+    string key = 14;
     string status = 9;
     string uploadId = 10;
     uint32 chunkCount = 11;
@@ -123,6 +124,7 @@ message PrepareUploadFileReply {
   repeated uint32 uploadChunks = 6;
   optional string sha = 7;
   optional string url = 8;
+  optional string key = 9;
 }
 
 message UploadFileRequest{
@@ -135,6 +137,7 @@ message UploadFileReply{
   string src = 1;
   string sha = 2;
   string url = 3;
+  string key = 4;
 }
 
 message UpdateFileRequest {

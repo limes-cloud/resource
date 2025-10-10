@@ -40,6 +40,7 @@ func init() {
 		cr := hs.Route("/")
 		cr.GET("/resource/api/v1/static/{expire}/{sign}/{src}", app.srv.SrcBlob())
 		cr.GET("/resource/api/v1/static/{src}", app.srv.SrcBlob())
+		cr.GET("/resource/api/{src}", app.srv.KeyBlob())
 		cr.POST("/resource/api/v1/upload", app.Upload())
 		cr.POST("/resource/client/v1/upload", app.Upload())
 	})
@@ -111,6 +112,7 @@ func (s *File) ListFile(c context.Context, req *pb.ListFileRequest) (*pb.ListFil
 			Sha:         item.Sha,
 			Src:         item.Src,
 			Url:         item.Url,
+			Key:         item.Key,
 			Status:      item.Status,
 			UploadId:    item.UploadId,
 			ChunkCount:  item.ChunkCount,
@@ -148,6 +150,7 @@ func (s *File) PrepareUploadFile(c context.Context, req *pb.PrepareUploadFileReq
 		UploadChunks: res.UploadChunks,
 		Sha:          res.Sha,
 		Url:          res.Url,
+		Key:          res.Key,
 	}, nil
 }
 
@@ -165,6 +168,7 @@ func (s *File) UploadFile(c context.Context, req *pb.UploadFileRequest) (*pb.Upl
 		Src: reply.Src,
 		Sha: reply.Sha,
 		Url: reply.Url,
+		Key: reply.Key,
 	}, nil
 }
 

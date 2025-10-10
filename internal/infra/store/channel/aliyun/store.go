@@ -115,6 +115,10 @@ func (s *Aliyun) Get(key string) (io.ReadCloser, error) {
 	return s.bucket.GetObject(key)
 }
 
+//func (s *Aliyun) GetMime(key string) (io.ReadCloser, error) {
+//	//return s.bucket.GetObjectMeta(key)
+//}
+
 func (s *Aliyun) Delete(key string) error {
 	return s.bucket.DeleteObject(key)
 }

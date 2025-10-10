@@ -1648,6 +1648,10 @@ func (m *PrepareUploadFileReply) validate(all bool) error {
 		// no validation rules for Url
 	}
 
+	if m.Key != nil {
+		// no validation rules for Key
+	}
+
 	if len(errors) > 0 {
 		return PrepareUploadFileReplyMultiError(errors)
 	}
@@ -1890,6 +1894,8 @@ func (m *UploadFileReply) validate(all bool) error {
 	// no validation rules for Sha
 
 	// no validation rules for Url
+
+	// no validation rules for Key
 
 	if len(errors) > 0 {
 		return UploadFileReplyMultiError(errors)
@@ -2477,6 +2483,8 @@ func (m *ListFileReply_File) validate(all bool) error {
 	// no validation rules for Src
 
 	// no validation rules for Url
+
+	// no validation rules for Key
 
 	// no validation rules for Status
 

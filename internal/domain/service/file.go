@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -190,6 +191,7 @@ func (u *File) PrepareUploadFile(ctx kratosx.Context, req *types.PrepareUploadFi
 				Src:      proto.String(oldFile.Src),
 				Sha:      proto.String(oldFile.Sha),
 				Url:      proto.String(url),
+				Key:      proto.String(oldFile.Key),
 			}, nil
 		}
 		// 触发断点续传
@@ -215,6 +217,7 @@ func (u *File) PrepareUploadFile(ctx kratosx.Context, req *types.PrepareUploadFi
 				Src:      proto.String(oldFile.Src),
 				Sha:      proto.String(oldFile.Sha),
 				Url:      proto.String(url),
+				Key:      proto.String(oldFile.Key),
 			}, nil
 		}
 
@@ -225,6 +228,7 @@ func (u *File) PrepareUploadFile(ctx kratosx.Context, req *types.PrepareUploadFi
 			ChunkCount:   proto.Uint32(oldFile.ChunkCount),
 			UploadChunks: chunkFactory.UploadedChunkIndex(),
 			Sha:          proto.String(oldFile.Sha),
+			Key:          proto.String(oldFile.Key),
 		}, nil
 	}
 
@@ -273,6 +277,7 @@ func (u *File) PrepareUploadFile(ctx kratosx.Context, req *types.PrepareUploadFi
 		ChunkSize:    proto.Uint32(chunkSize),
 		ChunkCount:   proto.Uint32(file.ChunkCount),
 		UploadChunks: nil,
+		Key:          proto.String(oldFile.Key),
 	}, nil
 }
 
@@ -353,6 +358,7 @@ func (u *File) UploadFile(ctx kratosx.Context, req *types.UploadFileRequest) (*t
 		Src: file.Src,
 		Sha: file.Sha,
 		Url: url,
+		Key: file.Key,
 	}, nil
 }
 
@@ -392,6 +398,60 @@ func (s *File) LocalPath(next http.Handler, src string) http.Handler {
 		r.URL.Path = src
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (s *File) KeyBlob() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
+		var req pb.StaticFileRequest
+		if err := ctx.BindQuery(&req); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&req); err != nil {
+			return err
+		}
+
+		//arr := strings.Split(req.Src, "_")
+		//if len(arr) < 2 {
+		//	return errors.NoSupportStoreError()
+		//}
+		//
+		//st, key := arr[0], ar	r[1]
+		uid := strings.Split(req.Src, ".")[0]
+		file, err := s.repo.GetFileBySha(kratosx.MustContext(ctx), uid)
+		if err != nil {
+			return err
+		}
+
+		store, err := s.store.GetStore(file.Store)
+		if err != nil {
+			return err
+		}
+
+		reader, err := store.Get(file.Key)
+		if err != nil {
+			return err
+		}
+		r, _ := io.ReadAll(reader)
+
+		// 处理返回
+		header := ctx.Response().Header()
+		if req.Download {
+			fn := req.Src
+			if req.SaveName != "" {
+				fn = req.SaveName + filepath.Ext(req.Src)
+			}
+			header.Set("Content-Type", "application/octet-stream")
+			header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
+		}
+
+		contentType := mime.TypeByExtension(filepath.Ext(file.Key))
+
+		if err := ctx.Blob(200, contentType, r); err != nil {
+			return errors.SystemError()
+		}
+
+		return nil
+	}
 }
 
 func (s *File) SrcBlob() thttp.HandlerFunc {

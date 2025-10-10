@@ -1,17 +1,20 @@
 
-env: PROD
+env: TEST
 server:
   http:
-    addr: 127.0.0.1:7003
-    timeout: 60s
+    host: 127.0.0.1
+    port: 7020
+    timeout: 10s
     marshal:
       emitUnpopulated: true
       useProtoNames: true
   grpc:
-    addr: 127.0.0.1:8003
-    timeout: 60s
+    host: 127.0.0.1
+    port: 8020
+    timeout: 10s
 log:
   level: 0
+  caller: true
   output:
     - stdout
     - file
@@ -34,34 +37,35 @@ database:
       dbName: resource
       option: ?charset=utf8mb4&parseTime=True&loc=Local
     config:
+      transformError:
+        enable: true
       initializer:
         enable: true
         path: deploy/data.sql
-      transformError:
-        enable: true
       maxLifetime: 2h #最大生存时间
       maxOpenConn: 20 #最大连接数量
       maxIdleConn: 10 #最大空闲数量
-      logLevel: 3 #日志等级
+      logLevel: 4 #日志等级
       slowThreshold: 2s #慢sql阈值
 redis:
   cache:
     enable: true
     host: 127.0.0.1:6379
-    username: ''
-    password: ''
+    username:
+    password:
 business:
   chunkSize: 1
   defaultMaxSize: 10
-  defaultAcceptTypes: ["jpg","png","txt","ppt","pptx","mp4","pdf"]
-  storage:
-    type: local
-    endpoint: xxx
-    id: xxx
-    secret: xxx
-    serverUrl: http://127.0.0.1:7003/resource/api/v1/static
-    localDir: static
-    temporaryExpire: 600s
+  defaultAcceptTypes: ["jpg","png","txt","ppt","pptx","mp4"]
+  storages:
+    - keyword: local
+      type: local
+      isExporter: true
+      serverUrl: http://127.0.0.1:7020/resource/api/v1/static
+      localDir: static
+      temporaryExpire: 600s
+      secret: limescloud
   export:
-    serverUrl: http://127.0.0.1:7003/resource/api/v1/download
+    serverUrl: https://prod-gw.qlime.cn/resource/api/v1/download
     localDir: static/export
+    expire: 72h

@@ -43,6 +43,7 @@ type PrepareUploadFileReply struct {
 	UploadChunks []uint32 `json:"uploadChunks"`
 	Sha          *string  `json:"sha"`
 	Url          *string  `json:"url"`
+	Key          *string  `json:"key"`
 }
 
 type UploadFileRequest struct {
@@ -55,4 +56,5 @@ type UploadFileReply struct {
 	Src string `json:"src"`
 	Sha string `json:"sha"`
 	Url string `json:"url"`
+	Key string `json:"key"`
 }
