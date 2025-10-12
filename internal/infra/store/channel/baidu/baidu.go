@@ -6,6 +6,8 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"os"
 	"time"
@@ -13,15 +15,14 @@ import (
 	"github.com/baidubce/bce-sdk-go/bce"
 	"github.com/baidubce/bce-sdk-go/services/bos"
 	"github.com/baidubce/bce-sdk-go/services/bos/api"
-	"github.com/go-redis/redis/v8"
-	"github.com/limes-cloud/kratosx/pkg/lock"
+	"github.com/limes-cloud/kratosx/library/lock"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
-	"github.com/limes-cloud/resource/internal/infra/store/config"
 	"github.com/limes-cloud/resource/internal/infra/store/types"
 )
 
 type Baidu struct {
+	ctx       context.Context
 	bucket    string
 	keyword   string
 	client    *bos.Client
@@ -38,7 +39,8 @@ type upload struct {
 	client *bos.Client
 }
 
-func New(conf *config.Config) (*Baidu, error) {
+func New(ctx core.Context) (*Baidu, error) {
+	conf := ctx.Config().Storage
 	if conf.Endpoint == "" || conf.Secret == "" || conf.Id == "" {
 		return nil, errors.New("store config error")
 	}
@@ -54,11 +56,11 @@ func New(conf *config.Config) (*Baidu, error) {
 	}
 
 	return &Baidu{
-		keyword:   conf.Keyword,
+		ctx:       context.Background(),
 		bucket:    conf.Bucket,
 		client:    client,
 		expire:    conf.TemporaryExpire,
-		cache:     conf.Cache,
+		cache:     ctx.Redis(),
 		cdn:       conf.Endpoint,
 		antiTheft: conf.AntiTheft,
 	}, nil
@@ -75,10 +77,10 @@ func (s *Baidu) GenTemporaryURL(key string) (string, error) {
 	var (
 		err    error
 		target string
-		locker = lock.New(s.cache, key+":lock")
+		locker = lock.New(s.ctx, key+":lock")
 	)
 	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
-	err = locker.AcquireFunc(context.Background(),
+	err = locker.AcquireFunc(
 		func() error {
 			target, err = s.cache.Get(context.Background(), ck).Result()
 			return err
@@ -110,14 +112,10 @@ func (s *Baidu) PutBytes(key string, in []byte) error {
 }
 
 func (s *Baidu) Put(key string, r io.Reader) error {
-	response, err := s.client.PutObjectFromStream(s.bucket, key, r, nil)
+	_, err := s.client.PutObjectFromStream(s.bucket, key, r, nil)
 	if err != nil {
 		return err
 	}
-
-	// todo
-	fmt.Println(response)
-
 	return nil
 }
 

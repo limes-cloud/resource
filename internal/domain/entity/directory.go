@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"github.com/limes-cloud/kratosx/types"
+	"github.com/limes-cloud/kratosx/model"
 )
 
 type Directory struct {
@@ -10,7 +10,7 @@ type Directory struct {
 	Accept   string       `json:"accept" gorm:"column:accept"`
 	MaxSize  uint32       `json:"maxSize" gorm:"column:max_size"`
 	Children []*Directory `json:"children" gorm:"-"`
-	types.BaseModel
+	model.BaseTenantModel
 }
 
 type DirectoryClosure struct {

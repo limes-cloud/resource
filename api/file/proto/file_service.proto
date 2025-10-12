@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package resource.api.file;
+option go_package = ".;file";
+option java_multiple_files = true;
+option java_package = "resource.api.file";
+
+import "api/file/proto/file.proto";
+import "google/api/annotations.proto";
+
+service File{
+
+  // GetFile 获取指定的文件信息
+  rpc GetFileBytes (GetFileBytesRequest) returns (stream GetFileBytesReply) {}
+
+  // ListFile 获取文件信息列表
+  rpc ListFile (ListFileRequest) returns (ListFileReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/files",
+    };
+  }
+
+  // PrepareUploadFile 预上传文件信息
+  rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
+    option (google.api.http) = {
+      post: "/resource/api/v1/file/prepare_upload",
+      body: "*",
+      additional_bindings:{
+        post: "/resource/client/v1/file/prepare_upload",
+        body: "*",
+      }
+    };
+  }
+
+  // UploadFile 上传文件
+  rpc UploadFile(UploadFileRequest) returns (UploadFileReply){}
+
+  // UpdateFile 更新文件信息
+  rpc UpdateFile (UpdateFileRequest) returns (UpdateFileReply) {
+    option (google.api.http) = {
+      put: "/resource/api/v1/file",
+      body: "*"
+    };
+  }
+
+  // DeleteFile 删除文件信息
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileReply) {
+    option (google.api.http) = {
+      delete: "/resource/api/v1/file",
+    };
+  }
+
+}

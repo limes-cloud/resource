@@ -1,33 +1,28 @@
 package service
 
 import (
-	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/pkg/tree"
+	"github.com/limes-cloud/resource/internal/core"
 
-	"github.com/limes-cloud/resource/api/resource/errors"
-	"github.com/limes-cloud/resource/internal/conf"
+	"github.com/limes-cloud/resource/api/errors"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
-	"github.com/limes-cloud/resource/internal/types"
 )
 
 type Directory struct {
-	conf *conf.Config
 	repo repository.Directory
 }
 
 func NewDirectory(
-	conf *conf.Config,
 	repo repository.Directory,
 ) *Directory {
 	return &Directory{
-		conf: conf,
 		repo: repo,
 	}
 }
 
 // GetDirectory 获取指定的文件目录信息
-func (u *Directory) GetDirectory(ctx kratosx.Context, id uint32) (*entity.Directory, error) {
+func (u *Directory) GetDirectory(ctx core.Context, id uint32) (*entity.Directory, error) {
 	res, err := u.repo.GetDirectory(ctx, id)
 	if err != nil {
 		ctx.Logger().Warnw("msg", "get directory error", "err", err.Error())
@@ -37,17 +32,17 @@ func (u *Directory) GetDirectory(ctx kratosx.Context, id uint32) (*entity.Direct
 }
 
 // ListDirectory 获取文件目录信息列表树
-func (u *Directory) ListDirectory(ctx kratosx.Context, req *types.ListDirectoryRequest) ([]*entity.Directory, uint32, error) {
-	list, total, err := u.repo.ListDirectory(ctx, req)
+func (u *Directory) ListDirectory(ctx core.Context) ([]*entity.Directory, error) {
+	list, err := u.repo.ListDirectory(ctx)
 	if err != nil {
 		ctx.Logger().Warnw("msg", "list directory error", "err", err.Error())
-		return nil, 0, errors.ListError(err.Error())
+		return nil, errors.ListError(err.Error())
 	}
-	return tree.BuildArrayTree(list), total, nil
+	return tree.BuildArrayTree(list), nil
 }
 
 // CreateDirectory 创建文件目录信息
-func (u *Directory) CreateDirectory(ctx kratosx.Context, req *entity.Directory) (uint32, error) {
+func (u *Directory) CreateDirectory(ctx core.Context, req *entity.Directory) (uint32, error) {
 	id, err := u.repo.CreateDirectory(ctx, req)
 	if err != nil {
 		ctx.Logger().Warnw("msg", "create directory error", "err", err.Error())
@@ -57,7 +52,7 @@ func (u *Directory) CreateDirectory(ctx kratosx.Context, req *entity.Directory) 
 }
 
 // UpdateDirectory 更新文件目录信息
-func (u *Directory) UpdateDirectory(ctx kratosx.Context, req *entity.Directory) error {
+func (u *Directory) UpdateDirectory(ctx core.Context, req *entity.Directory) error {
 	if err := u.repo.UpdateDirectory(ctx, req); err != nil {
 		ctx.Logger().Warnw("msg", "update directory error", "err", err.Error())
 		return errors.UpdateError(err.Error())
@@ -66,7 +61,7 @@ func (u *Directory) UpdateDirectory(ctx kratosx.Context, req *entity.Directory) 
 }
 
 // DeleteDirectory 删除文件目录信息
-func (u *Directory) DeleteDirectory(ctx kratosx.Context, ids []uint32) (uint32, error) {
+func (u *Directory) DeleteDirectory(ctx core.Context, ids []uint32) (uint32, error) {
 	total, err := u.repo.DeleteDirectory(ctx, ids)
 	if err != nil {
 		ctx.Logger().Warnw("msg", "delete directory error", "err", err.Error())

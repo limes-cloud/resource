@@ -2,21 +2,14 @@ package dbs
 
 import (
 	"errors"
-	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
 	"strings"
 	"sync"
 
-	"github.com/limes-cloud/resource/internal/conf"
-
 	"github.com/limes-cloud/resource/internal/domain/entity"
-	"github.com/limes-cloud/resource/internal/types"
-
-	"github.com/limes-cloud/kratosx"
-	"google.golang.org/protobuf/proto"
 )
 
 type Directory struct {
-	conf *conf.Config
 }
 
 var (
@@ -24,55 +17,28 @@ var (
 	directoryOnce sync.Once
 )
 
-func NewDirectory(conf *conf.Config) *Directory {
+func NewDirectory() *Directory {
 	directoryOnce.Do(func() {
-		directoryIns = &Directory{
-			conf: conf,
-		}
+		directoryIns = &Directory{}
 	})
 	return directoryIns
 }
 
 // GetDirectory 获取指定的数据
-func (r Directory) GetDirectory(ctx kratosx.Context, id uint32) (*entity.Directory, error) {
-	var (
-		directory = entity.Directory{}
-		fs        = []string{"*"}
-	)
-	return &directory, ctx.DB().Select(fs).First(&directory, id).Error
+func (r Directory) GetDirectory(ctx core.Context, id uint32) (*entity.Directory, error) {
+	var ent = entity.Directory{}
+	return &ent, ctx.DB().First(&ent, id).Error
 }
 
 // ListDirectory 获取列表
-func (r Directory) ListDirectory(ctx kratosx.Context, req *types.ListDirectoryRequest) ([]*entity.Directory, uint32, error) {
-	var (
-		list  []*entity.Directory
-		total int64
-		fs    = []string{"*"}
-	)
-
-	db := ctx.DB().Model(entity.Directory{}).Select(fs)
-
-	if err := db.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if req.OrderBy == nil || *req.OrderBy == "" {
-		req.OrderBy = proto.String("id")
-	}
-	if req.Order == nil || *req.Order == "" {
-		req.Order = proto.String("asc")
-	}
-	db = db.Order(fmt.Sprintf("%s %s", *req.OrderBy, *req.Order))
-	if *req.OrderBy != "id" {
-		db = db.Order("id asc")
-	}
-
-	return list, uint32(total), db.Find(&list).Error
+func (r Directory) ListDirectory(ctx core.Context) ([]*entity.Directory, error) {
+	var list []*entity.Directory
+	return list, ctx.DB().Model(entity.Directory{}).Order("id asc").Find(&list).Error
 }
 
 // CreateDirectory 创建数据
-func (r Directory) CreateDirectory(ctx kratosx.Context, directory *entity.Directory) (uint32, error) {
-	return directory.Id, ctx.Transaction(func(ctx kratosx.Context) error {
+func (r Directory) CreateDirectory(ctx core.Context, directory *entity.Directory) (uint32, error) {
+	return directory.Id, ctx.Transaction(func(ctx core.Context) error {
 		if err := ctx.DB().Create(directory).Error; err != nil {
 			return err
 		}
@@ -84,7 +50,7 @@ func (r Directory) CreateDirectory(ctx kratosx.Context, directory *entity.Direct
 }
 
 // UpdateDirectory 更新数据
-func (r Directory) UpdateDirectory(ctx kratosx.Context, directory *entity.Directory) error {
+func (r Directory) UpdateDirectory(ctx core.Context, directory *entity.Directory) error {
 	if directory.Id == directory.ParentId {
 		return errors.New("父级不能为自己")
 	}
@@ -93,7 +59,7 @@ func (r Directory) UpdateDirectory(ctx kratosx.Context, directory *entity.Direct
 		return err
 	}
 
-	return ctx.Transaction(func(ctx kratosx.Context) error {
+	return ctx.Transaction(func(ctx core.Context) error {
 		if old.ParentId != directory.ParentId {
 			if err := r.removeDirectoryParent(ctx, directory.Id); err != nil {
 				return err
@@ -107,7 +73,7 @@ func (r Directory) UpdateDirectory(ctx kratosx.Context, directory *entity.Direct
 }
 
 // DeleteDirectory 删除数据
-func (r Directory) DeleteDirectory(ctx kratosx.Context, ids []uint32) (uint32, error) {
+func (r Directory) DeleteDirectory(ctx core.Context, ids []uint32) (uint32, error) {
 	var del []uint32
 	for _, id := range ids {
 		del = append(del, id)
@@ -122,7 +88,7 @@ func (r Directory) DeleteDirectory(ctx kratosx.Context, ids []uint32) (uint32, e
 }
 
 // GetDirectoryChildrenIds 获取指定id的所有子id
-func (r Directory) GetDirectoryChildrenIds(ctx kratosx.Context, id uint32) ([]uint32, error) {
+func (r Directory) GetDirectoryChildrenIds(ctx core.Context, id uint32) ([]uint32, error) {
 	var ids []uint32
 	return ids, ctx.DB().Model(entity.DirectoryClosure{}).
 		Select("children").
@@ -131,7 +97,7 @@ func (r Directory) GetDirectoryChildrenIds(ctx kratosx.Context, id uint32) ([]ui
 }
 
 // GetDirectoryParentIds 获取指定id的所有父id
-func (r Directory) GetDirectoryParentIds(ctx kratosx.Context, id uint32) ([]uint32, error) {
+func (r Directory) GetDirectoryParentIds(ctx core.Context, id uint32) ([]uint32, error) {
 	var ids []uint32
 	return ids, ctx.DB().Model(entity.DirectoryClosure{}).
 		Select("parent").
@@ -140,7 +106,7 @@ func (r Directory) GetDirectoryParentIds(ctx kratosx.Context, id uint32) ([]uint
 }
 
 // appendDirectoryChildren 添加id到指定的父id下
-func (r Directory) appendDirectoryChildren(ctx kratosx.Context, pid uint32, id uint32) error {
+func (r Directory) appendDirectoryChildren(ctx core.Context, pid uint32, id uint32) error {
 	list := []*entity.DirectoryClosure{
 		{
 			Parent:   pid,
@@ -158,14 +124,15 @@ func (r Directory) appendDirectoryChildren(ctx kratosx.Context, pid uint32, id u
 }
 
 // removeDirectoryParent 删除指定id的所有父层级
-func (r Directory) removeDirectoryParent(ctx kratosx.Context, id uint32) error {
+func (r Directory) removeDirectoryParent(ctx core.Context, id uint32) error {
 	return ctx.DB().Delete(&entity.DirectoryClosure{}, "children=?", id).Error
 }
 
-func (r Directory) GetDirectoryLimitByPath(ctx kratosx.Context, paths []string) (*entity.DirectoryLimit, error) {
+func (r Directory) GetDirectoryLimitByPath(ctx core.Context, paths []string) (*entity.DirectoryLimit, error) {
 	var (
 		dir    = entity.Directory{}
 		parent = uint32(0)
+		conf   = ctx.Config()
 	)
 
 	for _, path := range paths {
@@ -178,8 +145,8 @@ func (r Directory) GetDirectoryLimitByPath(ctx kratosx.Context, paths []string) 
 			ParentId: parent,
 			Name:     path,
 		}).Attrs(entity.Directory{
-			Accept:  strings.Join(r.conf.DefaultAcceptTypes, ","),
-			MaxSize: r.conf.DefaultMaxSize,
+			Accept:  strings.Join(conf.DefaultAcceptTypes, ","),
+			MaxSize: conf.DefaultMaxSize,
 		}).FirstOrCreate(&nr).Error; err != nil {
 			return nil, err
 		}
@@ -194,7 +161,7 @@ func (r Directory) GetDirectoryLimitByPath(ctx kratosx.Context, paths []string) 
 	}, nil
 }
 
-func (r Directory) GetDirectoryLimitById(ctx kratosx.Context, id uint32) (*entity.DirectoryLimit, error) {
+func (r Directory) GetDirectoryLimitById(ctx core.Context, id uint32) (*entity.DirectoryLimit, error) {
 	var dir = entity.Directory{}
 	if err := ctx.DB().Where("id=?", id).First(&dir).Error; err != nil {
 		return nil, err

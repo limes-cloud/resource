@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package resource.api.entity;
+
+option go_package = ".;entity";
+option java_multiple_files = true;
+option java_package = "resource.api.entity";
+
+import "api/entity/proto/entity.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+
+service Entity{
+  // LoadEntity 载入全部系统的实体
+  rpc LoadEntity (google.protobuf.Empty) returns (LoadEntityReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/load/entities"
+    };
+  }
+}

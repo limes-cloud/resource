@@ -4,6 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/model"
+	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/limes-cloud/resource/internal/pkg/filex"
 	"io"
 	"net/http"
 	"os"
@@ -11,22 +17,14 @@ import (
 	"strings"
 	"time"
 
-	thttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
-	"github.com/limes-cloud/kratosx/pkg/filex"
-	ktypes "github.com/limes-cloud/kratosx/types"
 	"github.com/xuri/excelize/v2"
 	"google.golang.org/protobuf/proto"
 	"gorm.io/gorm"
 
-	"github.com/limes-cloud/resource/api/resource/errors"
-	pb "github.com/limes-cloud/resource/api/resource/file/v1"
-	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
-	"github.com/limes-cloud/resource/internal/pkg"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -39,26 +37,23 @@ const (
 )
 
 type Export struct {
-	conf  *conf.Config
 	repo  repository.Export
 	file  repository.File
 	store repository.Store
 }
 
 func NewExport(
-	conf *conf.Config,
 	repo repository.Export,
 	file repository.File,
 	store repository.Store,
 ) *Export {
 	export := &Export{
-		conf:  conf,
 		repo:  repo,
 		file:  file,
 		store: store,
 	}
 	go func() {
-		ctx := kratosx.MustContext(context.Background())
+		ctx := core.MustContext(context.Background(), kratosx.WithSkipDBHook())
 		for {
 			// 清理临时文件
 			export.clearExportFile(ctx)
@@ -70,24 +65,17 @@ func NewExport(
 }
 
 // ListExport 获取导出信息列表
-func (u *Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error) {
+func (u *Export) ListExport(ctx core.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error) {
 	list, total, err := u.repo.ListExport(ctx, req)
 	if err != nil {
 		ctx.Logger().Warnw("msg", "list directory error", "err", err.Error())
 		return nil, 0, errors.ListError(err.Error())
 	}
-	for ind, item := range list {
-		url, err := u.store.GetExportStore().GenTemporaryURL(item.Src)
-		if err != nil {
-			continue
-		}
-		list[ind].Url = url
-	}
 	return list, total, nil
 }
 
 // ExportExcel 创建导出表格
-func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest) (*types.ExportExcelReply, error) {
+func (u *Export) ExportExcel(ctx core.Context, req *types.ExportExcelRequest) (*types.ExportExcelReply, error) {
 	b, _ := json.Marshal(req.Rows)
 	sha := crypto.MD5(b)
 	export, err := u.repo.GetExportBySha(ctx, sha)
@@ -96,15 +84,13 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 	}
 
 	if err == nil {
-		if export.Status == STATUS_PROGRESS && export.UserId == req.UserId {
+		//
+		if export.Status == STATUS_PROGRESS && export.UserId == ctx.Auth().UserId {
 			return nil, errors.ExportTaskProcessError()
 		}
 		// 复制正在进行中的导入数据
 		id, err := u.repo.CopyExport(ctx, export, &types.CopyExportRequest{
-			UserId:       req.UserId,
-			DepartmentId: req.DepartmentId,
-			Scene:        req.Scene,
-			Name:         req.Name,
+			Name: req.Name,
 		})
 		if err != nil {
 			return nil, err
@@ -113,13 +99,10 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 	}
 
 	id, err := u.repo.CreateExport(ctx, &entity.Export{
-		UserId:       req.UserId,
-		DepartmentId: req.DepartmentId,
-		Scene:        req.Scene,
-		Name:         req.Name,
-		Sha:          sha,
-		Src:          fmt.Sprintf("%s.zip", sha),
-		Status:       STATUS_PROGRESS,
+		Name:   req.Name,
+		Sha:    sha,
+		Key:    fmt.Sprintf("%s.zip", sha),
+		Status: STATUS_PROGRESS,
 	})
 	if err != nil {
 		ctx.Logger().Warnw("msg", "create export error", "err", err.Error())
@@ -128,28 +111,31 @@ func (u *Export) ExportExcel(ctx kratosx.Context, req *types.ExportExcelRequest)
 
 	go func() {
 		kCtx := ctx.Clone()
+		conf := kCtx.Config()
 		size, err := u.exportExcel(kCtx, sha, req)
 		exp := &entity.Export{
-			BaseModel: ktypes.BaseModel{Id: id},
-			Status:    STATUS_COMPLETED,
-			Size:      size,
-			ExpiredAt: time.Now().Unix() + int64(u.conf.Export.Expire.Seconds()),
+			BaseTenantUserModel: model.BaseTenantUserModel{Id: id},
+			Status:              STATUS_COMPLETED,
+			Size:                size,
+			ExpiredAt:           time.Now().Unix() + int64(conf.Export.Expire.Seconds()),
 		}
 		if err != nil {
 			exp.Status = EXPORT_STATUS_FAIL
 			exp.Reason = proto.String(err.Error())
 		}
 
+		// todo 上传到存储系统
+
 		if err := u.repo.UpdateExport(kCtx, exp); err != nil {
 			ctx.Logger().Errorw("msg", "update export status error", "err", err.Error())
 		}
 	}()
 
-	return &types.ExportExcelReply{Id: id, Sha: sha, Src: fmt.Sprintf("%s.zip", sha)}, nil
+	return &types.ExportExcelReply{Id: id, Sha: sha, Key: fmt.Sprintf("%s.zip", sha)}, nil
 }
 
 // nolint
-func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, error) {
+func (u *Export) getFileByValue(ctx core.Context, value string) (*os.File, error) {
 	key := value
 	if strings.Contains(value, "/") {
 		key = value[strings.Index(value, "/")+1:]
@@ -161,12 +147,13 @@ func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, er
 		key = file.Key
 	}
 
-	fileName := u.conf.Export.LocalDir + "/tmp/" + key
+	conf := ctx.Config()
+	fileName := conf.Export.LocalDir + "/tmp/" + key
 	if filex.IsExistFile(fileName) {
 		return os.Open(fileName)
 	}
 
-	reader, err := u.store.GetExportStore().Get(key)
+	reader, err := u.store.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +168,17 @@ func (u *Export) getFileByValue(ctx kratosx.Context, value string) (*os.File, er
 	return file, nil
 }
 
-func (u *Export) exportExcel(ctx kratosx.Context, sha string, req *types.ExportExcelRequest) (uint32, error) {
+func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExcelRequest) (uint32, error) {
+	conf := ctx.Config()
+
+	uid := uuid.New().String()
+
+	key := fmt.Sprintf("%s.zip", sha)
 	// 存储地址
-	path := u.conf.Export.LocalDir + "/" + fmt.Sprintf("%s.zip", sha)
+	path := conf.Export.LocalDir + "/tmp/" + key
 
 	// 表格保存地址
-	excelPath := u.conf.Export.LocalDir + "/" + fmt.Sprintf("%s.xlsx", sha)
+	excelPath := conf.Export.LocalDir + "/tmp/" + uid + "/" + fmt.Sprintf("%s.xlsx", sha)
 	defer func() {
 		// 移除生成的excel文件
 		_ = os.Remove(excelPath)
@@ -235,7 +227,7 @@ func (u *Export) exportExcel(ctx kratosx.Context, sha string, req *types.ExportE
 	}
 
 	// 打包文件
-	exports, err := u.fetchFile(ctx, req.Files)
+	exports, err := u.fetchFile(ctx, uid, req.Files)
 	if err != nil {
 		return 0, err
 	}
@@ -248,6 +240,15 @@ func (u *Export) exportExcel(ctx kratosx.Context, sha string, req *types.ExportE
 		return 0, err
 	}
 
+	// 上传到存储系统
+	if err := u.store.PutFromLocal(key, path); err != nil {
+		return 0, err
+	}
+
+	// 删除本地文件
+	_ = os.Remove(path)
+	_ = os.Remove(conf.Export.LocalDir + "/tmp/" + uid)
+
 	// 获取文件大小
 	stat, err := os.Stat(path)
 	if err != nil {
@@ -257,8 +258,8 @@ func (u *Export) exportExcel(ctx kratosx.Context, sha string, req *types.ExportE
 }
 
 // fetchFile 拉取文件, 返回文件路径和文件名
-func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (map[string]string, error) {
-	getKeyFunc := func(ctx kratosx.Context, value string) (string, error) {
+func (u *Export) fetchFile(ctx core.Context, uid string, list []*types.ExportFileItem) (map[string]string, error) {
+	getKeyFunc := func(ctx core.Context, value string) (string, error) {
 		var key = value
 		if strings.Contains(value, "/") {
 			key = value[strings.Index(value, "/")+1:]
@@ -285,9 +286,16 @@ func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (m
 		}
 	}
 
-	var oriExports = make(map[string]string)
+	var (
+		oriExports = make(map[string]string)
+		conf       = ctx.Config()
+		dir        = conf.Export.LocalDir + "/tmp/" + uid + "/"
+	)
+	if !filex.IsExistFolder(dir) {
+		_ = os.MkdirAll(dir, 0750)
+	}
 	for key, rename := range exports {
-		path := u.conf.Export.LocalDir + "/tmp/" + key
+		path := dir + key
 		if filex.IsExistFile(path) {
 			oriExports[path] = rename
 			continue
@@ -299,21 +307,7 @@ func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (m
 			continue
 		}
 
-		// 获取存储器
-		sha := strings.Split(key, ".")[0]
-		file, err := u.file.GetFileBySha(ctx, sha)
-		if err != nil {
-			ctx.Logger().Errorw("msg", "get file error", "key", key, "err", err.Error())
-			continue
-		}
-
-		store, err := u.store.GetStore(file.Store)
-		if err != nil {
-			ctx.Logger().Errorw("msg", "get file store error", "key", key, "err", err.Error())
-			continue
-		}
-
-		reader, err := store.Get(key)
+		reader, err := u.store.Get(key)
 		if err != nil {
 			ctx.Logger().Errorw("msg", "get remote file error", "key", key, "err", err.Error())
 			continue
@@ -330,27 +324,40 @@ func (u *Export) fetchFile(ctx kratosx.Context, list []*types.ExportFileItem) (m
 	return oriExports, nil
 }
 
-func (u *Export) exportFile(ctx kratosx.Context, src string, list []*types.ExportFileItem) (uint32, error) {
-	oriExports, err := u.fetchFile(ctx, list)
+func (u *Export) exportFile(ctx core.Context, key string, list []*types.ExportFileItem) (uint32, error) {
+	uid := uuid.New().String()
+	oriExports, err := u.fetchFile(ctx, uid, list)
 	if err != nil {
 		return 0, err
 	}
 
-	src = u.conf.Export.LocalDir + "/" + src
-	if err := filex.ZipFiles(src, oriExports); err != nil {
+	conf := ctx.Config()
+	path := conf.Export.LocalDir + "/tmp/" + key
+	if err := filex.ZipFiles(path, oriExports); err != nil {
 		return 0, err
 	}
 
-	stat, err := os.Stat(src)
+	stat, err := os.Stat(path)
 	if err != nil {
 		return 0, err
 	}
+
+	// 上传到存储系统
+	if err := u.store.PutFromLocal(key, path); err != nil {
+		return 0, err
+	}
+
+	// 删除本地文件
+	_ = os.Remove(path)
+	_ = os.RemoveAll(conf.Export.LocalDir + "/tmp/" + uid)
+
 	return uint32(stat.Size() / 1024), nil
 }
 
 // clearExportTmpCache 清理临时文件夹
 func (u *Export) clearExportTmpCache() {
-	dir := u.conf.Export.LocalDir + "/tmp"
+	conf := core.MustContext(context.Background()).Config()
+	dir := conf.Export.LocalDir + "/tmp"
 	if !filex.IsExistFolder(dir) {
 		return
 	}
@@ -362,7 +369,7 @@ func (u *Export) clearExportTmpCache() {
 			return err
 		}
 		d := time.Since(info.ModTime())
-		if d.Seconds() >= u.conf.Export.Expire.Seconds() {
+		if d.Seconds() >= conf.Export.Expire.Seconds() {
 			_ = os.RemoveAll(path)
 		}
 		return err
@@ -370,8 +377,9 @@ func (u *Export) clearExportTmpCache() {
 }
 
 // clearExportFile 清理导出的过期的大文件
-func (u *Export) clearExportFile(ctx kratosx.Context) {
-	dir := u.conf.Export.LocalDir
+func (u *Export) clearExportFile(ctx core.Context) {
+	conf := ctx.Config()
+	dir := conf.Export.LocalDir
 	if !filex.IsExistFolder(dir) {
 		return
 	}
@@ -396,8 +404,8 @@ func (u *Export) clearExportFile(ctx kratosx.Context) {
 
 		for _, item := range files {
 			if err := u.repo.UpdateExport(ctx, &entity.Export{
-				BaseModel: ktypes.BaseModel{Id: item.Id},
-				Status:    EXPORT_STATUS_EXPIRED,
+				BaseTenantUserModel: model.BaseTenantUserModel{Id: item.Id},
+				Status:              EXPORT_STATUS_EXPIRED,
 			}); err != nil {
 				ctx.Logger().Warnw("msg", "update expire export file status error", "err", err.Error())
 				return
@@ -411,8 +419,11 @@ func (u *Export) clearExportFile(ctx kratosx.Context) {
 				ctx.Logger().Warnw("msg", "get export file count error", "err", err.Error())
 			}
 			if count == 0 {
-				if err = os.RemoveAll(dir + "/" + item.Src); err != nil {
+				if err = os.RemoveAll(dir + "/" + item.Key); err != nil {
 					ctx.Logger().Warnw("msg", "remove export file status error", "err", err.Error())
+				}
+				if err = u.store.Delete(item.Key); err != nil {
+					ctx.Logger().Warnw("msg", "delete export file status error", "err", err.Error())
 				}
 			}
 		}
@@ -426,7 +437,7 @@ func (u *Export) clearExportFile(ctx kratosx.Context) {
 }
 
 // ExportFile 创建导出表格
-func (u *Export) ExportFile(ctx kratosx.Context, req *types.ExportFileRequest) (*types.ExportFileReply, error) {
+func (u *Export) ExportFile(ctx core.Context, req *types.ExportFileRequest) (*types.ExportFileReply, error) {
 	b, _ := json.Marshal(req.Files)
 	ids, _ := json.Marshal(req.Ids)
 	sha := crypto.MD5(append(b, ids...))
@@ -435,15 +446,12 @@ func (u *Export) ExportFile(ctx kratosx.Context, req *types.ExportFileRequest) (
 		return nil, err
 	}
 	if err == nil {
-		if export.Status == STATUS_PROGRESS && export.UserId == req.UserId {
+		if export.Status == STATUS_PROGRESS && export.UserId == ctx.Auth().UserId {
 			return nil, errors.ExportTaskProcessError()
 		}
 		// 复制正在进行中的导入数据
 		id, err := u.repo.CopyExport(ctx, export, &types.CopyExportRequest{
-			UserId:       req.UserId,
-			DepartmentId: req.DepartmentId,
-			Scene:        req.Scene,
-			Name:         req.Name,
+			Name: req.Name,
 		})
 		if err != nil {
 			return nil, err
@@ -461,15 +469,12 @@ func (u *Export) ExportFile(ctx kratosx.Context, req *types.ExportFileRequest) (
 		}
 	}
 
-	src := fmt.Sprintf("%s.zip", sha)
+	key := fmt.Sprintf("%s.zip", sha)
 	id, err := u.repo.CreateExport(ctx, &entity.Export{
-		UserId:       req.UserId,
-		DepartmentId: req.DepartmentId,
-		Scene:        req.Scene,
-		Name:         req.Name,
-		Sha:          sha,
-		Src:          src,
-		Status:       STATUS_PROGRESS,
+		Name:   req.Name,
+		Sha:    sha,
+		Key:    fmt.Sprintf("%s.zip", sha),
+		Status: STATUS_PROGRESS,
 	})
 	if err != nil {
 		return nil, errors.DatabaseError(err.Error())
@@ -477,18 +482,18 @@ func (u *Export) ExportFile(ctx kratosx.Context, req *types.ExportFileRequest) (
 
 	go func() {
 		kCtx := ctx.Clone()
-		size, err := u.exportFile(kCtx, src, req.Files)
+		conf := kCtx.Config()
+		size, err := u.exportFile(kCtx, key, req.Files)
 		exp := &entity.Export{
-			BaseModel: ktypes.BaseModel{Id: id},
-			Status:    STATUS_COMPLETED,
-			Size:      size,
-			ExpiredAt: time.Now().Unix() + int64(u.conf.Export.Expire.Seconds()),
+			BaseTenantUserModel: model.BaseTenantUserModel{Id: id},
+			Status:              STATUS_COMPLETED,
+			Size:                size,
+			ExpiredAt:           time.Now().Unix() + int64(conf.Export.Expire.Seconds()),
 		}
 		if err != nil {
 			exp.Status = EXPORT_STATUS_FAIL
 			exp.Reason = proto.String(err.Error())
 		}
-
 		if err := u.repo.UpdateExport(kCtx, exp); err != nil {
 			ctx.Logger().Errorw("msg", "update export status error", "err", err.Error())
 		}
@@ -498,7 +503,7 @@ func (u *Export) ExportFile(ctx kratosx.Context, req *types.ExportFileRequest) (
 }
 
 // DeleteExport 删除导出信息
-func (u *Export) DeleteExport(ctx kratosx.Context, ids []uint32) (uint32, error) {
+func (u *Export) DeleteExport(ctx core.Context, ids []uint32) (uint32, error) {
 	total, err := u.repo.DeleteExport(ctx, ids)
 	if err != nil {
 		return 0, errors.DeleteError(err.Error())
@@ -507,7 +512,7 @@ func (u *Export) DeleteExport(ctx kratosx.Context, ids []uint32) (uint32, error)
 }
 
 // GetExport 获取指定的导出信息
-func (u *Export) GetExport(ctx kratosx.Context, req *types.GetExportRequest) (*entity.Export, error) {
+func (u *Export) GetExport(ctx core.Context, req *types.GetExportRequest) (*entity.Export, error) {
 	var (
 		res *entity.Export
 		err error
@@ -523,85 +528,17 @@ func (u *Export) GetExport(ctx kratosx.Context, req *types.GetExportRequest) (*e
 	if err != nil {
 		return nil, errors.GetError(err.Error())
 	}
-
-	res.Url, _ = u.store.GetExportStore().GenTemporaryURL(res.Src)
 	return res, nil
 }
 
 // VerifyURL 验证url
 func (u *Export) VerifyURL(key, expire, sign string) error {
-	return u.store.GetExportStore().VerifyTemporaryURL(key, expire, sign)
+	return u.store.VerifyTemporaryURL(key, expire, sign)
 }
 
-func (s *Export) LocalPath(next http.Handler, src string) http.Handler {
+func (s *Export) LocalPath(next http.Handler, key string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = src
+		r.URL.Path = key
 		next.ServeHTTP(w, r)
 	})
-}
-
-func (s *Export) Download() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var req pb.DownloadFileRequest
-		if err := ctx.BindQuery(&req); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&req); err != nil {
-			return err
-		}
-
-		if err := s.VerifyURL(req.Src, req.Expire, req.Sign); err != nil {
-			return err
-		}
-
-		blw := pkg.NewWriter()
-		fs := http.FileServer(http.Dir(s.conf.Export.LocalDir))
-		fs = s.LocalPath(fs, req.Src)
-		fs.ServeHTTP(blw, ctx.Request())
-
-		header := ctx.Response().Header()
-		fn := req.Src
-		if req.SaveName != "" {
-			fn = req.SaveName + filepath.Ext(req.Src)
-		}
-		header.Set("Content-Type", "application/octet-stream")
-		header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
-		ctx.Response().WriteHeader(blw.Code())
-		if _, err := ctx.Response().Write(blw.Body()); err != nil {
-			return errors.SystemError()
-		}
-
-		return nil
-	}
-}
-
-func (s *Export) DownloadTarget() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var req pb.DownloadTargetFileRequest
-		if err := ctx.BindQuery(&req); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&req); err != nil {
-			return err
-		}
-
-		blw := pkg.NewWriter()
-		fs := http.FileServer(http.Dir(s.conf.GetLocalStorage().LocalDir))
-		fs = s.LocalPath(fs, req.Src)
-		fs.ServeHTTP(blw, ctx.Request())
-
-		header := ctx.Response().Header()
-		fn := req.Src
-		if req.SaveName != "" {
-			fn = req.SaveName + filepath.Ext(req.Src)
-		}
-		header.Set("Content-Type", "application/octet-stream")
-		header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
-		ctx.Response().WriteHeader(blw.Code())
-		if _, err := ctx.Response().Write(blw.Body()); err != nil {
-			return errors.SystemError()
-		}
-
-		return nil
-	}
 }

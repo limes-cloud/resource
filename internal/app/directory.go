@@ -2,48 +2,46 @@ package app
 
 import (
 	"context"
+	"github.com/limes-cloud/kratosx/model"
+	"github.com/limes-cloud/kratosx/pkg/value"
+	"github.com/limes-cloud/resource/api/directory"
+	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/internal/core"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/kratosx"
-	"github.com/limes-cloud/kratosx/pkg/valx"
-	ktypes "github.com/limes-cloud/kratosx/types"
-
-	pb "github.com/limes-cloud/resource/api/resource/directory/v1"
-	"github.com/limes-cloud/resource/api/resource/errors"
-	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
-	"github.com/limes-cloud/resource/internal/types"
 )
 
 type Directory struct {
-	pb.UnimplementedDirectoryServer
+	directory.UnimplementedDirectoryServer
 	srv *service.Directory
 }
 
-func NewDirectory(conf *conf.Config) *Directory {
+func NewDirectory() *Directory {
 	return &Directory{
-		srv: service.NewDirectory(conf, dbs.NewDirectory(conf)),
+		srv: service.NewDirectory(dbs.NewDirectory()),
 	}
 }
 
 func init() {
-	register(func(c *conf.Config, hs *http.Server, gs *grpc.Server) {
-		srv := NewDirectory(c)
-		pb.RegisterDirectoryHTTPServer(hs, srv)
-		pb.RegisterDirectoryServer(gs, srv)
+	register(func(hs *http.Server, gs *grpc.Server) {
+		srv := NewDirectory()
+		directory.RegisterDirectoryHTTPServer(hs, srv)
+		directory.RegisterDirectoryServer(gs, srv)
 	})
 }
 
 // GetDirectory 获取指定的文件目录信息
-func (s *Directory) GetDirectory(c context.Context, req *pb.GetDirectoryRequest) (*pb.GetDirectoryReply, error) {
-	result, err := s.srv.GetDirectory(kratosx.MustContext(c), req.Id)
+func (s *Directory) GetDirectory(c context.Context, req *directory.GetDirectoryRequest) (*directory.GetDirectoryReply, error) {
+	result, err := s.srv.GetDirectory(core.MustContext(c), req.Id)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetDirectoryReply{
+	return &directory.GetDirectoryReply{
 		Id:        result.Id,
 		ParentId:  result.ParentId,
 		Name:      result.Name,
@@ -55,24 +53,21 @@ func (s *Directory) GetDirectory(c context.Context, req *pb.GetDirectoryRequest)
 }
 
 // ListDirectory 获取文件目录信息列表
-func (s *Directory) ListDirectory(c context.Context, req *pb.ListDirectoryRequest) (*pb.ListDirectoryReply, error) {
-	result, total, err := s.srv.ListDirectory(kratosx.MustContext(c), &types.ListDirectoryRequest{
-		Order:   req.Order,
-		OrderBy: req.OrderBy,
-	})
+func (s *Directory) ListDirectory(c context.Context, _ *emptypb.Empty) (*directory.ListDirectoryReply, error) {
+	result, err := s.srv.ListDirectory(core.MustContext(c))
 	if err != nil {
 		return nil, err
 	}
-	reply := pb.ListDirectoryReply{Total: total}
-	if err := valx.Transform(result, &reply.List); err != nil {
+	reply := directory.ListDirectoryReply{}
+	if err := value.Transform(result, &reply.List); err != nil {
 		return nil, errors.TransformError()
 	}
 	return &reply, nil
 }
 
 // CreateDirectory 创建文件目录信息
-func (s *Directory) CreateDirectory(c context.Context, req *pb.CreateDirectoryRequest) (*pb.CreateDirectoryReply, error) {
-	id, err := s.srv.CreateDirectory(kratosx.MustContext(c), &entity.Directory{
+func (s *Directory) CreateDirectory(c context.Context, req *directory.CreateDirectoryRequest) (*directory.CreateDirectoryReply, error) {
+	id, err := s.srv.CreateDirectory(core.MustContext(c), &entity.Directory{
 		ParentId: req.ParentId,
 		Name:     req.Name,
 		Accept:   req.Accept,
@@ -82,28 +77,28 @@ func (s *Directory) CreateDirectory(c context.Context, req *pb.CreateDirectoryRe
 		return nil, err
 	}
 
-	return &pb.CreateDirectoryReply{Id: id}, nil
+	return &directory.CreateDirectoryReply{Id: id}, nil
 }
 
 // UpdateDirectory 更新文件目录信息
-func (s *Directory) UpdateDirectory(c context.Context, req *pb.UpdateDirectoryRequest) (*pb.UpdateDirectoryReply, error) {
-	if err := s.srv.UpdateDirectory(kratosx.MustContext(c), &entity.Directory{
-		BaseModel: ktypes.BaseModel{Id: req.Id},
-		ParentId:  req.ParentId,
-		Name:      req.Name,
-		Accept:    req.Accept,
-		MaxSize:   req.MaxSize,
+func (s *Directory) UpdateDirectory(c context.Context, req *directory.UpdateDirectoryRequest) (*directory.UpdateDirectoryReply, error) {
+	if err := s.srv.UpdateDirectory(core.MustContext(c), &entity.Directory{
+		BaseTenantModel: model.BaseTenantModel{Id: req.Id},
+		ParentId:        req.ParentId,
+		Name:            req.Name,
+		Accept:          req.Accept,
+		MaxSize:         req.MaxSize,
 	}); err != nil {
 		return nil, err
 	}
-	return &pb.UpdateDirectoryReply{}, nil
+	return &directory.UpdateDirectoryReply{}, nil
 }
 
 // DeleteDirectory 删除文件目录信息
-func (s *Directory) DeleteDirectory(c context.Context, req *pb.DeleteDirectoryRequest) (*pb.DeleteDirectoryReply, error) {
-	total, err := s.srv.DeleteDirectory(kratosx.MustContext(c), req.Ids)
+func (s *Directory) DeleteDirectory(c context.Context, req *directory.DeleteDirectoryRequest) (*directory.DeleteDirectoryReply, error) {
+	total, err := s.srv.DeleteDirectory(core.MustContext(c), req.Ids)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.DeleteDirectoryReply{Total: total}, nil
+	return &directory.DeleteDirectoryReply{Total: total}, nil
 }

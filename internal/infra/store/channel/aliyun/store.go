@@ -6,20 +6,20 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"strconv"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/go-redis/redis/v8"
-	"github.com/limes-cloud/kratosx/pkg/lock"
+	"github.com/limes-cloud/kratosx/library/lock"
 
-	"github.com/limes-cloud/resource/internal/infra/store/config"
 	"github.com/limes-cloud/resource/internal/infra/store/types"
 )
 
 type Aliyun struct {
-	keyword   string
+	ctx       context.Context
 	bucket    *oss.Bucket
 	expire    time.Duration
 	cache     *redis.Client
@@ -32,7 +32,8 @@ type upload struct {
 	upload oss.InitiateMultipartUploadResult
 }
 
-func New(conf *config.Config) (*Aliyun, error) {
+func New(ctx core.Context) (*Aliyun, error) {
+	conf := ctx.Config().Storage
 	if conf.Endpoint == "" || conf.Id == "" || conf.Secret == "" {
 		return nil, errors.New("store config error")
 	}
@@ -48,17 +49,13 @@ func New(conf *config.Config) (*Aliyun, error) {
 	}
 
 	return &Aliyun{
-		keyword:   conf.Keyword,
+		ctx:       context.Background(),
 		bucket:    bucket,
 		expire:    conf.TemporaryExpire,
-		cache:     conf.Cache,
 		cdn:       conf.ServerURL,
 		antiTheft: conf.AntiTheft,
+		cache:     ctx.Redis(),
 	}, nil
-}
-
-func (s *Aliyun) GetKeyword() string {
-	return s.keyword
 }
 
 func (s *Aliyun) GenTemporaryURL(key string) (string, error) {
@@ -69,10 +66,10 @@ func (s *Aliyun) GenTemporaryURL(key string) (string, error) {
 	var (
 		err    error
 		target string
-		locker = lock.New(s.cache, key+":lock")
+		locker = lock.New(s.ctx, key+":lock")
 	)
 	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
-	err = locker.AcquireFunc(context.Background(),
+	err = locker.AcquireFunc(
 		func() error {
 			target, err = s.cache.Get(context.Background(), ck).Result()
 			return err

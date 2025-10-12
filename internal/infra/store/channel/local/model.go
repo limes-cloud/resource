@@ -1,12 +1,12 @@
 package local
 
 import (
-	"github.com/limes-cloud/kratosx/types"
+	"github.com/limes-cloud/kratosx/model"
 	"gorm.io/gorm"
 )
 
 type Chunk struct {
-	types.CreateModel
+	model.CreateModel
 	UploadID string `json:"upload_id"`
 	Index    int    `json:"index"`
 	Sha      string `json:"sha"`

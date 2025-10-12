@@ -3,19 +3,18 @@ package app
 import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/resource/internal/conf"
 )
 
-type registryFunc func(c *conf.Config, hs *http.Server, gs *grpc.Server)
+type registerFunc func(hs *http.Server, gs *grpc.Server)
 
-var registries []registryFunc
+var registerList []registerFunc
 
-func register(fn registryFunc) {
-	registries = append(registries, fn)
+func register(fn registerFunc) {
+	registerList = append(registerList, fn)
 }
 
-func New(c *conf.Config, hs *http.Server, gs *grpc.Server) {
-	for _, registry := range registries {
-		registry(c, hs, gs)
+func Register(hs *http.Server, gs *grpc.Server) {
+	for _, registry := range registerList {
+		registry(hs, gs)
 	}
 }

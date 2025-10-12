@@ -2,11 +2,11 @@ package dbs
 
 import (
 	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
+	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/google/uuid"
-	"github.com/limes-cloud/kratosx"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/limes-cloud/resource/internal/domain/entity"
@@ -29,7 +29,7 @@ func NewFile() *File {
 }
 
 // GetFileBySha 获取指定数据
-func (r File) GetFileBySha(ctx kratosx.Context, sha string) (*entity.File, error) {
+func (r File) GetFileBySha(ctx core.Context, sha string) (*entity.File, error) {
 	var (
 		file = entity.File{}
 		fs   = []string{"*"}
@@ -37,16 +37,13 @@ func (r File) GetFileBySha(ctx kratosx.Context, sha string) (*entity.File, error
 	return &file, ctx.DB().Select(fs).Where("sha = ?", sha).First(&file).Error
 }
 
-// GetFileBySrc 获取指定数据
-func (r File) GetFileBySrc(ctx kratosx.Context, src string) (*entity.File, error) {
-	var (
-		file = entity.File{}
-		fs   = []string{"*"}
-	)
-	return &file, ctx.DB().Select(fs).Where("src = ?", src).First(&file).Error
+// GetFileByKey 获取指定数据
+func (r File) GetFileByKey(ctx core.Context, src string) (*entity.File, error) {
+	sha := strings.TrimSuffix(src, filepath.Ext(src))
+	return r.GetFileBySha(ctx, sha)
 }
 
-func (r File) GetFileByUploadId(ctx kratosx.Context, uid string) (*entity.File, error) {
+func (r File) GetFileByUploadId(ctx core.Context, uid string) (*entity.File, error) {
 	var (
 		file = entity.File{}
 		fs   = []string{"*"}
@@ -55,7 +52,7 @@ func (r File) GetFileByUploadId(ctx kratosx.Context, uid string) (*entity.File, 
 }
 
 // GetFile 获取指定的数据
-func (r File) GetFile(ctx kratosx.Context, id uint32) (*entity.File, error) {
+func (r File) GetFile(ctx core.Context, id uint32) (*entity.File, error) {
 	var (
 		file = entity.File{}
 		fs   = []string{"*"}
@@ -64,7 +61,7 @@ func (r File) GetFile(ctx kratosx.Context, id uint32) (*entity.File, error) {
 }
 
 // ListFile 获取列表
-func (r File) ListFile(ctx kratosx.Context, req *types.ListFileRequest) ([]*entity.File, uint32, error) {
+func (r File) ListFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.File, uint32, error) {
 	var (
 		list  []*entity.File
 		total int64
@@ -82,8 +79,13 @@ func (r File) ListFile(ctx kratosx.Context, req *types.ListFileRequest) ([]*enti
 	if req.Name != nil && *req.Name != "" {
 		db = db.Where("name like ", *req.Name+"%")
 	}
-	if len(req.ShaList) != 0 {
-		db = db.Where("sha in ?", req.ShaList)
+	if len(req.KeyList) != 0 {
+		shaList := make([]string, len(req.KeyList))
+		// 去除文件后缀
+		for i, key := range req.KeyList {
+			shaList[i] = strings.TrimSuffix(key, filepath.Ext(key))
+		}
+		db = db.Where("sha in ?", shaList)
 	}
 
 	if err := db.Count(&total).Error; err != nil {
@@ -106,18 +108,17 @@ func (r File) ListFile(ctx kratosx.Context, req *types.ListFileRequest) ([]*enti
 }
 
 // CreateFile 创建数据
-func (r File) CreateFile(ctx kratosx.Context, file *entity.File) (uint32, error) {
-	file.Src = fmt.Sprintf("%d/%s", file.DirectoryId, file.Key)
+func (r File) CreateFile(ctx core.Context, file *entity.File) (uint32, error) {
 	return file.Id, ctx.DB().Create(file).Error
 }
 
 // UpdateFile 更新数据
-func (r File) UpdateFile(ctx kratosx.Context, file *entity.File) error {
+func (r File) UpdateFile(ctx core.Context, file *entity.File) error {
 	return ctx.DB().Where("id = ?", file.Id).Updates(file).Error
 }
 
 // DeleteFile 删除数据
-func (r File) DeleteFile(ctx kratosx.Context, ids []uint32, call func(file *entity.File)) (uint32, error) {
+func (r File) DeleteFile(ctx core.Context, ids []uint32, call func(file *entity.File)) (uint32, error) {
 	var files []*entity.File
 	if err := ctx.DB().Where("id in ?", ids).Find(&files).Error; err != nil {
 		return 0, err
@@ -131,27 +132,100 @@ func (r File) DeleteFile(ctx kratosx.Context, ids []uint32, call func(file *enti
 	return uint32(db.RowsAffected), db.Error
 }
 
-func (r File) CopyFile(ctx kratosx.Context, src *entity.File, directoryId uint32, fileName string) error {
-	if src.DirectoryId == directoryId {
-		return nil
-	}
-	uids := strings.Split(uuid.NewString(), "-")
-	file := entity.File{
-		DirectoryId: directoryId,
-		Store:       src.Store,
-		Key:         src.Key,
-		Src:         fmt.Sprintf("%d/%s", directoryId, src.Key),
-		Name:        fileName,
-		Status:      src.Status,
-		UploadId:    src.UploadId + "_copy_" + uids[0],
-		Type:        src.Type,
-		Size:        src.Size,
-		ChunkCount:  src.ChunkCount,
-		Sha:         src.Sha,
+func (r File) CreateUserFile(ctx core.Context, uf *entity.UserFile) (uint32, error) {
+	return uf.Id, ctx.DB().Create(uf).Error
+
+}
+
+func (r File) UpdateUserFile(ctx core.Context, uf *entity.UserFile) error {
+	return ctx.DB().Where("id = ?", uf.Id).Updates(uf).Error
+}
+
+func (r File) DeleteUserFile(ctx core.Context, ids []uint32, call func(UserFile *entity.File)) (uint32, error) {
+	// 查询删除的文件所属的文件id
+	var fileIds []uint32
+	if err := ctx.DB().Select("file_id").
+		Where("id in ?", ids).
+		Scan(&fileIds).Error; err != nil {
+		return 0, err
 	}
 
-	if err := ctx.DB().Create(&file).Error; err != nil {
-		ctx.Logger().Warnw("msg", "copy file error", "err", err)
+	// 查询当前的文件被引用的次数
+	var results []struct {
+		FileId uint32 `json:"file_id"`
+		Count  int64  `json:"count"`
 	}
-	return nil
+	if err := ctx.DB().Select("file_id", "count(*) count").
+		Where("file_id in ?", fileIds).
+		Group("file_id").
+		Scan(&results).Error; err != nil {
+		return 0, err
+	}
+
+	// 筛选需要删除的file_id
+	var delIds []uint32
+	for _, item := range results {
+		if item.Count > 1 {
+			delIds = append(delIds, item.FileId)
+		}
+	}
+
+	// 查询所有被删除的文件
+	var files []*entity.File
+	if err := ctx.DB().Where("id in ?", delIds).Find(&files).Error; err != nil {
+		return 0, err
+	}
+
+	err := ctx.Transaction(func(ctx core.Context) error {
+		if err := ctx.DB().Where("id in ?", ids).Delete(entity.UserFile{}).Error; err != nil {
+			return err
+		}
+		if err := ctx.DB().Where("id in ?", delIds).Delete(entity.File{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	for _, item := range files {
+		call(item)
+	}
+
+	return uint32(len(delIds)), nil
+}
+
+func (r File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
+	var (
+		list  []*entity.UserFile
+		total int64
+	)
+
+	db := ctx.DB().Model(entity.UserFile{}).Preload("File")
+
+	if req.DirectoryId != nil {
+		db = db.Where("directory_id = ?", *req.DirectoryId)
+	}
+	if req.Name != nil && *req.Name != "" {
+		db = db.Where("name like ", *req.Name+"%")
+	}
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	db = db.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize))
+
+	if req.OrderBy == nil || *req.OrderBy == "" {
+		req.OrderBy = proto.String("id")
+	}
+	if req.Order == nil || *req.Order == "" {
+		req.Order = proto.String("asc")
+	}
+	db = db.Order(fmt.Sprintf("%s %s", *req.OrderBy, *req.Order))
+	if *req.OrderBy != "id" {
+		db = db.Order("id asc")
+	}
+
+	return list, uint32(total), db.Find(&list).Error
 }

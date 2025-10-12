@@ -2,91 +2,86 @@ package app
 
 import (
 	"context"
-
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/kratosx"
-	"github.com/limes-cloud/kratosx/pkg/valx"
-
-	"github.com/limes-cloud/resource/api/resource/errors"
-	pb "github.com/limes-cloud/resource/api/resource/export/v1"
-	"github.com/limes-cloud/resource/internal/conf"
-	"github.com/limes-cloud/resource/internal/domain/service"
+	"github.com/limes-cloud/resource/api/export"
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
 	"github.com/limes-cloud/resource/internal/infra/store"
+
+	"github.com/limes-cloud/kratosx/pkg/value"
+
+	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
 type Export struct {
-	pb.UnimplementedExportServer
+	export.UnimplementedExportServer
 	srv *service.Export
 }
 
-func NewExport(conf *conf.Config) *Export {
+func NewExport() *Export {
 	return &Export{
-		srv: service.NewExport(conf, dbs.NewExport(conf), dbs.NewFile(), store.NewStore(conf)),
+		srv: service.NewExport(dbs.NewExport(), dbs.NewFile(), store.NewStore()),
 	}
 }
 
 func init() {
-	register(func(c *conf.Config, hs *http.Server, gs *grpc.Server) {
-		app := NewExport(c)
-		pb.RegisterExportHTTPServer(hs, app)
-		pb.RegisterExportServer(gs, app)
+	register(func(hs *http.Server, gs *grpc.Server) {
+		app := NewExport()
+		export.RegisterExportHTTPServer(hs, app)
+		export.RegisterExportServer(gs, app)
 
-		cr := hs.Route("/")
-		cr.GET("/resource/api/v1/download/{expire}/{sign}/{src}", app.srv.Download())
-		cr.GET("/resource/api/v1/download/{src}", app.srv.Download())
-
-		cr.GET("/resource/api/v1/target", app.srv.DownloadTarget())
+		//cr := hs.Route("/")
+		//cr.GET("/resource/api/v1/download/{expire}/{sign}/{src}", app.srv.Download())
+		//cr.GET("/resource/api/v1/download/{src}", app.srv.Download())
+		//
+		//cr.GET("/resource/api/v1/target", app.srv.DownloadTarget())
 	})
 }
 
 // ListExport 获取导出信息列表
-func (s *Export) ListExport(c context.Context, req *pb.ListExportRequest) (*pb.ListExportReply, error) {
-	list, total, err := s.srv.ListExport(kratosx.MustContext(c), &types.ListExportRequest{
-		Page:          req.Page,
-		PageSize:      req.PageSize,
-		Order:         req.Order,
-		OrderBy:       req.OrderBy,
-		All:           req.All,
-		UserIds:       req.UserIds,
-		DepartmentIds: req.DepartmentIds,
+func (s *Export) ListExport(c context.Context, req *export.ListExportRequest) (*export.ListExportReply, error) {
+	list, total, err := s.srv.ListExport(core.MustContext(c), &types.ListExportRequest{
+		Page:     req.Page,
+		PageSize: req.PageSize,
+		Order:    req.Order,
+		OrderBy:  req.OrderBy,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	reply := pb.ListExportReply{Total: total}
+	reply := export.ListExportReply{Total: total}
 	for _, item := range list {
-		reply.List = append(reply.List, &pb.ListExportReply_Export{
-			Id:           item.Id,
-			UserId:       item.UserId,
-			DepartmentId: item.DepartmentId,
-			Scene:        item.Scene,
-			Name:         item.Name,
-			Size:         item.Size,
-			Sha:          item.Sha,
-			Src:          item.Src,
-			Status:       item.Status,
-			Reason:       item.Reason,
-			ExpiredAt:    uint32(item.ExpiredAt),
-			CreatedAt:    uint32(item.CreatedAt),
-			UpdatedAt:    uint32(item.UpdatedAt),
-			Url:          item.Url,
+		reply.List = append(reply.List, &export.ListExportReply_Export{
+			Id:        item.Id,
+			Name:      item.Name,
+			Size:      item.Size,
+			Sha:       item.Sha,
+			Key:       item.Key,
+			Status:    item.Status,
+			Reason:    item.Reason,
+			ExpiredAt: uint32(item.ExpiredAt),
+			CreatedAt: uint32(item.CreatedAt),
+			UpdatedAt: uint32(item.UpdatedAt),
+			UserId:    item.UserId,
+			DeptId:    item.DeptId,
+			TenantId:  item.TenantId,
 		})
 	}
 	return &reply, nil
 }
 
 // ExportFile 创建导出文件
-func (s *Export) ExportFile(c context.Context, req *pb.ExportFileRequest) (*pb.ExportFileReply, error) {
+func (s *Export) ExportFile(c context.Context, req *export.ExportFileRequest) (*export.ExportFileReply, error) {
 	var (
 		in  = types.ExportFileRequest{}
-		ctx = kratosx.MustContext(c)
+		ctx = core.MustContext(c)
 	)
 
-	if err := valx.Transform(req, &in); err != nil {
+	if err := value.Transform(req, &in); err != nil {
 		ctx.Logger().Warnw("msg", "req transform err", "err", err.Error())
 		return nil, errors.TransformError()
 	}
@@ -96,17 +91,14 @@ func (s *Export) ExportFile(c context.Context, req *pb.ExportFileRequest) (*pb.E
 		return nil, err
 	}
 
-	return &pb.ExportFileReply{Id: res.Id}, nil
+	return &export.ExportFileReply{Id: res.Id}, nil
 }
 
 // ExportExcel 创建导出excel文件
-func (s *Export) ExportExcel(c context.Context, req *pb.ExportExcelRequest) (*pb.ExportExcelReply, error) {
+func (s *Export) ExportExcel(c context.Context, req *export.ExportExcelRequest) (*export.ExportExcelReply, error) {
 	var in = types.ExportExcelRequest{
-		Name:         req.Name,
-		UserId:       req.UserId,
-		DepartmentId: req.DepartmentId,
-		Scene:        req.Scene,
-		Headers:      req.Headers,
+		Name:    req.Name,
+		Headers: req.Headers,
 	}
 
 	for _, row := range req.Rows {
@@ -129,26 +121,26 @@ func (s *Export) ExportExcel(c context.Context, req *pb.ExportExcelRequest) (*pb
 	}
 	in.Files = files
 
-	res, err := s.srv.ExportExcel(kratosx.MustContext(c), &in)
+	res, err := s.srv.ExportExcel(core.MustContext(c), &in)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.ExportExcelReply{Id: res.Id}, nil
+	return &export.ExportExcelReply{Id: res.Id}, nil
 }
 
 // DeleteExport 删除导出信息
-func (s *Export) DeleteExport(c context.Context, req *pb.DeleteExportRequest) (*pb.DeleteExportReply, error) {
-	total, err := s.srv.DeleteExport(kratosx.MustContext(c), req.Ids)
+func (s *Export) DeleteExport(c context.Context, req *export.DeleteExportRequest) (*export.DeleteExportReply, error) {
+	total, err := s.srv.DeleteExport(core.MustContext(c), req.Ids)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.DeleteExportReply{Total: total}, nil
+	return &export.DeleteExportReply{Total: total}, nil
 }
 
 // GetExport 获取指定的导出信息
-func (s *Export) GetExport(c context.Context, req *pb.GetExportRequest) (*pb.GetExportReply, error) {
-	result, err := s.srv.GetExport(kratosx.MustContext(c), &types.GetExportRequest{
+func (s *Export) GetExport(c context.Context, req *export.GetExportRequest) (*export.GetExportReply, error) {
+	result, err := s.srv.GetExport(core.MustContext(c), &types.GetExportRequest{
 		Id:  req.Id,
 		Sha: req.Sha,
 	})
@@ -156,20 +148,16 @@ func (s *Export) GetExport(c context.Context, req *pb.GetExportRequest) (*pb.Get
 		return nil, err
 	}
 
-	return &pb.GetExportReply{
-		Id:           result.Id,
-		UserId:       result.UserId,
-		DepartmentId: result.DepartmentId,
-		Scene:        result.Scene,
-		Name:         result.Name,
-		Size:         result.Size,
-		Sha:          result.Sha,
-		Src:          result.Src,
-		Status:       result.Status,
-		Reason:       result.Reason,
-		ExpiredAt:    uint32(result.ExpiredAt),
-		CreatedAt:    uint32(result.CreatedAt),
-		UpdatedAt:    uint32(result.UpdatedAt),
-		Url:          result.Url,
+	return &export.GetExportReply{
+		Id:        result.Id,
+		Name:      result.Name,
+		Size:      result.Size,
+		Sha:       result.Sha,
+		Key:       result.Key,
+		Status:    result.Status,
+		Reason:    result.Reason,
+		ExpiredAt: uint32(result.ExpiredAt),
+		CreatedAt: uint32(result.CreatedAt),
+		UpdatedAt: uint32(result.UpdatedAt),
 	}, nil
 }

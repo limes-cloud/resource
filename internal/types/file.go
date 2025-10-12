@@ -3,7 +3,7 @@ package types
 type GetFileBytesRequest struct {
 	Id  *uint32 `json:"id"`
 	Sha *string `json:"sha"`
-	Src *string `json:"src"`
+	Key *string `json:"key"`
 }
 
 type GetFileBytesFunc func([]byte) error
@@ -11,7 +11,7 @@ type GetFileBytesFunc func([]byte) error
 type GetFileRequest struct {
 	Id  *uint32 `json:"id"`
 	Sha *string `json:"sha"`
-	Src *string `json:"src"`
+	Key *string `json:"key"`
 }
 
 type ListFileRequest struct {
@@ -22,7 +22,16 @@ type ListFileRequest struct {
 	DirectoryId *uint32  `json:"directoryId"`
 	Status      *string  `json:"status"`
 	Name        *string  `json:"name"`
-	ShaList     []string `json:"shaList"`
+	KeyList     []string `json:"keyList"`
+}
+
+type ListUserFileRequest struct {
+	Page        uint32  `json:"page"`
+	PageSize    uint32  `json:"pageSize"`
+	Order       *string `json:"order"`
+	OrderBy     *string `json:"orderBy"`
+	DirectoryId *uint32 `json:"directoryId"`
+	Name        *string `json:"name"`
 }
 
 type PrepareUploadFileRequest struct {
@@ -32,17 +41,16 @@ type PrepareUploadFileRequest struct {
 	Name          string  `json:"name"`
 	Size          uint32  `json:"size"`
 	Sha           string  `json:"sha"`
+	Key           string  `json:"key"`
 }
 
 type PrepareUploadFileReply struct {
 	Uploaded     bool     `json:"uploaded"`
-	Src          *string  `json:"src"`
 	ChunkSize    *uint32  `json:"chunkSize"`
 	ChunkCount   *uint32  `json:"chunkCount"`
 	UploadId     *string  `json:"uploadId"`
 	UploadChunks []uint32 `json:"uploadChunks"`
 	Sha          *string  `json:"sha"`
-	Url          *string  `json:"url"`
 	Key          *string  `json:"key"`
 }
 
@@ -53,8 +61,6 @@ type UploadFileRequest struct {
 }
 
 type UploadFileReply struct {
-	Src string `json:"src"`
 	Sha string `json:"sha"`
-	Url string `json:"url"`
 	Key string `json:"key"`
 }

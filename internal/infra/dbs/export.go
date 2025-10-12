@@ -2,20 +2,18 @@ package dbs
 
 import (
 	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/limes-cloud/kratosx"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/limes-cloud/resource/internal/conf"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
 type Export struct {
-	conf *conf.Config
 }
 
 var (
@@ -23,31 +21,27 @@ var (
 	exportOnce sync.Once
 )
 
-func NewExport(conf *conf.Config) *Export {
+func NewExport() *Export {
 	exportOnce.Do(func() {
-		exportIns = &Export{
-			conf: conf,
-		}
+		exportIns = &Export{}
 	})
 	return exportIns
 }
 
-func (r Export) CopyExport(ctx kratosx.Context, export *entity.Export, req *types.CopyExportRequest) (uint32, error) {
+func (r Export) CopyExport(ctx core.Context, export *entity.Export, req *types.CopyExportRequest) (uint32, error) {
+	conf := ctx.Config()
 	exp := entity.Export{
-		UserId:       req.UserId,
-		DepartmentId: req.DepartmentId,
-		Scene:        req.Scene,
-		Name:         req.Name,
-		Size:         export.Size,
-		Sha:          export.Sha,
-		Src:          export.Src,
-		Status:       export.Status,
-		ExpiredAt:    time.Now().Unix() + int64(r.conf.Export.Expire.Seconds()),
+		Name:      req.Name,
+		Size:      export.Size,
+		Sha:       export.Sha,
+		Key:       export.Key,
+		Status:    export.Status,
+		ExpiredAt: time.Now().Unix() + int64(conf.Export.Expire.Seconds()),
 	}
 	return r.CreateExport(ctx, &exp)
 }
 
-func (r Export) GetKeyByValue(ctx kratosx.Context, value string) (string, error) {
+func (r Export) GetKeyByValue(ctx core.Context, value string) (string, error) {
 	key := value
 	if strings.Contains(value, "/") {
 		key = value[strings.Index(value, "/")+1:]
@@ -60,7 +54,7 @@ func (r Export) GetKeyByValue(ctx kratosx.Context, value string) (string, error)
 }
 
 // ListExport 获取列表
-func (r Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error) {
+func (r Export) ListExport(ctx core.Context, req *types.ListExportRequest) ([]*entity.Export, uint32, error) {
 	var (
 		list  []*entity.Export
 		total int64
@@ -69,14 +63,6 @@ func (r Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([
 
 	db := ctx.DB().Model(entity.Export{}).Select(fs)
 
-	if !req.All {
-		if req.UserIds != nil {
-			db = db.Where("user_id in ?", req.UserIds)
-		}
-		if req.DepartmentIds != nil {
-			db = db.Where("department_ids in ?", req.DepartmentIds)
-		}
-	}
 	if req.Name != nil {
 		db = db.Where("name like ?", *req.Name+"%")
 	}
@@ -107,18 +93,18 @@ func (r Export) ListExport(ctx kratosx.Context, req *types.ListExportRequest) ([
 }
 
 // CreateExport 创建数据
-func (r Export) CreateExport(ctx kratosx.Context, export *entity.Export) (uint32, error) {
+func (r Export) CreateExport(ctx core.Context, export *entity.Export) (uint32, error) {
 	return export.Id, ctx.DB().Create(export).Error
 }
 
 // DeleteExport 删除数据
-func (r Export) DeleteExport(ctx kratosx.Context, ids []uint32) (uint32, error) {
+func (r Export) DeleteExport(ctx core.Context, ids []uint32) (uint32, error) {
 	db := ctx.DB().Where("id in ?", ids).Delete(&entity.Export{})
 	return uint32(db.RowsAffected), db.Error
 }
 
 // GetExportBySha 获取指定数据
-func (r Export) GetExportBySha(ctx kratosx.Context, sha string) (*entity.Export, error) {
+func (r Export) GetExportBySha(ctx core.Context, sha string) (*entity.Export, error) {
 	var (
 		export = entity.Export{}
 		fs     = []string{"*"}
@@ -127,7 +113,7 @@ func (r Export) GetExportBySha(ctx kratosx.Context, sha string) (*entity.Export,
 }
 
 // GetExport 获取指定的数据
-func (r Export) GetExport(ctx kratosx.Context, id uint32) (*entity.Export, error) {
+func (r Export) GetExport(ctx core.Context, id uint32) (*entity.Export, error) {
 	var (
 		export = entity.Export{}
 		fs     = []string{"*"}
@@ -136,12 +122,12 @@ func (r Export) GetExport(ctx kratosx.Context, id uint32) (*entity.Export, error
 }
 
 // UpdateExport 更新数据
-func (r Export) UpdateExport(ctx kratosx.Context, export *entity.Export) error {
+func (r Export) UpdateExport(ctx core.Context, export *entity.Export) error {
 	return ctx.DB().Where("id=?", export.Id).Updates(export).Error
 }
 
 // GetExportFileKeyById 获取导出的key
-func (r Export) GetExportFileKeyById(ctx kratosx.Context, id uint32) (string, error) {
+func (r Export) GetExportFileKeyById(ctx core.Context, id uint32) (string, error) {
 	var key string
 	if err := ctx.DB().Model(entity.File{}).Select("key").Where("id=?", id).Scan(&key).Error; err != nil {
 		return "", err
@@ -149,7 +135,7 @@ func (r Export) GetExportFileKeyById(ctx kratosx.Context, id uint32) (string, er
 	return key, nil
 }
 
-func (r Export) GetExportFileCount(ctx kratosx.Context, req *types.GetExportFileCountRequest) (int64, error) {
+func (r Export) GetExportFileCount(ctx core.Context, req *types.GetExportFileCountRequest) (int64, error) {
 	var count int64
 	return count, ctx.DB().Model(entity.Export{}).
 		Where("sha=?", req.Sha).

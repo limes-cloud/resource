@@ -6,23 +6,25 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm/logger"
 	"io"
 	"os"
 	"strings"
 	"time"
 	"unsafe"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/limes-cloud/kratosx/library/lock"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
-	"github.com/limes-cloud/kratosx/pkg/lock"
 	"gorm.io/gorm"
 
-	"github.com/limes-cloud/resource/internal/infra/store/config"
 	"github.com/limes-cloud/resource/internal/infra/store/types"
 )
 
 type Local struct {
+	ctx       context.Context
 	antiTheft bool
 	keyword   string
 	dir       string
@@ -39,14 +41,17 @@ type upload struct {
 	Local *Local
 }
 
-func New(conf *config.Config) (*Local, error) {
+func New(ctx core.Context) (*Local, error) {
+	conf := ctx.Config().Storage
 	return &Local{
-		keyword:   conf.Keyword,
-		dir:       conf.LocalDir,
-		db:        conf.DB,
+		ctx: context.Background(),
+		dir: conf.LocalDir,
+		db: ctx.DB().Session(&gorm.Session{
+			Logger: logger.Default.LogMode(logger.Silent),
+		}),
 		secret:    conf.Secret,
 		expire:    conf.TemporaryExpire,
-		cache:     conf.Cache,
+		cache:     ctx.Redis(),
 		url:       conf.ServerURL,
 		antiTheft: conf.AntiTheft,
 	}, nil
@@ -63,10 +68,10 @@ func (s *Local) GenTemporaryURL(key string) (string, error) {
 	var (
 		err    error
 		target string
-		locker = lock.New(s.cache, key+":lock")
+		locker = lock.New(s.ctx, key+":lock")
 	)
 	ck := fmt.Sprintf("resource:%x", md5.Sum([]byte(key)))
-	err = locker.AcquireFunc(context.Background(),
+	err = locker.AcquireFunc(
 		func() error {
 			target, err = s.cache.Get(context.Background(), ck).Result()
 			return err
