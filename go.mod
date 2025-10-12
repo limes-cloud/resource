@@ -8,8 +8,8 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/go-kratos/kratos/v2 v2.8.4
 	github.com/google/uuid v1.6.0
-	github.com/limes-cloud/kratosx v1.2.4
-	github.com/limes-cloud/manager/api v0.0.1
+	github.com/limes-cloud/kratosx v1.2.5
+	github.com/limes-cloud/manager/api v0.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/spf13/cast v1.9.2
@@ -126,7 +126,4 @@ require (
 	gorm.io/driver/sqlserver v1.6.1 // indirect
 )
 
-replace (
-github.com/limes-cloud/manager/api v0.0.1 => ../../server/manager/api
-github.com/limes-cloud/kratosx v1.2.4 => ../../framework/kratosx
-)
+replace github.com/limes-cloud/manager/api v0.0.0 => ../../server/manager/api
