@@ -149,13 +149,21 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	if err == nil {
 		// 触发秒传
 		if oldFile.Status == STATUS_COMPLETED {
-			if _, err := u.repo.CreateUserFile(ctx, &entity.UserFile{
-				DirectoryId: directoryId,
-				Name:        req.Name,
-				FileId:      oldFile.Id,
-			}); err != nil {
+			// 判断当前用户是否已经拥有了图片
+			has, err := u.repo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
+			if err != nil {
 				return nil, errors.UploadFileError(err.Error())
 			}
+			if !has {
+				if _, err := u.repo.CreateUserFile(ctx, &entity.UserFile{
+					DirectoryId: directoryId,
+					Name:        req.Name,
+					FileId:      oldFile.Id,
+				}); err != nil {
+					return nil, errors.UploadFileError(err.Error())
+				}
+			}
+
 			return &types.PrepareUploadFileReply{
 				Uploaded: true,
 				Key:      proto.String(oldFile.Key),
@@ -253,7 +261,7 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 		ChunkSize:    proto.Uint32(chunkSize),
 		ChunkCount:   proto.Uint32(file.ChunkCount),
 		UploadChunks: nil,
-		Key:          proto.String(oldFile.Key),
+		Key:          proto.String(fmt.Sprintf("%s.%s", req.Sha, tp)),
 	}, nil
 }
 

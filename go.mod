@@ -5,11 +5,11 @@ go 1.24.6
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/baidubce/bce-sdk-go v0.9.226
-	github.com/envoyproxy/protoc-gen-validate v1.2.1
-	github.com/go-kratos/kratos/v2 v2.8.4
+	github.com/go-kratos/kratos/v2 v2.9.1
 	github.com/google/uuid v1.6.0
 	github.com/limes-cloud/kratosx v1.2.5
 	github.com/limes-cloud/manager/api v0.0.0
+	github.com/limes-cloud/resource/api v0.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/spf13/cast v1.9.2
@@ -17,9 +17,7 @@ require (
 	github.com/xuri/excelize/v2 v2.8.1
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/image v0.23.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20250818200422-3122310a409c
-	google.golang.org/grpc v1.75.0
-	google.golang.org/protobuf v1.36.8
+	google.golang.org/protobuf v1.36.10
 	gorm.io/gorm v1.30.1
 )
 
@@ -32,6 +30,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -110,14 +109,16 @@ require (
 	go.opentelemetry.io/proto/otlp v1.2.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797 // indirect
+	google.golang.org/grpc v1.76.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -126,4 +127,7 @@ require (
 	gorm.io/driver/sqlserver v1.6.1 // indirect
 )
 
-replace github.com/limes-cloud/manager/api v0.0.0 => ../../server/manager/api
+replace (
+	github.com/limes-cloud/manager/api v0.0.0 => ../../server/manager/api
+	github.com/limes-cloud/resource/api v0.0.0 => ../../server/resource/api
+)

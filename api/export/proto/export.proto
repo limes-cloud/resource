@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package resource.api.export;
-option go_package = ".;export";
+option go_package = "resource/api/export;export";
 option java_multiple_files = true;
 option java_package = "resource.api.export";
 

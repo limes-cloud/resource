@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package resource.api.file;
-option go_package = ".;file";
+option go_package = "resource/api/file;file";
 option java_multiple_files = true;
 option java_package = "resource.api.file";
 

@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 package resource.api.error;
-option go_package = ".;errors";
+option go_package = "resource/api/errors;errors";
 option java_multiple_files = true;
 option java_package = "resource.api.errors";
 
-import "errors/errors.proto";
+import "errorsx/errors.proto";
 
 enum ErrorReason {
   // 设置缺省错误码

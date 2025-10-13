@@ -196,6 +196,17 @@ func (r File) DeleteUserFile(ctx core.Context, ids []uint32, call func(UserFile 
 	return uint32(len(delIds)), nil
 }
 
+func (r File) IsExistUserFile(ctx core.Context, uid, fid uint32) (bool, error) {
+	var id uint32
+	if err := ctx.DB().Model(entity.UserFile{}).
+		Select("id").
+		Where("user_id=? and file_id=?", uid, fid).
+		Scan(&id).Error; err != nil {
+		return false, err
+	}
+	return id > 0, nil
+}
+
 func (r File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
 	var (
 		list  []*entity.UserFile

@@ -28,6 +28,9 @@ type File interface {
 	// DeleteFile 删除文件信息
 	DeleteFile(ctx core.Context, ids []uint32, call func(file *entity.File)) (uint32, error)
 
+	// IsExistUserFile 判断是否存在文件
+	IsExistUserFile(ctx core.Context, uid, fid uint32) (bool, error)
+
 	// CreateUserFile 创建文件信息
 	CreateUserFile(ctx core.Context, req *entity.UserFile) (uint32, error)
 
