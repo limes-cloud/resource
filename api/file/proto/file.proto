@@ -7,6 +7,25 @@ option java_package = "resource.api.file";
 
 import "validate/validate.proto";
 
+message GetUserFileRequest {
+  optional string directory = 1[(validate.rules).string = {min_len: 1}];
+  optional uint32 id = 3[(validate.rules).uint32 = {gte: 1}];
+  optional string key = 4[(validate.rules).string = {min_len: 1}];
+  optional string sha = 5[(validate.rules).string = {min_len: 1}];
+}
+
+message GetUserFileReply {
+  uint32 id = 1;
+  uint32 directoryId = 2;
+  string name = 3;
+  string type = 4;
+  uint32 size = 5;
+  string sha = 6;
+  string key = 7;
+  uint32 createdAt = 9;
+  uint32 updatedAt = 10;
+}
+
 message StaticFileRequest{
   string key = 1[(validate.rules).string = {min_len:1}];
   string expire = 2;

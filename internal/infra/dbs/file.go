@@ -144,7 +144,7 @@ func (r File) UpdateUserFile(ctx core.Context, uf *entity.UserFile) error {
 func (r File) DeleteUserFile(ctx core.Context, ids []uint32, call func(UserFile *entity.File)) (uint32, error) {
 	// 查询删除的文件所属的文件id
 	var fileIds []uint32
-	if err := ctx.DB().Select("file_id").
+	if err := ctx.DB().Model(entity.UserFile{}).Select("file_id").
 		Where("id in ?", ids).
 		Scan(&fileIds).Error; err != nil {
 		return 0, err
@@ -155,7 +155,7 @@ func (r File) DeleteUserFile(ctx core.Context, ids []uint32, call func(UserFile 
 		FileId uint32 `json:"file_id"`
 		Count  int64  `json:"count"`
 	}
-	if err := ctx.DB().Select("file_id", "count(*) count").
+	if err := ctx.DB().Model(entity.UserFile{}).Select("file_id", "count(*) count").
 		Where("file_id in ?", fileIds).
 		Group("file_id").
 		Scan(&results).Error; err != nil {
@@ -165,7 +165,7 @@ func (r File) DeleteUserFile(ctx core.Context, ids []uint32, call func(UserFile 
 	// 筛选需要删除的file_id
 	var delIds []uint32
 	for _, item := range results {
-		if item.Count > 1 {
+		if item.Count <= 1 {
 			delIds = append(delIds, item.FileId)
 		}
 	}
@@ -205,6 +205,16 @@ func (r File) IsExistUserFile(ctx core.Context, uid, fid uint32) (bool, error) {
 		return false, err
 	}
 	return id > 0, nil
+}
+
+// GetUserFile 获取指定的数据
+func (r File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error) {
+	var file = entity.UserFile{}
+	db := ctx.DB().Where("user_id = ?", req.UserId).Where("file_id = ?", req.FileId)
+	if req.DirectoryId != 0 {
+		db = db.Where("directory_id = ?", req.DirectoryId)
+	}
+	return &file, db.First(&file).Error
 }
 
 func (r File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {

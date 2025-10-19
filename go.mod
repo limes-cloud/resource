@@ -7,8 +7,9 @@ require (
 	github.com/baidubce/bce-sdk-go v0.9.226
 	github.com/go-kratos/kratos/v2 v2.9.1
 	github.com/google/uuid v1.6.0
-	github.com/limes-cloud/kratosx v1.2.5
-	github.com/limes-cloud/manager/api v0.0.0
+	github.com/limes-cloud/configure v1.0.49
+	github.com/limes-cloud/kratosx v1.2.6
+	github.com/limes-cloud/manager/api v0.0.0-20251019104000-8ffec8944c5c
 	github.com/limes-cloud/resource/api v0.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/redis/go-redis/v9 v9.4.0
@@ -127,7 +128,4 @@ require (
 	gorm.io/driver/sqlserver v1.6.1 // indirect
 )
 
-replace (
-	github.com/limes-cloud/manager/api v0.0.0 => ../../server/manager/api
-	github.com/limes-cloud/resource/api v0.0.0 => ../../server/resource/api
-)
+replace github.com/limes-cloud/resource/api v0.0.0 => ./api

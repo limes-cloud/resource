@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	File_GetUserFile_FullMethodName       = "/resource.api.file.File/GetUserFile"
 	File_GetFileBytes_FullMethodName      = "/resource.api.file.File/GetFileBytes"
 	File_ListFile_FullMethodName          = "/resource.api.file.File/ListFile"
 	File_PrepareUploadFile_FullMethodName = "/resource.api.file.File/PrepareUploadFile"
@@ -31,6 +32,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileClient interface {
+	// GetFile 获取指定的文件信息
+	GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...grpc.CallOption) (*GetUserFileReply, error)
 	// GetFile 获取指定的文件信息
 	GetFileBytes(ctx context.Context, in *GetFileBytesRequest, opts ...grpc.CallOption) (File_GetFileBytesClient, error)
 	// ListFile 获取文件信息列表
@@ -51,6 +54,15 @@ type fileClient struct {
 
 func NewFileClient(cc grpc.ClientConnInterface) FileClient {
 	return &fileClient{cc}
+}
+
+func (c *fileClient) GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...grpc.CallOption) (*GetUserFileReply, error) {
+	out := new(GetUserFileReply)
+	err := c.cc.Invoke(ctx, File_GetUserFile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *fileClient) GetFileBytes(ctx context.Context, in *GetFileBytesRequest, opts ...grpc.CallOption) (File_GetFileBytesClient, error) {
@@ -135,6 +147,8 @@ func (c *fileClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts
 // for forward compatibility
 type FileServer interface {
 	// GetFile 获取指定的文件信息
+	GetUserFile(context.Context, *GetUserFileRequest) (*GetUserFileReply, error)
+	// GetFile 获取指定的文件信息
 	GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error
 	// ListFile 获取文件信息列表
 	ListFile(context.Context, *ListFileRequest) (*ListFileReply, error)
@@ -153,6 +167,9 @@ type FileServer interface {
 type UnimplementedFileServer struct {
 }
 
+func (UnimplementedFileServer) GetUserFile(context.Context, *GetUserFileRequest) (*GetUserFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserFile not implemented")
+}
 func (UnimplementedFileServer) GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetFileBytes not implemented")
 }
@@ -182,6 +199,24 @@ type UnsafeFileServer interface {
 
 func RegisterFileServer(s grpc.ServiceRegistrar, srv FileServer) {
 	s.RegisterService(&File_ServiceDesc, srv)
+}
+
+func _File_GetUserFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileServer).GetUserFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: File_GetUserFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileServer).GetUserFile(ctx, req.(*GetUserFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _File_GetFileBytes_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -302,6 +337,10 @@ var File_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "resource.api.file.File",
 	HandlerType: (*FileServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetUserFile",
+			Handler:    _File_GetUserFile_Handler,
+		},
 		{
 			MethodName: "ListFile",
 			Handler:    _File_ListFile_Handler,

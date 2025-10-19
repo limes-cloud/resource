@@ -14,6 +14,7 @@ import (
 	_ "go.uber.org/automaxprocs"
 )
 
+// bu
 func main() {
 	srv := core.InitApp(
 		kratosx.WithRegistrarServer(app.Register),

@@ -1,5 +1,15 @@
 package types
 
+type GetUserFileRequest struct {
+	DirectoryId uint32
+	UserId      uint32
+	FileId      uint32
+	Directory   *string `json:"directory"`
+	Id          *uint32 `json:"id"`
+	Sha         *string `json:"sha"`
+	Key         *string `json:"key"`
+}
+
 type GetFileBytesRequest struct {
 	Id  *uint32 `json:"id"`
 	Sha *string `json:"sha"`

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm/logger"
 	"io"
 	"os"
 	"strings"
@@ -18,8 +17,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx/library/lock"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
-	"gorm.io/gorm"
-
 	"github.com/limes-cloud/resource/internal/infra/store/types"
 )
 
@@ -28,7 +25,6 @@ type Local struct {
 	antiTheft bool
 	keyword   string
 	dir       string
-	db        *gorm.DB
 	secret    string
 	cache     *redis.Client
 	expire    time.Duration
@@ -44,11 +40,8 @@ type upload struct {
 func New(ctx core.Context) (*Local, error) {
 	conf := ctx.Config().Storage
 	return &Local{
-		ctx: context.Background(),
-		dir: conf.LocalDir,
-		db: ctx.DB().Session(&gorm.Session{
-			Logger: logger.Default.LogMode(logger.Silent),
-		}),
+		ctx:       context.Background(),
+		dir:       conf.LocalDir,
 		secret:    conf.Secret,
 		expire:    conf.TemporaryExpire,
 		cache:     ctx.Redis(),
@@ -205,16 +198,16 @@ func (s *Local) NewPutChunkByUploadID(key, id string) (types.PutChunk, error) {
 
 func (u *upload) ChunkCount() int {
 	chunk := Chunk{}
-	chunks, _ := chunk.Parts(u.Local.db, u.uuid)
+	chunks, _ := chunk.UploadedChunkIndex(u.Local.dir, u.uuid)
 	return len(chunks)
 }
 
 func (u *upload) UploadedChunkIndex() []uint32 {
 	var arr []uint32
 	chunk := Chunk{}
-	chunks, _ := chunk.Parts(u.Local.db, u.uuid)
+	chunks, _ := chunk.UploadedChunkIndex(u.Local.dir, u.uuid)
 	for _, item := range chunks {
-		arr = append(arr, uint32(item.Index))
+		arr = append(arr, uint32(item))
 	}
 	return arr
 }
@@ -229,14 +222,6 @@ func (u *upload) Append(r io.Reader, index int) error {
 		return err
 	}
 
-	sha := crypto.Sha256(all)
-
-	oldChunk := Chunk{}
-	// 查询是否已经存在数据
-	if err := oldChunk.OneBySha(u.Local.db, sha); err == nil {
-		return oldChunk.Copy(u.Local.db, u.uuid, index)
-	}
-
 	chunk := Chunk{
 		UploadID: u.uuid,
 		Index:    index,
@@ -245,7 +230,7 @@ func (u *upload) Append(r io.Reader, index int) error {
 		Data:     *(*string)(unsafe.Pointer(&all)),
 	}
 
-	return chunk.Add(u.Local.db)
+	return chunk.Add(u.Local.dir)
 }
 
 func (u *upload) AppendBytes(r []byte, index int) error {
@@ -257,17 +242,17 @@ func (u *upload) AppendBytes(r []byte, index int) error {
 		Data:     *(*string)(unsafe.Pointer(&r)),
 	}
 
-	return chunk.Add(u.Local.db)
+	return chunk.Add(u.Local.dir)
 }
 
 func (u *upload) Abort() error {
 	chunk := Chunk{}
-	return chunk.Delete(u.Local.db, u.uuid)
+	return chunk.Delete(u.Local.dir, u.uuid)
 }
 
 func (u *upload) Complete() error {
 	chunk := Chunk{}
-	chunks, err := chunk.Parts(u.Local.db, u.uuid)
+	chunks, err := chunk.Parts(u.Local.dir, u.uuid)
 	if err != nil {
 		return err
 	}
@@ -293,6 +278,6 @@ func (u *upload) Complete() error {
 			return err
 		}
 	}
-	_ = chunk.Delete(u.Local.db, u.uuid)
+	_ = chunk.Delete(u.Local.dir, u.uuid)
 	return nil
 }

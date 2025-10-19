@@ -20,6 +20,7 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationFileDeleteFile = "/resource.api.file.File/DeleteFile"
+const OperationFileGetUserFile = "/resource.api.file.File/GetUserFile"
 const OperationFileListFile = "/resource.api.file.File/ListFile"
 const OperationFilePrepareUploadFile = "/resource.api.file.File/PrepareUploadFile"
 const OperationFileUpdateFile = "/resource.api.file.File/UpdateFile"
@@ -27,6 +28,8 @@ const OperationFileUpdateFile = "/resource.api.file.File/UpdateFile"
 type FileHTTPServer interface {
 	// DeleteFile DeleteFile 删除文件信息
 	DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileReply, error)
+	// GetUserFile GetFile 获取指定的文件信息
+	GetUserFile(context.Context, *GetUserFileRequest) (*GetUserFileReply, error)
 	// ListFile ListFile 获取文件信息列表
 	ListFile(context.Context, *ListFileRequest) (*ListFileReply, error)
 	// PrepareUploadFile PrepareUploadFile 预上传文件信息
@@ -37,11 +40,31 @@ type FileHTTPServer interface {
 
 func RegisterFileHTTPServer(s *http.Server, srv FileHTTPServer) {
 	r := s.Route("/")
+	r.GET("/resource/api/v1/user/file", _File_GetUserFile0_HTTP_Handler(srv))
 	r.GET("/resource/api/v1/files", _File_ListFile0_HTTP_Handler(srv))
 	r.POST("/resource/client/v1/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
 	r.POST("/resource/api/v1/file/prepare_upload", _File_PrepareUploadFile1_HTTP_Handler(srv))
 	r.PUT("/resource/api/v1/file", _File_UpdateFile0_HTTP_Handler(srv))
 	r.DELETE("/resource/api/v1/file", _File_DeleteFile0_HTTP_Handler(srv))
+}
+
+func _File_GetUserFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserFileRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationFileGetUserFile)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.GetUserFile(ctx, req.(*GetUserFileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserFileReply)
+		return ctx.Result(200, reply)
+	}
 }
 
 func _File_ListFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
@@ -150,6 +173,7 @@ func _File_DeleteFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) e
 
 type FileHTTPClient interface {
 	DeleteFile(ctx context.Context, req *DeleteFileRequest, opts ...http.CallOption) (rsp *DeleteFileReply, err error)
+	GetUserFile(ctx context.Context, req *GetUserFileRequest, opts ...http.CallOption) (rsp *GetUserFileReply, err error)
 	ListFile(ctx context.Context, req *ListFileRequest, opts ...http.CallOption) (rsp *ListFileReply, err error)
 	PrepareUploadFile(ctx context.Context, req *PrepareUploadFileRequest, opts ...http.CallOption) (rsp *PrepareUploadFileReply, err error)
 	UpdateFile(ctx context.Context, req *UpdateFileRequest, opts ...http.CallOption) (rsp *UpdateFileReply, err error)
@@ -170,6 +194,19 @@ func (c *FileHTTPClientImpl) DeleteFile(ctx context.Context, in *DeleteFileReque
 	opts = append(opts, http.Operation(OperationFileDeleteFile))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *FileHTTPClientImpl) GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...http.CallOption) (*GetUserFileReply, error) {
+	var out GetUserFileReply
+	pattern := "/resource/api/v1/user/file"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationFileGetUserFile))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

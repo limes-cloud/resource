@@ -58,13 +58,13 @@ func NewFile(
 	}
 }
 
-// GetFile 获取指定的文件信息
-func (u *File) GetFile(ctx core.Context, req *types.GetFileRequest) (*entity.File, error) {
-	var (
-		res *entity.File
-		err error
-	)
+// GetUserFile 获取用户指定的文件信息
+func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error) {
 
+	var (
+		err error
+		res *entity.File
+	)
 	if req.Id != nil {
 		res, err = u.repo.GetFile(ctx, *req.Id)
 	} else if req.Sha != nil {
@@ -81,7 +81,23 @@ func (u *File) GetFile(ctx core.Context, req *types.GetFileRequest) (*entity.Fil
 		return nil, errors.NotExistFileError()
 	}
 
-	return res, nil
+	if req.Directory != nil {
+		dir, err := u.directory.GetDirectoryLimitByPath(ctx, strings.Split(*req.Directory, "/"))
+		if err != nil {
+			return nil, errors.GetError()
+		}
+		req.DirectoryId = dir.DirectoryId
+	}
+
+	req.FileId = res.Id
+	req.UserId = ctx.Auth().UserId
+	uf, err := u.repo.GetUserFile(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	uf.File = res
+	return uf, nil
 }
 
 func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileBytesFunc) error {
@@ -303,6 +319,7 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 			u.mui[req.UploadId] = &sync.Once{}
 		}
 		u.rw.Unlock()
+		fmt.Println("upload", chunkFactory.ChunkCount(), file.ChunkCount)
 
 		// 当前已经上传完成
 		if chunkFactory.ChunkCount() == int(file.ChunkCount) {

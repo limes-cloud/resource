@@ -45,6 +45,30 @@ func init() {
 	})
 }
 
+func (s *File) GetUserFile(c context.Context, req *file.GetUserFileRequest) (*file.GetUserFileReply, error) {
+	res, err := s.srv.GetUserFile(core.MustContext(c), &types.GetUserFileRequest{
+		Directory: req.Directory,
+		Id:        req.Id,
+		Sha:       req.Sha,
+		Key:       req.Key,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &file.GetUserFileReply{
+		Id:          res.Id,
+		DirectoryId: res.DirectoryId,
+		Name:        res.Name,
+		Type:        res.File.Type,
+		Size:        res.File.Size,
+		Sha:         res.File.Sha,
+		Key:         res.File.Key,
+		CreatedAt:   uint32(res.CreatedAt),
+		UpdatedAt:   uint32(res.UpdatedAt),
+	}, nil
+
+}
+
 func (s *File) GetFileBytes(req *file.GetFileBytesRequest, reply file.File_GetFileBytesServer) error {
 	return s.srv.GetFileBytes(
 		core.MustContext(reply.Context()),

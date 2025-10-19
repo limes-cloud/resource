@@ -11,6 +11,13 @@ import "google/api/annotations.proto";
 service File{
 
   // GetFile 获取指定的文件信息
+  rpc GetUserFile (GetUserFileRequest) returns (GetUserFileReply) {
+    option (google.api.http) = {
+      get: "/resource/api/v1/user/file",
+    };
+  }
+
+  // GetFile 获取指定的文件信息
   rpc GetFileBytes (GetFileBytesRequest) returns (stream GetFileBytesReply) {}
 
   // ListFile 获取文件信息列表

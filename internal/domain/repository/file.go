@@ -7,6 +7,8 @@ import (
 )
 
 type File interface {
+	GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error)
+
 	// GetFile 获取指定的文件信息
 	GetFile(ctx core.Context, id uint32) (*entity.File, error)
 
