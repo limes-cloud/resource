@@ -40,12 +40,12 @@ type FileHTTPServer interface {
 
 func RegisterFileHTTPServer(s *http.Server, srv FileHTTPServer) {
 	r := s.Route("/")
-	r.GET("/resource/api/v1/user/file", _File_GetUserFile0_HTTP_Handler(srv))
-	r.GET("/resource/api/v1/files", _File_ListFile0_HTTP_Handler(srv))
-	r.POST("/resource/client/v1/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
-	r.POST("/resource/api/v1/file/prepare_upload", _File_PrepareUploadFile1_HTTP_Handler(srv))
-	r.PUT("/resource/api/v1/file", _File_UpdateFile0_HTTP_Handler(srv))
-	r.DELETE("/resource/api/v1/file", _File_DeleteFile0_HTTP_Handler(srv))
+	r.GET("/resource/api/user/file", _File_GetUserFile0_HTTP_Handler(srv))
+	r.GET("/resource/api/files", _File_ListFile0_HTTP_Handler(srv))
+	r.POST("/resource/client/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
+	r.POST("/resource/api/file/prepare_upload", _File_PrepareUploadFile1_HTTP_Handler(srv))
+	r.PUT("/resource/api/file", _File_UpdateFile0_HTTP_Handler(srv))
+	r.DELETE("/resource/api/file", _File_DeleteFile0_HTTP_Handler(srv))
 }
 
 func _File_GetUserFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
@@ -189,7 +189,7 @@ func NewFileHTTPClient(client *http.Client) FileHTTPClient {
 
 func (c *FileHTTPClientImpl) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...http.CallOption) (*DeleteFileReply, error) {
 	var out DeleteFileReply
-	pattern := "/resource/api/v1/file"
+	pattern := "/resource/api/file"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationFileDeleteFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -202,7 +202,7 @@ func (c *FileHTTPClientImpl) DeleteFile(ctx context.Context, in *DeleteFileReque
 
 func (c *FileHTTPClientImpl) GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...http.CallOption) (*GetUserFileReply, error) {
 	var out GetUserFileReply
-	pattern := "/resource/api/v1/user/file"
+	pattern := "/resource/api/user/file"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationFileGetUserFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -215,7 +215,7 @@ func (c *FileHTTPClientImpl) GetUserFile(ctx context.Context, in *GetUserFileReq
 
 func (c *FileHTTPClientImpl) ListFile(ctx context.Context, in *ListFileRequest, opts ...http.CallOption) (*ListFileReply, error) {
 	var out ListFileReply
-	pattern := "/resource/api/v1/files"
+	pattern := "/resource/api/files"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationFileListFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -228,7 +228,7 @@ func (c *FileHTTPClientImpl) ListFile(ctx context.Context, in *ListFileRequest, 
 
 func (c *FileHTTPClientImpl) PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...http.CallOption) (*PrepareUploadFileReply, error) {
 	var out PrepareUploadFileReply
-	pattern := "/resource/api/v1/file/prepare_upload"
+	pattern := "/resource/api/file/prepare_upload"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationFilePrepareUploadFile))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -241,7 +241,7 @@ func (c *FileHTTPClientImpl) PrepareUploadFile(ctx context.Context, in *PrepareU
 
 func (c *FileHTTPClientImpl) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...http.CallOption) (*UpdateFileReply, error) {
 	var out UpdateFileReply
-	pattern := "/resource/api/v1/file"
+	pattern := "/resource/api/file"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationFileUpdateFile))
 	opts = append(opts, http.PathTemplate(pattern))

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package resource.api.file;
-option go_package = "resource/api/file;file";
+option go_package = ".;file";
 option java_multiple_files = true;
 option java_package = "resource.api.file";
 
@@ -13,7 +13,7 @@ service File{
   // GetFile 获取指定的文件信息
   rpc GetUserFile (GetUserFileRequest) returns (GetUserFileReply) {
     option (google.api.http) = {
-      get: "/resource/api/v1/user/file",
+      get: "/resource/api/user/file",
     };
   }
 
@@ -23,17 +23,17 @@ service File{
   // ListFile 获取文件信息列表
   rpc ListFile (ListFileRequest) returns (ListFileReply) {
     option (google.api.http) = {
-      get: "/resource/api/v1/files",
+      get: "/resource/api/files",
     };
   }
 
   // PrepareUploadFile 预上传文件信息
   rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
     option (google.api.http) = {
-      post: "/resource/api/v1/file/prepare_upload",
+      post: "/resource/api/file/prepare_upload",
       body: "*",
       additional_bindings:{
-        post: "/resource/client/v1/file/prepare_upload",
+        post: "/resource/client/file/prepare_upload",
         body: "*",
       }
     };
@@ -45,7 +45,7 @@ service File{
   // UpdateFile 更新文件信息
   rpc UpdateFile (UpdateFileRequest) returns (UpdateFileReply) {
     option (google.api.http) = {
-      put: "/resource/api/v1/file",
+      put: "/resource/api/file",
       body: "*"
     };
   }
@@ -53,7 +53,7 @@ service File{
   // DeleteFile 删除文件信息
   rpc DeleteFile (DeleteFileRequest) returns (DeleteFileReply) {
     option (google.api.http) = {
-      delete: "/resource/api/v1/file",
+      delete: "/resource/api/file",
     };
   }
 

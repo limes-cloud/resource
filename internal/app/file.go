@@ -40,8 +40,8 @@ func init() {
 		cr.GET("/resource/api/static/{key}", app.srv.KeyBlob())
 		cr.GET("/resource/api/{key}", app.srv.Redirect())
 
-		cr.POST("/resource/api/v1/upload", app.Upload())
-		cr.POST("/resource/client/v1/upload", app.Upload())
+		cr.POST("/resource/api/chunk_upload", app.ChunkUpload())
+		cr.POST("/resource/api/upload", app.Upload())
 	})
 }
 
@@ -126,7 +126,6 @@ func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileR
 		Name:          req.Name,
 		Size:          req.Size,
 		Sha:           req.Sha,
-		Store:         req.Store,
 	})
 	if err != nil {
 		return nil, err
@@ -146,6 +145,23 @@ func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileR
 // UploadFile 上传文件信息
 func (s *File) UploadFile(c context.Context, req *file.UploadFileRequest) (*file.UploadFileReply, error) {
 	reply, err := s.srv.UploadFile(core.MustContext(c), &types.UploadFileRequest{
+		DirectoryId:   req.DirectoryId,
+		DirectoryPath: req.DirectoryPath,
+		Data:          req.Data,
+		Sha:           req.Sha,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &file.UploadFileReply{
+		Sha: reply.Sha,
+		Key: reply.Key,
+	}, nil
+}
+
+// UploadChunkFile 上传文件信息
+func (s *File) UploadChunkFile(c context.Context, req *file.UploadChunkFileRequest) (*file.UploadFileReply, error) {
+	reply, err := s.srv.UploadChunkFile(core.MustContext(c), &types.UploadChunkFileRequest{
 		UploadId: req.UploadId,
 		Index:    req.Index,
 		Data:     req.Data,
@@ -180,9 +196,9 @@ func (s *File) DeleteFile(c context.Context, req *file.DeleteFileRequest) (*file
 	return &file.DeleteFileReply{Total: total}, nil
 }
 
-func (s *File) Upload() http.HandlerFunc {
+func (s *File) ChunkUpload() http.HandlerFunc {
 	return func(ctx http.Context) error {
-		var in file.UploadFileRequest
+		var in file.UploadChunkFileRequest
 
 		in.UploadId = ctx.Request().FormValue("uploadId")
 		in.Index = cast.ToUint32(ctx.Request().FormValue("index"))
@@ -197,6 +213,43 @@ func (s *File) Upload() http.HandlerFunc {
 		}
 		if in.UploadId == "" || int(in.Index) <= 0 || len(in.Data) == 0 {
 			return errors.ParamsError()
+		}
+
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return s.UploadChunkFile(ctx, req.(*file.UploadChunkFileRequest))
+		})
+
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*file.UploadFileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func (s *File) Upload() http.HandlerFunc {
+	return func(ctx http.Context) error {
+		var in file.UploadFileRequest
+
+		if ctx.Request().FormValue("directoryId") != "" {
+			v := cast.ToUint32(ctx.Request().FormValue("directoryId"))
+			in.DirectoryId = &v
+		}
+		if ctx.Request().FormValue("directoryPath") != "" {
+			v := ctx.Request().FormValue("directoryPath")
+			in.DirectoryPath = &v
+		}
+		in.Sha = ctx.Request().FormValue("sha")
+		in.Name = ctx.Request().FormValue("name")
+		fileByte, _, err := ctx.Request().FormFile("data")
+		if err != nil {
+			return errors.UploadFileError(err.Error())
+		}
+
+		in.Data, err = io.ReadAll(fileByte)
+		if err != nil {
+			return errors.UploadFileError(err.Error())
 		}
 
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {

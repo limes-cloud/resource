@@ -281,8 +281,98 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	}, nil
 }
 
-// UploadFile 上传文件信息
 func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*types.UploadFileReply, error) {
+	var (
+		err         error
+		limit       *entity.DirectoryLimit
+		directoryId uint32
+	)
+	if req.DirectoryId != nil {
+		limit, err = u.directory.GetDirectoryLimitById(ctx, *req.DirectoryId)
+	} else {
+		paths := strings.Split(*req.DirectoryPath, "/")
+		limit, err = u.directory.GetDirectoryLimitByPath(ctx, paths)
+	}
+	if err != nil {
+		return nil, errors.DatabaseError(err.Error())
+	}
+
+	// 校验是否存在上传记录
+	oldFile, err := u.repo.GetFileBySha(ctx, req.Sha)
+	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.UpdateError(err.Error())
+	}
+	if err == nil && oldFile.Status == STATUS_COMPLETED {
+		// 判断当前用户是否已经拥有了图片
+		has, err := u.repo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
+		if err != nil {
+			return nil, errors.UploadFileError(err.Error())
+		}
+		if !has {
+			if _, err := u.repo.CreateUserFile(ctx, &entity.UserFile{
+				DirectoryId: directoryId,
+				Name:        req.Name,
+				FileId:      oldFile.Id,
+			}); err != nil {
+				return nil, errors.UploadFileError(err.Error())
+			}
+		}
+
+		return &types.UploadFileReply{
+			Key: oldFile.Key,
+			Sha: oldFile.Sha,
+		}, nil
+	}
+
+	// 校验文件大小
+	fileSize := uint32(len(req.Data))
+	if size := pkg.GetKBSize(limit.MaxSize); size < fileSize {
+		return nil, errors.ExceedMaxSizeError()
+	}
+
+	// 校验文件类型
+	tp := pkg.GetFileType(req.Name)
+	if !value.InList(limit.Accepts, tp) {
+		return nil, errors.NoSupportFileTypeError()
+	}
+
+	// 构建文件对象
+	file := &entity.File{
+		Size:       fileSize,
+		Sha:        req.Sha,
+		Key:        fmt.Sprintf("%s.%s", req.Sha, tp),
+		Status:     STATUS_COMPLETED,
+		Type:       tp,
+		UploadId:   uuid.NewString(),
+		ChunkCount: 1,
+	}
+
+	err = ctx.Transaction(func(ctx core.Context) error {
+		id, err := u.repo.CreateFile(ctx, file)
+		if err != nil {
+			return err
+		}
+		if _, err = u.repo.CreateUserFile(ctx, &entity.UserFile{
+			DirectoryId: directoryId,
+			Name:        req.Name,
+			FileId:      id,
+		}); err != nil {
+			return err
+		}
+		return u.store.PutBytes(file.Key, req.Data)
+	})
+	if err != nil {
+		return nil, errors.UpdateError(err.Error())
+	}
+
+	return &types.UploadFileReply{
+		Sha: req.Sha,
+		Key: file.Key,
+	}, nil
+}
+
+// UploadChunkFile 上传文件信息
+func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileRequest) (*types.UploadFileReply, error) {
 	file, err := u.repo.GetFileByUploadId(ctx, req.UploadId)
 	if err != nil {
 		return nil, errors.UpdateError("不存在上传任务")
@@ -319,7 +409,6 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 			u.mui[req.UploadId] = &sync.Once{}
 		}
 		u.rw.Unlock()
-		fmt.Println("upload", chunkFactory.ChunkCount(), file.ChunkCount)
 
 		// 当前已经上传完成
 		if chunkFactory.ChunkCount() == int(file.ChunkCount) {

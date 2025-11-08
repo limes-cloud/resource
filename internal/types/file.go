@@ -45,7 +45,6 @@ type ListUserFileRequest struct {
 }
 
 type PrepareUploadFileRequest struct {
-	Store         *string `json:"store"`
 	DirectoryId   *uint32 `json:"directoryId"`
 	DirectoryPath *string `json:"directoryPath"`
 	Name          string  `json:"name"`
@@ -65,6 +64,14 @@ type PrepareUploadFileReply struct {
 }
 
 type UploadFileRequest struct {
+	DirectoryId   *uint32 `json:"directoryId"`
+	DirectoryPath *string `json:"directoryPath"`
+	Name          string  `json:"name"`
+	Sha           string  `json:"sha"`
+	Data          []byte  `json:"data"`
+}
+
+type UploadChunkFileRequest struct {
 	Data     []byte `json:"data"`
 	UploadId string `json:"uploadId"`
 	Index    uint32 `json:"index"`

@@ -35,6 +35,286 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on GetUserFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetUserFileRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUserFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUserFileRequestMultiError, or nil if none found.
+func (m *GetUserFileRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUserFileRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.Directory != nil {
+
+		if utf8.RuneCountInString(m.GetDirectory()) < 1 {
+			err := GetUserFileRequestValidationError{
+				field:  "Directory",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.Id != nil {
+
+		if m.GetId() < 1 {
+			err := GetUserFileRequestValidationError{
+				field:  "Id",
+				reason: "value must be greater than or equal to 1",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.Key != nil {
+
+		if utf8.RuneCountInString(m.GetKey()) < 1 {
+			err := GetUserFileRequestValidationError{
+				field:  "Key",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.Sha != nil {
+
+		if utf8.RuneCountInString(m.GetSha()) < 1 {
+			err := GetUserFileRequestValidationError{
+				field:  "Sha",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetUserFileRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUserFileRequestMultiError is an error wrapping multiple validation errors
+// returned by GetUserFileRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetUserFileRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUserFileRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUserFileRequestMultiError) AllErrors() []error { return m }
+
+// GetUserFileRequestValidationError is the validation error returned by
+// GetUserFileRequest.Validate if the designated constraints aren't met.
+type GetUserFileRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUserFileRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUserFileRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUserFileRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUserFileRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUserFileRequestValidationError) ErrorName() string {
+	return "GetUserFileRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUserFileRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUserFileRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUserFileRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUserFileRequestValidationError{}
+
+// Validate checks the field values on GetUserFileReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetUserFileReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUserFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUserFileReplyMultiError, or nil if none found.
+func (m *GetUserFileReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUserFileReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for DirectoryId
+
+	// no validation rules for Name
+
+	// no validation rules for Type
+
+	// no validation rules for Size
+
+	// no validation rules for Sha
+
+	// no validation rules for Key
+
+	// no validation rules for CreatedAt
+
+	// no validation rules for UpdatedAt
+
+	if len(errors) > 0 {
+		return GetUserFileReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUserFileReplyMultiError is an error wrapping multiple validation errors
+// returned by GetUserFileReply.ValidateAll() if the designated constraints
+// aren't met.
+type GetUserFileReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUserFileReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUserFileReplyMultiError) AllErrors() []error { return m }
+
+// GetUserFileReplyValidationError is the validation error returned by
+// GetUserFileReply.Validate if the designated constraints aren't met.
+type GetUserFileReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUserFileReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUserFileReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUserFileReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUserFileReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUserFileReplyValidationError) ErrorName() string { return "GetUserFileReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetUserFileReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUserFileReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUserFileReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUserFileReplyValidationError{}
+
 // Validate checks the field values on StaticFileRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -1235,21 +1515,6 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 
 	}
 
-	if m.Store != nil {
-
-		if utf8.RuneCountInString(m.GetStore()) < 1 {
-			err := PrepareUploadFileRequestValidationError{
-				field:  "Store",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
-
 	if len(errors) > 0 {
 		return PrepareUploadFileRequestMultiError(errors)
 	}
@@ -1454,6 +1719,247 @@ var _ interface {
 	ErrorName() string
 } = PrepareUploadFileReplyValidationError{}
 
+// Validate checks the field values on UploadChunkFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadChunkFileRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadChunkFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadChunkFileRequestMultiError, or nil if none found.
+func (m *UploadChunkFileRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadChunkFileRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(m.GetData()) < 0 {
+		err := UploadChunkFileRequestValidationError{
+			field:  "Data",
+			reason: "value length must be at least 0 bytes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetUploadId()) < 1 {
+		err := UploadChunkFileRequestValidationError{
+			field:  "UploadId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetIndex() <= 0 {
+		err := UploadChunkFileRequestValidationError{
+			field:  "Index",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return UploadChunkFileRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadChunkFileRequestMultiError is an error wrapping multiple validation
+// errors returned by UploadChunkFileRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UploadChunkFileRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadChunkFileRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadChunkFileRequestMultiError) AllErrors() []error { return m }
+
+// UploadChunkFileRequestValidationError is the validation error returned by
+// UploadChunkFileRequest.Validate if the designated constraints aren't met.
+type UploadChunkFileRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadChunkFileRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadChunkFileRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadChunkFileRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadChunkFileRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadChunkFileRequestValidationError) ErrorName() string {
+	return "UploadChunkFileRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadChunkFileRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadChunkFileRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadChunkFileRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadChunkFileRequestValidationError{}
+
+// Validate checks the field values on UploadChunkFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadChunkFileReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadChunkFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadChunkFileReplyMultiError, or nil if none found.
+func (m *UploadChunkFileReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadChunkFileReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Sha
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return UploadChunkFileReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadChunkFileReplyMultiError is an error wrapping multiple validation
+// errors returned by UploadChunkFileReply.ValidateAll() if the designated
+// constraints aren't met.
+type UploadChunkFileReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadChunkFileReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadChunkFileReplyMultiError) AllErrors() []error { return m }
+
+// UploadChunkFileReplyValidationError is the validation error returned by
+// UploadChunkFileReply.Validate if the designated constraints aren't met.
+type UploadChunkFileReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadChunkFileReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadChunkFileReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadChunkFileReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadChunkFileReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadChunkFileReplyValidationError) ErrorName() string {
+	return "UploadChunkFileReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadChunkFileReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadChunkFileReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadChunkFileReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadChunkFileReplyValidationError{}
+
 // Validate checks the field values on UploadFileRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -1476,6 +1982,28 @@ func (m *UploadFileRequest) validate(all bool) error {
 
 	var errors []error
 
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := UploadFileRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSha()) < 1 {
+		err := UploadFileRequestValidationError{
+			field:  "Sha",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(m.GetData()) < 0 {
 		err := UploadFileRequestValidationError{
 			field:  "Data",
@@ -1487,26 +2015,34 @@ func (m *UploadFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetUploadId()) < 1 {
-		err := UploadFileRequestValidationError{
-			field:  "UploadId",
-			reason: "value length must be at least 1 runes",
+	if m.DirectoryId != nil {
+
+		if m.GetDirectoryId() <= 0 {
+			err := UploadFileRequestValidationError{
+				field:  "DirectoryId",
+				reason: "value must be greater than 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
-	if m.GetIndex() <= 0 {
-		err := UploadFileRequestValidationError{
-			field:  "Index",
-			reason: "value must be greater than 0",
+	if m.DirectoryPath != nil {
+
+		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
+			err := UploadFileRequestValidationError{
+				field:  "DirectoryPath",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	if len(errors) > 0 {

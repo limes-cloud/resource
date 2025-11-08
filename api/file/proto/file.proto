@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package resource.api.file;
-option go_package = "resource/api/file;file";
+option go_package = ".;file";
 option java_multiple_files = true;
 option java_package = "resource.api.file";
 
@@ -99,7 +99,6 @@ message ListFileReply {
 message PrepareUploadFileRequest {
   optional uint32 directoryId = 1[(validate.rules).uint32 = {gt: 0}];
   optional string directoryPath = 2[(validate.rules).string = {min_len: 1}];
-  optional string store = 6[(validate.rules).string = {min_len: 1}];
   string name = 3[(validate.rules).string = {min_len: 1}];
   uint32 size = 4[(validate.rules).uint32 = {gt:0}];
   string sha = 5[(validate.rules).string = {min_len: 1}];
@@ -115,10 +114,23 @@ message PrepareUploadFileReply {
   optional string sha = 7;
 }
 
-message UploadFileRequest{
+message UploadChunkFileRequest{
   bytes data = 1[(validate.rules).bytes = {min_len:0}];
   string uploadId = 2[(validate.rules).string = {min_len:1}];
   uint32 index = 3[(validate.rules).uint32 = {gt:0}];;
+}
+
+message UploadChunkFileReply{
+  string sha = 1;
+  string key = 2;
+}
+
+message UploadFileRequest{
+  optional uint32 directoryId = 1[(validate.rules).uint32 = {gt: 0}];
+  optional string directoryPath = 2[(validate.rules).string = {min_len: 1}];
+  string name = 3[(validate.rules).string = {min_len: 1}];
+  string sha = 4[(validate.rules).string = {min_len: 1}];
+  bytes data = 5[(validate.rules).bytes = {min_len:0}];
 }
 
 message UploadFileReply{
