@@ -20,8 +20,8 @@ service File{
   // GetFile 获取指定的文件信息
   rpc GetFileBytes (GetFileBytesRequest) returns (stream GetFileBytesReply) {}
 
-  // ListFile 获取文件信息列表
-  rpc ListFile (ListFileRequest) returns (ListFileReply) {
+  // ListUserFile 获取文件信息列表
+  rpc ListUserFile (ListUserFileRequest) returns (ListUserFileReply) {
     option (google.api.http) = {
       get: "/resource/api/files",
     };
@@ -43,15 +43,15 @@ service File{
   rpc UploadFile(UploadFileRequest) returns (UploadFileReply){}
 
   // UpdateFile 更新文件信息
-  rpc UpdateFile (UpdateFileRequest) returns (UpdateFileReply) {
+  rpc UpdateUserFile (UpdateUserFileRequest) returns (UpdateUserFileReply) {
     option (google.api.http) = {
       put: "/resource/api/file",
       body: "*"
     };
   }
 
-  // DeleteFile 删除文件信息
-  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileReply) {
+  // DeleteUserFile 删除文件信息
+  rpc DeleteUserFile (DeleteUserFileRequest) returns (DeleteUserFileReply) {
     option (google.api.http) = {
       delete: "/resource/api/file",
     };

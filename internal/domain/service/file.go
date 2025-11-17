@@ -127,8 +127,8 @@ func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileByt
 	return nil
 }
 
-// ListFile 获取文件信息列表
-func (u *File) ListFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
+// ListUserFile 获取文件信息列表
+func (u *File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
 	list, total, err := u.repo.ListUserFile(ctx, req)
 	if err != nil {
 		return nil, 0, errors.ListError(err.Error())
@@ -448,16 +448,16 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 	}, nil
 }
 
-// UpdateFile 更新文件信息
-func (u *File) UpdateFile(ctx core.Context, req *entity.UserFile) error {
+// UpdateUserFile 更新文件信息
+func (u *File) UpdateUserFile(ctx core.Context, req *entity.UserFile) error {
 	if err := u.repo.UpdateUserFile(ctx, req); err != nil {
 		return errors.UpdateError(err.Error())
 	}
 	return nil
 }
 
-// DeleteFile 删除文件信息
-func (u *File) DeleteFile(ctx core.Context, ids []uint32) (uint32, error) {
+// DeleteUserFile 删除文件信息
+func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
 	total, err := u.repo.DeleteUserFile(ctx, ids, func(file *entity.File) {
 		if file.Status == STATUS_COMPLETED {
 			_ = u.store.Delete(file.Key)

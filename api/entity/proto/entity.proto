@@ -9,8 +9,6 @@ option java_outer_classname = "EntityV1";
 
 import "validate/validate.proto";
 
-
-
 message LoadEntityReply {
   message EntityField{
     string name = 1;

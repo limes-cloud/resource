@@ -41,11 +41,11 @@ type DirectoryHTTPServer interface {
 
 func RegisterDirectoryHTTPServer(s *http.Server, srv DirectoryHTTPServer) {
 	r := s.Route("/")
-	r.GET("/resource/api/v1/directory", _Directory_GetDirectory0_HTTP_Handler(srv))
-	r.GET("/resource/api/v1/directories", _Directory_ListDirectory0_HTTP_Handler(srv))
-	r.POST("/resource/api/v1/directory", _Directory_CreateDirectory0_HTTP_Handler(srv))
-	r.PUT("/resource/api/v1/directory", _Directory_UpdateDirectory0_HTTP_Handler(srv))
-	r.DELETE("/resource/api/v1/directory", _Directory_DeleteDirectory0_HTTP_Handler(srv))
+	r.GET("/resource/api/directory", _Directory_GetDirectory0_HTTP_Handler(srv))
+	r.GET("/resource/api/directories", _Directory_ListDirectory0_HTTP_Handler(srv))
+	r.POST("/resource/api/directory", _Directory_CreateDirectory0_HTTP_Handler(srv))
+	r.PUT("/resource/api/directory", _Directory_UpdateDirectory0_HTTP_Handler(srv))
+	r.DELETE("/resource/api/directory", _Directory_DeleteDirectory0_HTTP_Handler(srv))
 }
 
 func _Directory_GetDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
@@ -167,7 +167,7 @@ func NewDirectoryHTTPClient(client *http.Client) DirectoryHTTPClient {
 
 func (c *DirectoryHTTPClientImpl) CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...http.CallOption) (*CreateDirectoryReply, error) {
 	var out CreateDirectoryReply
-	pattern := "/resource/api/v1/directory"
+	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationDirectoryCreateDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -180,7 +180,7 @@ func (c *DirectoryHTTPClientImpl) CreateDirectory(ctx context.Context, in *Creat
 
 func (c *DirectoryHTTPClientImpl) DeleteDirectory(ctx context.Context, in *DeleteDirectoryRequest, opts ...http.CallOption) (*DeleteDirectoryReply, error) {
 	var out DeleteDirectoryReply
-	pattern := "/resource/api/v1/directory"
+	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationDirectoryDeleteDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -193,7 +193,7 @@ func (c *DirectoryHTTPClientImpl) DeleteDirectory(ctx context.Context, in *Delet
 
 func (c *DirectoryHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirectoryRequest, opts ...http.CallOption) (*GetDirectoryReply, error) {
 	var out GetDirectoryReply
-	pattern := "/resource/api/v1/directory"
+	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationDirectoryGetDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -206,7 +206,7 @@ func (c *DirectoryHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirec
 
 func (c *DirectoryHTTPClientImpl) ListDirectory(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*ListDirectoryReply, error) {
 	var out ListDirectoryReply
-	pattern := "/resource/api/v1/directories"
+	pattern := "/resource/api/directories"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationDirectoryListDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -219,7 +219,7 @@ func (c *DirectoryHTTPClientImpl) ListDirectory(ctx context.Context, in *emptypb
 
 func (c *DirectoryHTTPClientImpl) UpdateDirectory(ctx context.Context, in *UpdateDirectoryRequest, opts ...http.CallOption) (*UpdateDirectoryReply, error) {
 	var out UpdateDirectoryReply
-	pattern := "/resource/api/v1/directory"
+	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationDirectoryUpdateDirectory))
 	opts = append(opts, http.PathTemplate(pattern))

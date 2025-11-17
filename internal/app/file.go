@@ -36,9 +36,8 @@ func init() {
 		file.RegisterFileServer(gs, app)
 
 		cr := hs.Route("/")
-		//cr.GET("/resource/api/v1/static/{expire}/{sign}/{key}", app.srv.SrcBlob())
 		cr.GET("/resource/api/static/{key}", app.srv.KeyBlob())
-		cr.GET("/resource/api/{key}", app.srv.Redirect())
+		cr.GET("/resource/{key}", app.srv.Redirect())
 
 		cr.POST("/resource/api/chunk_upload", app.ChunkUpload())
 		cr.POST("/resource/api/upload", app.Upload())
@@ -81,9 +80,9 @@ func (s *File) GetFileBytes(req *file.GetFileBytesRequest, reply file.File_GetFi
 	)
 }
 
-// ListFile 获取文件信息列表
-func (s *File) ListFile(c context.Context, req *file.ListFileRequest) (*file.ListFileReply, error) {
-	list, total, err := s.srv.ListFile(core.MustContext(c), &types.ListFileRequest{
+// ListUserFile 获取文件信息列表
+func (s *File) ListUserFile(c context.Context, req *file.ListUserFileRequest) (*file.ListUserFileReply, error) {
+	list, total, err := s.srv.ListUserFile(core.MustContext(c), &types.ListFileRequest{
 		Page:        req.Page,
 		PageSize:    req.PageSize,
 		Order:       req.Order,
@@ -97,9 +96,9 @@ func (s *File) ListFile(c context.Context, req *file.ListFileRequest) (*file.Lis
 		return nil, err
 	}
 
-	reply := file.ListFileReply{Total: total}
+	reply := file.ListUserFileReply{Total: total}
 	for _, item := range list {
-		reply.List = append(reply.List, &file.ListFileReply_File{
+		reply.List = append(reply.List, &file.ListUserFileReply_File{
 			Id:          item.Id,
 			DirectoryId: item.DirectoryId,
 			Name:        item.Name,
@@ -175,25 +174,25 @@ func (s *File) UploadChunkFile(c context.Context, req *file.UploadChunkFileReque
 	}, nil
 }
 
-// UpdateFile 更新文件信息
-func (s *File) UpdateFile(c context.Context, req *file.UpdateFileRequest) (*file.UpdateFileReply, error) {
-	if err := s.srv.UpdateFile(core.MustContext(c), &entity.UserFile{
+// UpdateUserFile 更新文件信息
+func (s *File) UpdateUserFile(c context.Context, req *file.UpdateUserFileRequest) (*file.UpdateUserFileReply, error) {
+	if err := s.srv.UpdateUserFile(core.MustContext(c), &entity.UserFile{
 		BaseTenantUserModel: model.BaseTenantUserModel{Id: req.Id},
 		DirectoryId:         req.DirectoryId,
 		Name:                req.Name,
 	}); err != nil {
 		return nil, err
 	}
-	return &file.UpdateFileReply{}, nil
+	return &file.UpdateUserFileReply{}, nil
 }
 
-// DeleteFile 删除文件信息
-func (s *File) DeleteFile(c context.Context, req *file.DeleteFileRequest) (*file.DeleteFileReply, error) {
-	total, err := s.srv.DeleteFile(core.MustContext(c), req.Ids)
+// DeleteUserFile 删除文件信息
+func (s *File) DeleteUserFile(c context.Context, req *file.DeleteUserFileRequest) (*file.DeleteUserFileReply, error) {
+	total, err := s.srv.DeleteUserFile(core.MustContext(c), req.Ids)
 	if err != nil {
 		return nil, err
 	}
-	return &file.DeleteFileReply{Total: total}, nil
+	return &file.DeleteUserFileReply{Total: total}, nil
 }
 
 func (s *File) ChunkUpload() http.HandlerFunc {

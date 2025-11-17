@@ -11,12 +11,12 @@ paths:
             tags:
                 - File
             description: UpdateFile 更新文件信息
-            operationId: File_UpdateFile
+            operationId: File_UpdateUserFile
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateFileRequest'
+                            $ref: '#/components/schemas/UpdateUserFileRequest'
                 required: true
             responses:
                 "200":
@@ -24,7 +24,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/UpdateFileReply'
+                                $ref: '#/components/schemas/UpdateUserFileReply'
                 default:
                     description: Default error response
                     content:
@@ -34,8 +34,8 @@ paths:
         delete:
             tags:
                 - File
-            description: DeleteFile 删除文件信息
-            operationId: File_DeleteFile
+            description: DeleteUserFile 删除文件信息
+            operationId: File_DeleteUserFile
             parameters:
                 - name: ids
                   in: query
@@ -50,7 +50,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/DeleteFileReply'
+                                $ref: '#/components/schemas/DeleteUserFileReply'
                 default:
                     description: Default error response
                     content:
@@ -86,8 +86,8 @@ paths:
         get:
             tags:
                 - File
-            description: ListFile 获取文件信息列表
-            operationId: File_ListFile
+            description: ListUserFile 获取文件信息列表
+            operationId: File_ListUserFile
             parameters:
                 - name: page
                   in: query
@@ -132,7 +132,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListFileReply'
+                                $ref: '#/components/schemas/ListUserFileReply'
                 default:
                     description: Default error response
                     content:
@@ -203,7 +203,7 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        DeleteFileReply:
+        DeleteUserFileReply:
             type: object
             properties:
                 total:
@@ -243,7 +243,7 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        ListFileReply:
+        ListUserFileReply:
             type: object
             properties:
                 total:
@@ -252,8 +252,8 @@ components:
                 list:
                     type: array
                     items:
-                        $ref: '#/components/schemas/ListFileReply_File'
-        ListFileReply_File:
+                        $ref: '#/components/schemas/ListUserFileReply_File'
+        ListUserFileReply_File:
             type: object
             properties:
                 id:
@@ -332,10 +332,10 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        UpdateFileReply:
+        UpdateUserFileReply:
             type: object
             properties: {}
-        UpdateFileRequest:
+        UpdateUserFileRequest:
             type: object
             properties:
                 id:

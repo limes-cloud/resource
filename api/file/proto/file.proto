@@ -68,7 +68,7 @@ message GetFileBytesReply{
   bytes data = 1;
 }
 
-message ListFileRequest {
+message ListUserFileRequest {
   uint32 page = 1[(validate.rules).uint32 = {gt: 0}];
   uint32 pageSize = 2[(validate.rules).uint32 = {gt: 0,lte:50}];
   optional string order = 3[(validate.rules).string = {in: ["asc","desc"]}];
@@ -79,7 +79,7 @@ message ListFileRequest {
   repeated string keyList = 8;
 }
 
-message ListFileReply {
+message ListUserFileReply {
   message File {
     uint32 id = 1;
     uint32 directoryId = 2;
@@ -138,20 +138,20 @@ message UploadFileReply{
   string key = 2;
 }
 
-message UpdateFileRequest {
+message UpdateUserFileRequest {
   uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
   uint32 directoryId = 2[(validate.rules).uint32 = {gt: 0}];
   string name = 3[(validate.rules).string = {min_len: 1}];
 }
 
-message UpdateFileReply {
+message UpdateUserFileReply {
 }
 
-message DeleteFileRequest {
+message DeleteUserFileRequest {
   repeated uint32 ids = 1[(validate.rules).repeated = {min_items: 1, unique:true, max_items:50}];
 }
 
-message DeleteFileReply {
+message DeleteUserFileReply {
   uint32 total = 1;
 }
 

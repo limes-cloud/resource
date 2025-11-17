@@ -1103,22 +1103,22 @@ var _ interface {
 	ErrorName() string
 } = GetFileBytesReplyValidationError{}
 
-// Validate checks the field values on ListFileRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *ListFileRequest) Validate() error {
+// Validate checks the field values on ListUserFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListUserFileRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListFileRequest with the rules
+// ValidateAll checks the field values on ListUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListFileRequestMultiError, or nil if none found.
-func (m *ListFileRequest) ValidateAll() error {
+// ListUserFileRequestMultiError, or nil if none found.
+func (m *ListUserFileRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListFileRequest) validate(all bool) error {
+func (m *ListUserFileRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1126,7 +1126,7 @@ func (m *ListFileRequest) validate(all bool) error {
 	var errors []error
 
 	if m.GetPage() <= 0 {
-		err := ListFileRequestValidationError{
+		err := ListUserFileRequestValidationError{
 			field:  "Page",
 			reason: "value must be greater than 0",
 		}
@@ -1137,7 +1137,7 @@ func (m *ListFileRequest) validate(all bool) error {
 	}
 
 	if val := m.GetPageSize(); val <= 0 || val > 50 {
-		err := ListFileRequestValidationError{
+		err := ListUserFileRequestValidationError{
 			field:  "PageSize",
 			reason: "value must be inside range (0, 50]",
 		}
@@ -1149,8 +1149,8 @@ func (m *ListFileRequest) validate(all bool) error {
 
 	if m.Order != nil {
 
-		if _, ok := _ListFileRequest_Order_InLookup[m.GetOrder()]; !ok {
-			err := ListFileRequestValidationError{
+		if _, ok := _ListUserFileRequest_Order_InLookup[m.GetOrder()]; !ok {
+			err := ListUserFileRequestValidationError{
 				field:  "Order",
 				reason: "value must be in list [asc desc]",
 			}
@@ -1164,8 +1164,8 @@ func (m *ListFileRequest) validate(all bool) error {
 
 	if m.OrderBy != nil {
 
-		if _, ok := _ListFileRequest_OrderBy_InLookup[m.GetOrderBy()]; !ok {
-			err := ListFileRequestValidationError{
+		if _, ok := _ListUserFileRequest_OrderBy_InLookup[m.GetOrderBy()]; !ok {
+			err := ListUserFileRequestValidationError{
 				field:  "OrderBy",
 				reason: "value must be in list [id created_at updated_at]",
 			}
@@ -1183,8 +1183,8 @@ func (m *ListFileRequest) validate(all bool) error {
 
 	if m.Status != nil {
 
-		if _, ok := _ListFileRequest_Status_InLookup[m.GetStatus()]; !ok {
-			err := ListFileRequestValidationError{
+		if _, ok := _ListUserFileRequest_Status_InLookup[m.GetStatus()]; !ok {
+			err := ListUserFileRequestValidationError{
 				field:  "Status",
 				reason: "value must be in list [PROGRESS COMPLETED]",
 			}
@@ -1201,19 +1201,19 @@ func (m *ListFileRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ListFileRequestMultiError(errors)
+		return ListUserFileRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListFileRequestMultiError is an error wrapping multiple validation errors
-// returned by ListFileRequest.ValidateAll() if the designated constraints
-// aren't met.
-type ListFileRequestMultiError []error
+// ListUserFileRequestMultiError is an error wrapping multiple validation
+// errors returned by ListUserFileRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListUserFileRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListFileRequestMultiError) Error() string {
+func (m ListUserFileRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1222,11 +1222,11 @@ func (m ListFileRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListFileRequestMultiError) AllErrors() []error { return m }
+func (m ListUserFileRequestMultiError) AllErrors() []error { return m }
 
-// ListFileRequestValidationError is the validation error returned by
-// ListFileRequest.Validate if the designated constraints aren't met.
-type ListFileRequestValidationError struct {
+// ListUserFileRequestValidationError is the validation error returned by
+// ListUserFileRequest.Validate if the designated constraints aren't met.
+type ListUserFileRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1234,22 +1234,24 @@ type ListFileRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListFileRequestValidationError) Field() string { return e.field }
+func (e ListUserFileRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListFileRequestValidationError) Reason() string { return e.reason }
+func (e ListUserFileRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListFileRequestValidationError) Cause() error { return e.cause }
+func (e ListUserFileRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListFileRequestValidationError) Key() bool { return e.key }
+func (e ListUserFileRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListFileRequestValidationError) ErrorName() string { return "ListFileRequestValidationError" }
+func (e ListUserFileRequestValidationError) ErrorName() string {
+	return "ListUserFileRequestValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e ListFileRequestValidationError) Error() string {
+func (e ListUserFileRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1261,14 +1263,14 @@ func (e ListFileRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListFileRequest.%s: %s%s",
+		"invalid %sListUserFileRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListFileRequestValidationError{}
+var _ error = ListUserFileRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -1276,40 +1278,40 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListFileRequestValidationError{}
+} = ListUserFileRequestValidationError{}
 
-var _ListFileRequest_Order_InLookup = map[string]struct{}{
+var _ListUserFileRequest_Order_InLookup = map[string]struct{}{
 	"asc":  {},
 	"desc": {},
 }
 
-var _ListFileRequest_OrderBy_InLookup = map[string]struct{}{
+var _ListUserFileRequest_OrderBy_InLookup = map[string]struct{}{
 	"id":         {},
 	"created_at": {},
 	"updated_at": {},
 }
 
-var _ListFileRequest_Status_InLookup = map[string]struct{}{
+var _ListUserFileRequest_Status_InLookup = map[string]struct{}{
 	"PROGRESS":  {},
 	"COMPLETED": {},
 }
 
-// Validate checks the field values on ListFileReply with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *ListFileReply) Validate() error {
+// Validate checks the field values on ListUserFileReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ListUserFileReply) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ListFileReplyMultiError, or
-// nil if none found.
-func (m *ListFileReply) ValidateAll() error {
+// ValidateAll checks the field values on ListUserFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListUserFileReplyMultiError, or nil if none found.
+func (m *ListUserFileReply) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListFileReply) validate(all bool) error {
+func (m *ListUserFileReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1325,7 +1327,7 @@ func (m *ListFileReply) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListFileReplyValidationError{
+					errors = append(errors, ListUserFileReplyValidationError{
 						field:  fmt.Sprintf("List[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1333,7 +1335,7 @@ func (m *ListFileReply) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, ListFileReplyValidationError{
+					errors = append(errors, ListUserFileReplyValidationError{
 						field:  fmt.Sprintf("List[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1342,7 +1344,7 @@ func (m *ListFileReply) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return ListFileReplyValidationError{
+				return ListUserFileReplyValidationError{
 					field:  fmt.Sprintf("List[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1353,19 +1355,19 @@ func (m *ListFileReply) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ListFileReplyMultiError(errors)
+		return ListUserFileReplyMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListFileReplyMultiError is an error wrapping multiple validation errors
-// returned by ListFileReply.ValidateAll() if the designated constraints
+// ListUserFileReplyMultiError is an error wrapping multiple validation errors
+// returned by ListUserFileReply.ValidateAll() if the designated constraints
 // aren't met.
-type ListFileReplyMultiError []error
+type ListUserFileReplyMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListFileReplyMultiError) Error() string {
+func (m ListUserFileReplyMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1374,11 +1376,11 @@ func (m ListFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListFileReplyMultiError) AllErrors() []error { return m }
+func (m ListUserFileReplyMultiError) AllErrors() []error { return m }
 
-// ListFileReplyValidationError is the validation error returned by
-// ListFileReply.Validate if the designated constraints aren't met.
-type ListFileReplyValidationError struct {
+// ListUserFileReplyValidationError is the validation error returned by
+// ListUserFileReply.Validate if the designated constraints aren't met.
+type ListUserFileReplyValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1386,22 +1388,24 @@ type ListFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListFileReplyValidationError) Field() string { return e.field }
+func (e ListUserFileReplyValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListFileReplyValidationError) Reason() string { return e.reason }
+func (e ListUserFileReplyValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListFileReplyValidationError) Cause() error { return e.cause }
+func (e ListUserFileReplyValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListFileReplyValidationError) Key() bool { return e.key }
+func (e ListUserFileReplyValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListFileReplyValidationError) ErrorName() string { return "ListFileReplyValidationError" }
+func (e ListUserFileReplyValidationError) ErrorName() string {
+	return "ListUserFileReplyValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e ListFileReplyValidationError) Error() string {
+func (e ListUserFileReplyValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1413,14 +1417,14 @@ func (e ListFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListFileReply.%s: %s%s",
+		"invalid %sListUserFileReply.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListFileReplyValidationError{}
+var _ error = ListUserFileReplyValidationError{}
 
 var _ interface {
 	Field() string
@@ -1428,7 +1432,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListFileReplyValidationError{}
+} = ListUserFileReplyValidationError{}
 
 // Validate checks the field values on PrepareUploadFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -2229,22 +2233,22 @@ var _ interface {
 	ErrorName() string
 } = UploadFileReplyValidationError{}
 
-// Validate checks the field values on UpdateFileRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *UpdateFileRequest) Validate() error {
+// Validate checks the field values on UpdateUserFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateUserFileRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpdateFileRequest with the rules
+// ValidateAll checks the field values on UpdateUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UpdateFileRequestMultiError, or nil if none found.
-func (m *UpdateFileRequest) ValidateAll() error {
+// UpdateUserFileRequestMultiError, or nil if none found.
+func (m *UpdateUserFileRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpdateFileRequest) validate(all bool) error {
+func (m *UpdateUserFileRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2252,7 +2256,7 @@ func (m *UpdateFileRequest) validate(all bool) error {
 	var errors []error
 
 	if m.GetId() <= 0 {
-		err := UpdateFileRequestValidationError{
+		err := UpdateUserFileRequestValidationError{
 			field:  "Id",
 			reason: "value must be greater than 0",
 		}
@@ -2263,7 +2267,7 @@ func (m *UpdateFileRequest) validate(all bool) error {
 	}
 
 	if m.GetDirectoryId() <= 0 {
-		err := UpdateFileRequestValidationError{
+		err := UpdateUserFileRequestValidationError{
 			field:  "DirectoryId",
 			reason: "value must be greater than 0",
 		}
@@ -2274,7 +2278,7 @@ func (m *UpdateFileRequest) validate(all bool) error {
 	}
 
 	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := UpdateFileRequestValidationError{
+		err := UpdateUserFileRequestValidationError{
 			field:  "Name",
 			reason: "value length must be at least 1 runes",
 		}
@@ -2285,19 +2289,19 @@ func (m *UpdateFileRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return UpdateFileRequestMultiError(errors)
+		return UpdateUserFileRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpdateFileRequestMultiError is an error wrapping multiple validation errors
-// returned by UpdateFileRequest.ValidateAll() if the designated constraints
-// aren't met.
-type UpdateFileRequestMultiError []error
+// UpdateUserFileRequestMultiError is an error wrapping multiple validation
+// errors returned by UpdateUserFileRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateUserFileRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpdateFileRequestMultiError) Error() string {
+func (m UpdateUserFileRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2306,11 +2310,11 @@ func (m UpdateFileRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpdateFileRequestMultiError) AllErrors() []error { return m }
+func (m UpdateUserFileRequestMultiError) AllErrors() []error { return m }
 
-// UpdateFileRequestValidationError is the validation error returned by
-// UpdateFileRequest.Validate if the designated constraints aren't met.
-type UpdateFileRequestValidationError struct {
+// UpdateUserFileRequestValidationError is the validation error returned by
+// UpdateUserFileRequest.Validate if the designated constraints aren't met.
+type UpdateUserFileRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2318,24 +2322,24 @@ type UpdateFileRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpdateFileRequestValidationError) Field() string { return e.field }
+func (e UpdateUserFileRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpdateFileRequestValidationError) Reason() string { return e.reason }
+func (e UpdateUserFileRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpdateFileRequestValidationError) Cause() error { return e.cause }
+func (e UpdateUserFileRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpdateFileRequestValidationError) Key() bool { return e.key }
+func (e UpdateUserFileRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpdateFileRequestValidationError) ErrorName() string {
-	return "UpdateFileRequestValidationError"
+func (e UpdateUserFileRequestValidationError) ErrorName() string {
+	return "UpdateUserFileRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UpdateFileRequestValidationError) Error() string {
+func (e UpdateUserFileRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2347,14 +2351,14 @@ func (e UpdateFileRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpdateFileRequest.%s: %s%s",
+		"invalid %sUpdateUserFileRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpdateFileRequestValidationError{}
+var _ error = UpdateUserFileRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -2362,24 +2366,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpdateFileRequestValidationError{}
+} = UpdateUserFileRequestValidationError{}
 
-// Validate checks the field values on UpdateFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *UpdateFileReply) Validate() error {
+// Validate checks the field values on UpdateUserFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateUserFileReply) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpdateFileReply with the rules
+// ValidateAll checks the field values on UpdateUserFileReply with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UpdateFileReplyMultiError, or nil if none found.
-func (m *UpdateFileReply) ValidateAll() error {
+// UpdateUserFileReplyMultiError, or nil if none found.
+func (m *UpdateUserFileReply) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpdateFileReply) validate(all bool) error {
+func (m *UpdateUserFileReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2387,19 +2391,19 @@ func (m *UpdateFileReply) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return UpdateFileReplyMultiError(errors)
+		return UpdateUserFileReplyMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpdateFileReplyMultiError is an error wrapping multiple validation errors
-// returned by UpdateFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type UpdateFileReplyMultiError []error
+// UpdateUserFileReplyMultiError is an error wrapping multiple validation
+// errors returned by UpdateUserFileReply.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateUserFileReplyMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpdateFileReplyMultiError) Error() string {
+func (m UpdateUserFileReplyMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2408,11 +2412,11 @@ func (m UpdateFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpdateFileReplyMultiError) AllErrors() []error { return m }
+func (m UpdateUserFileReplyMultiError) AllErrors() []error { return m }
 
-// UpdateFileReplyValidationError is the validation error returned by
-// UpdateFileReply.Validate if the designated constraints aren't met.
-type UpdateFileReplyValidationError struct {
+// UpdateUserFileReplyValidationError is the validation error returned by
+// UpdateUserFileReply.Validate if the designated constraints aren't met.
+type UpdateUserFileReplyValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2420,22 +2424,24 @@ type UpdateFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpdateFileReplyValidationError) Field() string { return e.field }
+func (e UpdateUserFileReplyValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpdateFileReplyValidationError) Reason() string { return e.reason }
+func (e UpdateUserFileReplyValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpdateFileReplyValidationError) Cause() error { return e.cause }
+func (e UpdateUserFileReplyValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpdateFileReplyValidationError) Key() bool { return e.key }
+func (e UpdateUserFileReplyValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpdateFileReplyValidationError) ErrorName() string { return "UpdateFileReplyValidationError" }
+func (e UpdateUserFileReplyValidationError) ErrorName() string {
+	return "UpdateUserFileReplyValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e UpdateFileReplyValidationError) Error() string {
+func (e UpdateUserFileReplyValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2447,14 +2453,14 @@ func (e UpdateFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpdateFileReply.%s: %s%s",
+		"invalid %sUpdateUserFileReply.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpdateFileReplyValidationError{}
+var _ error = UpdateUserFileReplyValidationError{}
 
 var _ interface {
 	Field() string
@@ -2462,24 +2468,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpdateFileReplyValidationError{}
+} = UpdateUserFileReplyValidationError{}
 
-// Validate checks the field values on DeleteFileRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *DeleteFileRequest) Validate() error {
+// Validate checks the field values on DeleteUserFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteUserFileRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on DeleteFileRequest with the rules
+// ValidateAll checks the field values on DeleteUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// DeleteFileRequestMultiError, or nil if none found.
-func (m *DeleteFileRequest) ValidateAll() error {
+// DeleteUserFileRequestMultiError, or nil if none found.
+func (m *DeleteUserFileRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *DeleteFileRequest) validate(all bool) error {
+func (m *DeleteUserFileRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2487,7 +2493,7 @@ func (m *DeleteFileRequest) validate(all bool) error {
 	var errors []error
 
 	if l := len(m.GetIds()); l < 1 || l > 50 {
-		err := DeleteFileRequestValidationError{
+		err := DeleteUserFileRequestValidationError{
 			field:  "Ids",
 			reason: "value must contain between 1 and 50 items, inclusive",
 		}
@@ -2497,13 +2503,13 @@ func (m *DeleteFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	_DeleteFileRequest_Ids_Unique := make(map[uint32]struct{}, len(m.GetIds()))
+	_DeleteUserFileRequest_Ids_Unique := make(map[uint32]struct{}, len(m.GetIds()))
 
 	for idx, item := range m.GetIds() {
 		_, _ = idx, item
 
-		if _, exists := _DeleteFileRequest_Ids_Unique[item]; exists {
-			err := DeleteFileRequestValidationError{
+		if _, exists := _DeleteUserFileRequest_Ids_Unique[item]; exists {
+			err := DeleteUserFileRequestValidationError{
 				field:  fmt.Sprintf("Ids[%v]", idx),
 				reason: "repeated value must contain unique items",
 			}
@@ -2512,26 +2518,26 @@ func (m *DeleteFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		} else {
-			_DeleteFileRequest_Ids_Unique[item] = struct{}{}
+			_DeleteUserFileRequest_Ids_Unique[item] = struct{}{}
 		}
 
 		// no validation rules for Ids[idx]
 	}
 
 	if len(errors) > 0 {
-		return DeleteFileRequestMultiError(errors)
+		return DeleteUserFileRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// DeleteFileRequestMultiError is an error wrapping multiple validation errors
-// returned by DeleteFileRequest.ValidateAll() if the designated constraints
-// aren't met.
-type DeleteFileRequestMultiError []error
+// DeleteUserFileRequestMultiError is an error wrapping multiple validation
+// errors returned by DeleteUserFileRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteUserFileRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m DeleteFileRequestMultiError) Error() string {
+func (m DeleteUserFileRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2540,11 +2546,11 @@ func (m DeleteFileRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m DeleteFileRequestMultiError) AllErrors() []error { return m }
+func (m DeleteUserFileRequestMultiError) AllErrors() []error { return m }
 
-// DeleteFileRequestValidationError is the validation error returned by
-// DeleteFileRequest.Validate if the designated constraints aren't met.
-type DeleteFileRequestValidationError struct {
+// DeleteUserFileRequestValidationError is the validation error returned by
+// DeleteUserFileRequest.Validate if the designated constraints aren't met.
+type DeleteUserFileRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2552,24 +2558,24 @@ type DeleteFileRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e DeleteFileRequestValidationError) Field() string { return e.field }
+func (e DeleteUserFileRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e DeleteFileRequestValidationError) Reason() string { return e.reason }
+func (e DeleteUserFileRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e DeleteFileRequestValidationError) Cause() error { return e.cause }
+func (e DeleteUserFileRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e DeleteFileRequestValidationError) Key() bool { return e.key }
+func (e DeleteUserFileRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e DeleteFileRequestValidationError) ErrorName() string {
-	return "DeleteFileRequestValidationError"
+func (e DeleteUserFileRequestValidationError) ErrorName() string {
+	return "DeleteUserFileRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e DeleteFileRequestValidationError) Error() string {
+func (e DeleteUserFileRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2581,14 +2587,14 @@ func (e DeleteFileRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sDeleteFileRequest.%s: %s%s",
+		"invalid %sDeleteUserFileRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = DeleteFileRequestValidationError{}
+var _ error = DeleteUserFileRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -2596,24 +2602,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = DeleteFileRequestValidationError{}
+} = DeleteUserFileRequestValidationError{}
 
-// Validate checks the field values on DeleteFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *DeleteFileReply) Validate() error {
+// Validate checks the field values on DeleteUserFileReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteUserFileReply) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on DeleteFileReply with the rules
+// ValidateAll checks the field values on DeleteUserFileReply with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// DeleteFileReplyMultiError, or nil if none found.
-func (m *DeleteFileReply) ValidateAll() error {
+// DeleteUserFileReplyMultiError, or nil if none found.
+func (m *DeleteUserFileReply) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *DeleteFileReply) validate(all bool) error {
+func (m *DeleteUserFileReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2623,19 +2629,19 @@ func (m *DeleteFileReply) validate(all bool) error {
 	// no validation rules for Total
 
 	if len(errors) > 0 {
-		return DeleteFileReplyMultiError(errors)
+		return DeleteUserFileReplyMultiError(errors)
 	}
 
 	return nil
 }
 
-// DeleteFileReplyMultiError is an error wrapping multiple validation errors
-// returned by DeleteFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type DeleteFileReplyMultiError []error
+// DeleteUserFileReplyMultiError is an error wrapping multiple validation
+// errors returned by DeleteUserFileReply.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteUserFileReplyMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m DeleteFileReplyMultiError) Error() string {
+func (m DeleteUserFileReplyMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2644,11 +2650,11 @@ func (m DeleteFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m DeleteFileReplyMultiError) AllErrors() []error { return m }
+func (m DeleteUserFileReplyMultiError) AllErrors() []error { return m }
 
-// DeleteFileReplyValidationError is the validation error returned by
-// DeleteFileReply.Validate if the designated constraints aren't met.
-type DeleteFileReplyValidationError struct {
+// DeleteUserFileReplyValidationError is the validation error returned by
+// DeleteUserFileReply.Validate if the designated constraints aren't met.
+type DeleteUserFileReplyValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2656,22 +2662,24 @@ type DeleteFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e DeleteFileReplyValidationError) Field() string { return e.field }
+func (e DeleteUserFileReplyValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e DeleteFileReplyValidationError) Reason() string { return e.reason }
+func (e DeleteUserFileReplyValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e DeleteFileReplyValidationError) Cause() error { return e.cause }
+func (e DeleteUserFileReplyValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e DeleteFileReplyValidationError) Key() bool { return e.key }
+func (e DeleteUserFileReplyValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e DeleteFileReplyValidationError) ErrorName() string { return "DeleteFileReplyValidationError" }
+func (e DeleteUserFileReplyValidationError) ErrorName() string {
+	return "DeleteUserFileReplyValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e DeleteFileReplyValidationError) Error() string {
+func (e DeleteUserFileReplyValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2683,14 +2691,14 @@ func (e DeleteFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sDeleteFileReply.%s: %s%s",
+		"invalid %sDeleteUserFileReply.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = DeleteFileReplyValidationError{}
+var _ error = DeleteUserFileReplyValidationError{}
 
 var _ interface {
 	Field() string
@@ -2698,24 +2706,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = DeleteFileReplyValidationError{}
+} = DeleteUserFileReplyValidationError{}
 
-// Validate checks the field values on ListFileReply_File with the rules
+// Validate checks the field values on ListUserFileReply_File with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListFileReply_File) Validate() error {
+func (m *ListUserFileReply_File) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListFileReply_File with the rules
+// ValidateAll checks the field values on ListUserFileReply_File with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListFileReply_FileMultiError, or nil if none found.
-func (m *ListFileReply_File) ValidateAll() error {
+// ListUserFileReply_FileMultiError, or nil if none found.
+func (m *ListUserFileReply_File) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListFileReply_File) validate(all bool) error {
+func (m *ListUserFileReply_File) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2741,19 +2749,19 @@ func (m *ListFileReply_File) validate(all bool) error {
 	// no validation rules for UpdatedAt
 
 	if len(errors) > 0 {
-		return ListFileReply_FileMultiError(errors)
+		return ListUserFileReply_FileMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListFileReply_FileMultiError is an error wrapping multiple validation errors
-// returned by ListFileReply_File.ValidateAll() if the designated constraints
-// aren't met.
-type ListFileReply_FileMultiError []error
+// ListUserFileReply_FileMultiError is an error wrapping multiple validation
+// errors returned by ListUserFileReply_File.ValidateAll() if the designated
+// constraints aren't met.
+type ListUserFileReply_FileMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListFileReply_FileMultiError) Error() string {
+func (m ListUserFileReply_FileMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2762,11 +2770,11 @@ func (m ListFileReply_FileMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListFileReply_FileMultiError) AllErrors() []error { return m }
+func (m ListUserFileReply_FileMultiError) AllErrors() []error { return m }
 
-// ListFileReply_FileValidationError is the validation error returned by
-// ListFileReply_File.Validate if the designated constraints aren't met.
-type ListFileReply_FileValidationError struct {
+// ListUserFileReply_FileValidationError is the validation error returned by
+// ListUserFileReply_File.Validate if the designated constraints aren't met.
+type ListUserFileReply_FileValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2774,24 +2782,24 @@ type ListFileReply_FileValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListFileReply_FileValidationError) Field() string { return e.field }
+func (e ListUserFileReply_FileValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListFileReply_FileValidationError) Reason() string { return e.reason }
+func (e ListUserFileReply_FileValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListFileReply_FileValidationError) Cause() error { return e.cause }
+func (e ListUserFileReply_FileValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListFileReply_FileValidationError) Key() bool { return e.key }
+func (e ListUserFileReply_FileValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListFileReply_FileValidationError) ErrorName() string {
-	return "ListFileReply_FileValidationError"
+func (e ListUserFileReply_FileValidationError) ErrorName() string {
+	return "ListUserFileReply_FileValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ListFileReply_FileValidationError) Error() string {
+func (e ListUserFileReply_FileValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2803,14 +2811,14 @@ func (e ListFileReply_FileValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListFileReply_File.%s: %s%s",
+		"invalid %sListUserFileReply_File.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListFileReply_FileValidationError{}
+var _ error = ListUserFileReply_FileValidationError{}
 
 var _ interface {
 	Field() string
@@ -2818,4 +2826,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListFileReply_FileValidationError{}
+} = ListUserFileReply_FileValidationError{}

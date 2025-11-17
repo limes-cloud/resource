@@ -21,11 +21,11 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	File_GetUserFile_FullMethodName       = "/resource.api.file.File/GetUserFile"
 	File_GetFileBytes_FullMethodName      = "/resource.api.file.File/GetFileBytes"
-	File_ListFile_FullMethodName          = "/resource.api.file.File/ListFile"
+	File_ListUserFile_FullMethodName      = "/resource.api.file.File/ListUserFile"
 	File_PrepareUploadFile_FullMethodName = "/resource.api.file.File/PrepareUploadFile"
 	File_UploadFile_FullMethodName        = "/resource.api.file.File/UploadFile"
-	File_UpdateFile_FullMethodName        = "/resource.api.file.File/UpdateFile"
-	File_DeleteFile_FullMethodName        = "/resource.api.file.File/DeleteFile"
+	File_UpdateUserFile_FullMethodName    = "/resource.api.file.File/UpdateUserFile"
+	File_DeleteUserFile_FullMethodName    = "/resource.api.file.File/DeleteUserFile"
 )
 
 // FileClient is the client API for File service.
@@ -36,16 +36,16 @@ type FileClient interface {
 	GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...grpc.CallOption) (*GetUserFileReply, error)
 	// GetFile 获取指定的文件信息
 	GetFileBytes(ctx context.Context, in *GetFileBytesRequest, opts ...grpc.CallOption) (File_GetFileBytesClient, error)
-	// ListFile 获取文件信息列表
-	ListFile(ctx context.Context, in *ListFileRequest, opts ...grpc.CallOption) (*ListFileReply, error)
+	// ListUserFile 获取文件信息列表
+	ListUserFile(ctx context.Context, in *ListUserFileRequest, opts ...grpc.CallOption) (*ListUserFileReply, error)
 	// PrepareUploadFile 预上传文件信息
 	PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...grpc.CallOption) (*PrepareUploadFileReply, error)
 	// UploadFile 上传文件
 	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileReply, error)
 	// UpdateFile 更新文件信息
-	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileReply, error)
-	// DeleteFile 删除文件信息
-	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileReply, error)
+	UpdateUserFile(ctx context.Context, in *UpdateUserFileRequest, opts ...grpc.CallOption) (*UpdateUserFileReply, error)
+	// DeleteUserFile 删除文件信息
+	DeleteUserFile(ctx context.Context, in *DeleteUserFileRequest, opts ...grpc.CallOption) (*DeleteUserFileReply, error)
 }
 
 type fileClient struct {
@@ -97,9 +97,9 @@ func (x *fileGetFileBytesClient) Recv() (*GetFileBytesReply, error) {
 	return m, nil
 }
 
-func (c *fileClient) ListFile(ctx context.Context, in *ListFileRequest, opts ...grpc.CallOption) (*ListFileReply, error) {
-	out := new(ListFileReply)
-	err := c.cc.Invoke(ctx, File_ListFile_FullMethodName, in, out, opts...)
+func (c *fileClient) ListUserFile(ctx context.Context, in *ListUserFileRequest, opts ...grpc.CallOption) (*ListUserFileReply, error) {
+	out := new(ListUserFileReply)
+	err := c.cc.Invoke(ctx, File_ListUserFile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,18 +124,18 @@ func (c *fileClient) UploadFile(ctx context.Context, in *UploadFileRequest, opts
 	return out, nil
 }
 
-func (c *fileClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileReply, error) {
-	out := new(UpdateFileReply)
-	err := c.cc.Invoke(ctx, File_UpdateFile_FullMethodName, in, out, opts...)
+func (c *fileClient) UpdateUserFile(ctx context.Context, in *UpdateUserFileRequest, opts ...grpc.CallOption) (*UpdateUserFileReply, error) {
+	out := new(UpdateUserFileReply)
+	err := c.cc.Invoke(ctx, File_UpdateUserFile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *fileClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileReply, error) {
-	out := new(DeleteFileReply)
-	err := c.cc.Invoke(ctx, File_DeleteFile_FullMethodName, in, out, opts...)
+func (c *fileClient) DeleteUserFile(ctx context.Context, in *DeleteUserFileRequest, opts ...grpc.CallOption) (*DeleteUserFileReply, error) {
+	out := new(DeleteUserFileReply)
+	err := c.cc.Invoke(ctx, File_DeleteUserFile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,16 +150,16 @@ type FileServer interface {
 	GetUserFile(context.Context, *GetUserFileRequest) (*GetUserFileReply, error)
 	// GetFile 获取指定的文件信息
 	GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error
-	// ListFile 获取文件信息列表
-	ListFile(context.Context, *ListFileRequest) (*ListFileReply, error)
+	// ListUserFile 获取文件信息列表
+	ListUserFile(context.Context, *ListUserFileRequest) (*ListUserFileReply, error)
 	// PrepareUploadFile 预上传文件信息
 	PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error)
 	// UploadFile 上传文件
 	UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error)
 	// UpdateFile 更新文件信息
-	UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileReply, error)
-	// DeleteFile 删除文件信息
-	DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileReply, error)
+	UpdateUserFile(context.Context, *UpdateUserFileRequest) (*UpdateUserFileReply, error)
+	// DeleteUserFile 删除文件信息
+	DeleteUserFile(context.Context, *DeleteUserFileRequest) (*DeleteUserFileReply, error)
 	mustEmbedUnimplementedFileServer()
 }
 
@@ -173,8 +173,8 @@ func (UnimplementedFileServer) GetUserFile(context.Context, *GetUserFileRequest)
 func (UnimplementedFileServer) GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetFileBytes not implemented")
 }
-func (UnimplementedFileServer) ListFile(context.Context, *ListFileRequest) (*ListFileReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListFile not implemented")
+func (UnimplementedFileServer) ListUserFile(context.Context, *ListUserFileRequest) (*ListUserFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserFile not implemented")
 }
 func (UnimplementedFileServer) PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepareUploadFile not implemented")
@@ -182,11 +182,11 @@ func (UnimplementedFileServer) PrepareUploadFile(context.Context, *PrepareUpload
 func (UnimplementedFileServer) UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
-func (UnimplementedFileServer) UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
+func (UnimplementedFileServer) UpdateUserFile(context.Context, *UpdateUserFileRequest) (*UpdateUserFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserFile not implemented")
 }
-func (UnimplementedFileServer) DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFile not implemented")
+func (UnimplementedFileServer) DeleteUserFile(context.Context, *DeleteUserFileRequest) (*DeleteUserFileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFile not implemented")
 }
 func (UnimplementedFileServer) mustEmbedUnimplementedFileServer() {}
 
@@ -240,20 +240,20 @@ func (x *fileGetFileBytesServer) Send(m *GetFileBytesReply) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _File_ListFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListFileRequest)
+func _File_ListUserFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FileServer).ListFile(ctx, in)
+		return srv.(FileServer).ListUserFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: File_ListFile_FullMethodName,
+		FullMethod: File_ListUserFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServer).ListFile(ctx, req.(*ListFileRequest))
+		return srv.(FileServer).ListUserFile(ctx, req.(*ListUserFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -294,38 +294,38 @@ func _File_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _File_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFileRequest)
+func _File_UpdateUserFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FileServer).UpdateFile(ctx, in)
+		return srv.(FileServer).UpdateUserFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: File_UpdateFile_FullMethodName,
+		FullMethod: File_UpdateUserFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServer).UpdateFile(ctx, req.(*UpdateFileRequest))
+		return srv.(FileServer).UpdateUserFile(ctx, req.(*UpdateUserFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _File_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFileRequest)
+func _File_DeleteUserFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FileServer).DeleteFile(ctx, in)
+		return srv.(FileServer).DeleteUserFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: File_DeleteFile_FullMethodName,
+		FullMethod: File_DeleteUserFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServer).DeleteFile(ctx, req.(*DeleteFileRequest))
+		return srv.(FileServer).DeleteUserFile(ctx, req.(*DeleteUserFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -342,8 +342,8 @@ var File_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _File_GetUserFile_Handler,
 		},
 		{
-			MethodName: "ListFile",
-			Handler:    _File_ListFile_Handler,
+			MethodName: "ListUserFile",
+			Handler:    _File_ListUserFile_Handler,
 		},
 		{
 			MethodName: "PrepareUploadFile",
@@ -354,12 +354,12 @@ var File_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _File_UploadFile_Handler,
 		},
 		{
-			MethodName: "UpdateFile",
-			Handler:    _File_UpdateFile_Handler,
+			MethodName: "UpdateUserFile",
+			Handler:    _File_UpdateUserFile_Handler,
 		},
 		{
-			MethodName: "DeleteFile",
-			Handler:    _File_DeleteFile_Handler,
+			MethodName: "DeleteUserFile",
+			Handler:    _File_DeleteUserFile_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
