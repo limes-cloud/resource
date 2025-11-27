@@ -13,7 +13,7 @@ service File{
   // GetFile 获取指定的文件信息
   rpc GetUserFile (GetUserFileRequest) returns (GetUserFileReply) {
     option (google.api.http) = {
-      get: "/resource/api/user/file",
+      get: "/resource/api/file",
     };
   }
 
@@ -32,10 +32,6 @@ service File{
     option (google.api.http) = {
       post: "/resource/api/file/prepare_upload",
       body: "*",
-      additional_bindings:{
-        post: "/resource/client/file/prepare_upload",
-        body: "*",
-      }
     };
   }
 

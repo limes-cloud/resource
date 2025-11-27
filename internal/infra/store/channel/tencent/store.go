@@ -6,12 +6,13 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/redis/go-redis/v9"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/limes-cloud/kratosx/library/lock"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -20,8 +21,8 @@ import (
 )
 
 type Tencent struct {
+	conf      *core.Storage
 	ctx       context.Context
-	keyword   string
 	client    *cos.Client
 	expire    time.Duration
 	cache     *redis.Client
@@ -29,14 +30,17 @@ type Tencent struct {
 	antiTheft bool
 }
 
+func (s *Tencent) ParserQuery(req *types.ParserQuery) string {
+	return ""
+}
+
 type upload struct {
 	client *cos.Client
 	upload *cos.InitiateMultipartUploadResult
 }
 
-func New(ctx core.Context) (*Tencent, error) {
-	conf := ctx.Config().Storage
-	if conf.Endpoint == "" || conf.Secret == "" || conf.Id == "" {
+func New(ctx core.Context, conf *core.Storage) (*Tencent, error) {
+	if conf.Endpoint == "" || conf.Secret == "" || conf.AK == "" {
 		return nil, errors.New("store config error")
 	}
 
@@ -48,12 +52,13 @@ func New(ctx core.Context) (*Tencent, error) {
 	b := &cos.BaseURL{BucketURL: u}
 	client := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  conf.Id,
+			SecretID:  conf.AK,
 			SecretKey: conf.Secret,
 		},
 	})
 
 	return &Tencent{
+		conf:      conf,
 		ctx:       context.Background(),
 		client:    client,
 		expire:    conf.TemporaryExpire,
@@ -63,8 +68,8 @@ func New(ctx core.Context) (*Tencent, error) {
 	}, nil
 }
 
-func (s *Tencent) GetKeyword() string {
-	return s.keyword
+func (s *Tencent) Config() *core.Storage {
+	return s.conf
 }
 
 func (s *Tencent) GenTemporaryURL(key string) (string, error) {

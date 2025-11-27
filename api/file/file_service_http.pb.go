@@ -40,10 +40,9 @@ type FileHTTPServer interface {
 
 func RegisterFileHTTPServer(s *http.Server, srv FileHTTPServer) {
 	r := s.Route("/")
-	r.GET("/resource/api/user/file", _File_GetUserFile0_HTTP_Handler(srv))
+	r.GET("/resource/api/file", _File_GetUserFile0_HTTP_Handler(srv))
 	r.GET("/resource/api/files", _File_ListUserFile0_HTTP_Handler(srv))
-	r.POST("/resource/client/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
-	r.POST("/resource/api/file/prepare_upload", _File_PrepareUploadFile1_HTTP_Handler(srv))
+	r.POST("/resource/api/file/prepare_upload", _File_PrepareUploadFile0_HTTP_Handler(srv))
 	r.PUT("/resource/api/file", _File_UpdateUserFile0_HTTP_Handler(srv))
 	r.DELETE("/resource/api/file", _File_DeleteUserFile0_HTTP_Handler(srv))
 }
@@ -87,28 +86,6 @@ func _File_ListUserFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context)
 }
 
 func _File_PrepareUploadFile0_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in PrepareUploadFileRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationFilePrepareUploadFile)
-		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
-			return srv.PrepareUploadFile(ctx, req.(*PrepareUploadFileRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*PrepareUploadFileReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _File_PrepareUploadFile1_HTTP_Handler(srv FileHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in PrepareUploadFileRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -202,7 +179,7 @@ func (c *FileHTTPClientImpl) DeleteUserFile(ctx context.Context, in *DeleteUserF
 
 func (c *FileHTTPClientImpl) GetUserFile(ctx context.Context, in *GetUserFileRequest, opts ...http.CallOption) (*GetUserFileReply, error) {
 	var out GetUserFileReply
-	pattern := "/resource/api/user/file"
+	pattern := "/resource/api/file"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationFileGetUserFile))
 	opts = append(opts, http.PathTemplate(pattern))

@@ -6,11 +6,12 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/redis/go-redis/v9"
 	"io"
 	"os"
 	"time"
+
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/baidubce/bce-sdk-go/bce"
 	"github.com/baidubce/bce-sdk-go/services/bos"
@@ -22,14 +23,18 @@ import (
 )
 
 type Baidu struct {
+	conf      *core.Storage
 	ctx       context.Context
 	bucket    string
-	keyword   string
 	client    *bos.Client
 	expire    time.Duration
 	cache     *redis.Client
 	cdn       string
 	antiTheft bool
+}
+
+func (s *Baidu) ParserQuery(req *types.ParserQuery) string {
+	return ""
 }
 
 type upload struct {
@@ -39,14 +44,13 @@ type upload struct {
 	client *bos.Client
 }
 
-func New(ctx core.Context) (*Baidu, error) {
-	conf := ctx.Config().Storage
-	if conf.Endpoint == "" || conf.Secret == "" || conf.Id == "" {
+func New(ctx core.Context, conf *core.Storage) (*Baidu, error) {
+	if conf.Endpoint == "" || conf.Secret == "" || conf.AK == "" {
 		return nil, errors.New("store config error")
 	}
 
 	client, err := bos.NewClientWithConfig(&bos.BosClientConfiguration{
-		Ak:               conf.Id,
+		Ak:               conf.AK,
 		Sk:               conf.Secret,
 		Endpoint:         conf.ServerURL,
 		RedirectDisabled: false,
@@ -56,6 +60,7 @@ func New(ctx core.Context) (*Baidu, error) {
 	}
 
 	return &Baidu{
+		conf:      conf,
 		ctx:       context.Background(),
 		bucket:    conf.Bucket,
 		client:    client,
@@ -66,8 +71,8 @@ func New(ctx core.Context) (*Baidu, error) {
 	}, nil
 }
 
-func (s *Baidu) GetKeyword() string {
-	return s.keyword
+func (s *Baidu) Config() *core.Storage {
+	return s.conf
 }
 
 func (s *Baidu) GenTemporaryURL(key string) (string, error) {

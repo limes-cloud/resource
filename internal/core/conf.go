@@ -13,16 +13,18 @@ import (
 var conf = &Conf{}
 
 type Storage struct {
+	Keyword         string        // 存储器标识
 	Type            string        // 存储类型
 	AntiTheft       bool          // 开启防盗链
 	Endpoint        string        // oss连接地址
-	Id              string        // AK
+	AK              string        // AK
 	Secret          string        // SK
 	Bucket          string        // OSS 存储路径
 	Region          string        // OSS 地域
 	LocalDir        string        // 本地路径，仅local用
-	ServerURL       string        // server地址仅local用
+	ServerURL       string        // server地址
 	TemporaryExpire time.Duration // 过期时间
+	IsExporter      bool          // 是否为导出器
 }
 
 type Export struct {
@@ -34,7 +36,7 @@ type Conf struct {
 	DefaultMaxSize     uint32
 	DefaultAcceptTypes []string
 	ChunkSize          uint32
-	Storage            *Storage
+	Storage            []*Storage
 	Export             *Export
 }
 

@@ -47,7 +47,6 @@ database:
     maxIdleConn: 10 #最大空闲数量
     logLevel: 4 #日志等级
     slowThreshold: 2s #慢sql阈值
-
 redis:
   - enable: true
     name: cache
@@ -62,13 +61,11 @@ business:
   defaultMaxSize: 10
   defaultAcceptTypes: ["jpg","png","txt","ppt","pptx","mp4"]
   storage:
-    keyword: local
-    type: local
-    isExporter: true
-    serverUrl: http://127.0.0.1:7020/resource/api/static
-    localDir: static
-    temporaryExpire: 600s
-    secret: limescloud
+    - keyword: local
+      type: local
+      isExporter: true
+      serverUrl: http://127.0.0.1:7020/resource/api/static
+      localDir: static
   export:
     localDir: static/export
     expire: 72h

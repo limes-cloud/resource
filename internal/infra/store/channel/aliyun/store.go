@@ -6,11 +6,12 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/redis/go-redis/v9"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/limes-cloud/kratosx/library/lock"
@@ -19,6 +20,7 @@ import (
 )
 
 type Aliyun struct {
+	conf      *core.Storage
 	ctx       context.Context
 	bucket    *oss.Bucket
 	expire    time.Duration
@@ -27,18 +29,21 @@ type Aliyun struct {
 	antiTheft bool
 }
 
+func (s *Aliyun) ParserQuery(req *types.ParserQuery) string {
+	return ""
+}
+
 type upload struct {
 	bucket *oss.Bucket
 	upload oss.InitiateMultipartUploadResult
 }
 
-func New(ctx core.Context) (*Aliyun, error) {
-	conf := ctx.Config().Storage
-	if conf.Endpoint == "" || conf.Id == "" || conf.Secret == "" {
+func New(ctx core.Context, conf *core.Storage) (*Aliyun, error) {
+	if conf.Endpoint == "" || conf.AK == "" || conf.Secret == "" {
 		return nil, errors.New("store config error")
 	}
 
-	client, err := oss.New(conf.Endpoint, conf.Id, conf.Secret)
+	client, err := oss.New(conf.Endpoint, conf.AK, conf.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +54,7 @@ func New(ctx core.Context) (*Aliyun, error) {
 	}
 
 	return &Aliyun{
+		conf:      conf,
 		ctx:       context.Background(),
 		bucket:    bucket,
 		expire:    conf.TemporaryExpire,
@@ -56,6 +62,10 @@ func New(ctx core.Context) (*Aliyun, error) {
 		antiTheft: conf.AntiTheft,
 		cache:     ctx.Redis(),
 	}, nil
+}
+
+func (s *Aliyun) Config() *core.Storage {
+	return s.conf
 }
 
 func (s *Aliyun) GenTemporaryURL(key string) (string, error) {

@@ -5,6 +5,7 @@ import (
 )
 
 type File struct {
+	Store      string `json:"store" gorm:"column:store"`
 	Type       string `json:"type" gorm:"column:type"`
 	Size       uint32 `json:"size" gorm:"column:size"`
 	Sha        string `json:"sha" gorm:"column:sha"`

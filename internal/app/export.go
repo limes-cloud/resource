@@ -2,14 +2,13 @@ package app
 
 import (
 	"context"
+
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/limes-cloud/kratosx/pkg/value"
 	"github.com/limes-cloud/resource/api/export"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
-	"github.com/limes-cloud/resource/internal/infra/store"
-
-	"github.com/limes-cloud/kratosx/pkg/value"
 
 	"github.com/limes-cloud/resource/api/errors"
 	"github.com/limes-cloud/resource/internal/domain/service"
@@ -23,7 +22,7 @@ type Export struct {
 
 func NewExport() *Export {
 	return &Export{
-		srv: service.NewExport(dbs.NewExport(), dbs.NewFile(), store.NewStore()),
+		srv: service.NewExport(dbs.NewExport(), dbs.NewFile()),
 	}
 }
 
@@ -96,7 +95,7 @@ func (s *Export) ExportFile(c context.Context, req *export.ExportFileRequest) (*
 
 // ExportExcel 创建导出excel文件
 func (s *Export) ExportExcel(c context.Context, req *export.ExportExcelRequest) (*export.ExportExcelReply, error) {
-	var in = types.ExportExcelRequest{
+	in := types.ExportExcelRequest{
 		Name:    req.Name,
 		Headers: req.Headers,
 	}

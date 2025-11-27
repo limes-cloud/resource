@@ -1,11 +1,13 @@
 package dbs
 
 import (
+	"errors"
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/limes-cloud/resource/internal/core"
 
 	"google.golang.org/protobuf/proto"
 
@@ -13,8 +15,7 @@ import (
 	"github.com/limes-cloud/resource/internal/types"
 )
 
-type File struct {
-}
+type File struct{}
 
 var (
 	fileIns  *File
@@ -29,18 +30,22 @@ func NewFile() *File {
 }
 
 // GetFileBySha 获取指定数据
-func (r File) GetFileBySha(ctx core.Context, sha string) (*entity.File, error) {
+func (r File) GetFileBySha(ctx core.Context, store string, sha string) (*entity.File, error) {
 	var (
 		file = entity.File{}
 		fs   = []string{"*"}
 	)
-	return &file, ctx.DB().Select(fs).Where("sha = ?", sha).First(&file).Error
+	return &file, ctx.DB().Select(fs).Where("store = ? and sha = ?", store, sha).First(&file).Error
 }
 
 // GetFileByKey 获取指定数据
-func (r File) GetFileByKey(ctx core.Context, src string) (*entity.File, error) {
-	sha := strings.TrimSuffix(src, filepath.Ext(src))
-	return r.GetFileBySha(ctx, sha)
+func (r File) GetFileByKey(ctx core.Context, key string) (*entity.File, error) {
+	sha := strings.TrimSuffix(key, filepath.Ext(key))
+	arr := strings.Split(key, "/")
+	if len(arr) != 2 {
+		return nil, errors.New("key is error")
+	}
+	return r.GetFileBySha(ctx, arr[0], sha)
 }
 
 func (r File) GetFileByUploadId(ctx core.Context, uid string) (*entity.File, error) {
@@ -134,7 +139,6 @@ func (r File) DeleteFile(ctx core.Context, ids []uint32, call func(file *entity.
 
 func (r File) CreateUserFile(ctx core.Context, uf *entity.UserFile) (uint32, error) {
 	return uf.Id, ctx.DB().Create(uf).Error
-
 }
 
 func (r File) UpdateUserFile(ctx core.Context, uf *entity.UserFile) error {
@@ -209,7 +213,7 @@ func (r File) IsExistUserFile(ctx core.Context, uid, fid uint32) (bool, error) {
 
 // GetUserFile 获取指定的数据
 func (r File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error) {
-	var file = entity.UserFile{}
+	file := entity.UserFile{}
 	db := ctx.DB().Where("user_id = ?", req.UserId).Where("file_id = ?", req.FileId)
 	if req.DirectoryId != 0 {
 		db = db.Where("directory_id = ?", req.DirectoryId)

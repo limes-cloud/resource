@@ -6,13 +6,15 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/redis/go-redis/v9"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx/library/lock"
@@ -21,14 +23,41 @@ import (
 )
 
 type Local struct {
+	conf      *core.Storage
 	ctx       context.Context
 	antiTheft bool
-	keyword   string
 	dir       string
 	secret    string
 	cache     *redis.Client
 	expire    time.Duration
 	url       string
+}
+
+func (s *Local) ParserQuery(req *types.ParserQuery) string {
+	u := url.Values{}
+	if req.Width != 0 {
+		u.Set("width", fmt.Sprint(req.Width))
+	}
+	if req.Height != 0 {
+		u.Set("height", fmt.Sprint(req.Height))
+	}
+	if req.Download {
+		u.Set("download", "true")
+	}
+	if req.SaveName != "" {
+		u.Set("saveName", req.SaveName)
+	}
+	if req.Expire != "" {
+		u.Set("expire", fmt.Sprint(req.Expire))
+	}
+	if req.Mode != "" {
+		u.Set("mode", req.Mode)
+	}
+	if req.Sign != "" {
+		u.Set("sign", req.Sign)
+	}
+
+	return u.Encode()
 }
 
 type upload struct {
@@ -37,9 +66,9 @@ type upload struct {
 	Local *Local
 }
 
-func New(ctx core.Context) (*Local, error) {
-	conf := ctx.Config().Storage
+func New(ctx core.Context, conf *core.Storage) (*Local, error) {
 	return &Local{
+		conf:      conf,
 		ctx:       context.Background(),
 		dir:       conf.LocalDir,
 		secret:    conf.Secret,
@@ -50,8 +79,8 @@ func New(ctx core.Context) (*Local, error) {
 	}, nil
 }
 
-func (s *Local) GetKeyword() string {
-	return s.keyword
+func (s *Local) Config() *core.Storage {
+	return s.conf
 }
 
 func (s *Local) GenTemporaryURL(key string) (string, error) {
@@ -264,7 +293,7 @@ func (u *upload) Complete() error {
 	// 如果已经存在文件了，则直接删除
 	_ = os.Remove(path)
 
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		return err
 	}

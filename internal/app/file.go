@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"io"
+
 	"github.com/limes-cloud/kratosx/model"
 	"github.com/limes-cloud/resource/api/file"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/spf13/cast"
-	"io"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
-	"github.com/limes-cloud/resource/internal/infra/store"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -25,7 +25,7 @@ type File struct {
 
 func NewFile() *File {
 	return &File{
-		srv: service.NewFile(dbs.NewFile(), dbs.NewDirectory(), store.NewStore()),
+		srv: service.NewFile(dbs.NewFile(), dbs.NewDirectory()),
 	}
 }
 
@@ -36,8 +36,8 @@ func init() {
 		file.RegisterFileServer(gs, app)
 
 		cr := hs.Route("/")
-		cr.GET("/resource/api/static/{key}", app.srv.KeyBlob())
-		cr.GET("/resource/{key}", app.srv.Redirect())
+		cr.GET("/resource/api/static/{store}/{key}", app.srv.KeyBlob())
+		cr.GET("/resource/{store}/{key}", app.srv.Redirect())
 
 		cr.POST("/resource/api/chunk_upload", app.ChunkUpload())
 		cr.POST("/resource/api/upload", app.Upload())
@@ -48,7 +48,6 @@ func (s *File) GetUserFile(c context.Context, req *file.GetUserFileRequest) (*fi
 	res, err := s.srv.GetUserFile(core.MustContext(c), &types.GetUserFileRequest{
 		Directory: req.Directory,
 		Id:        req.Id,
-		Sha:       req.Sha,
 		Key:       req.Key,
 	})
 	if err != nil {
@@ -65,7 +64,6 @@ func (s *File) GetUserFile(c context.Context, req *file.GetUserFileRequest) (*fi
 		CreatedAt:   uint32(res.CreatedAt),
 		UpdatedAt:   uint32(res.UpdatedAt),
 	}, nil
-
 }
 
 func (s *File) GetFileBytes(req *file.GetFileBytesRequest, reply file.File_GetFileBytesServer) error {
@@ -125,6 +123,7 @@ func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileR
 		Name:          req.Name,
 		Size:          req.Size,
 		Sha:           req.Sha,
+		Store:         req.Store,
 	})
 	if err != nil {
 		return nil, err
@@ -148,6 +147,7 @@ func (s *File) UploadFile(c context.Context, req *file.UploadFileRequest) (*file
 		DirectoryPath: req.DirectoryPath,
 		Data:          req.Data,
 		Sha:           req.Sha,
+		Store:         req.Store,
 	})
 	if err != nil {
 		return nil, err

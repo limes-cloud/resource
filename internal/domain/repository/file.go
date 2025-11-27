@@ -13,7 +13,7 @@ type File interface {
 	GetFile(ctx core.Context, id uint32) (*entity.File, error)
 
 	// GetFileBySha 获取指定的文件信息
-	GetFileBySha(ctx core.Context, sha string) (*entity.File, error)
+	GetFileBySha(ctx core.Context, store, sha string) (*entity.File, error)
 
 	// GetFileByUploadId 获取指定的文件信息
 	GetFileByUploadId(ctx core.Context, uid string) (*entity.File, error)

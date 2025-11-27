@@ -3,12 +3,6 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"github.com/limes-cloud/kratosx/model"
-	"github.com/limes-cloud/kratosx/pkg/value"
-	"github.com/limes-cloud/resource/api/errors"
-	"github.com/limes-cloud/resource/api/file"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/limes-cloud/resource/internal/pkg/image"
 	"io"
 	"math"
 	"net/http"
@@ -21,14 +15,20 @@ import (
 	thttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
-
-	"google.golang.org/protobuf/proto"
-	"gorm.io/gorm"
-
+	"github.com/limes-cloud/kratosx/model"
+	"github.com/limes-cloud/kratosx/pkg/value"
+	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/api/file"
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
+	"github.com/limes-cloud/resource/internal/infra/store"
+	storetypes "github.com/limes-cloud/resource/internal/infra/store/types"
 	"github.com/limes-cloud/resource/internal/pkg"
+	"github.com/limes-cloud/resource/internal/pkg/image"
 	"github.com/limes-cloud/resource/internal/types"
+	"google.golang.org/protobuf/proto"
+	"gorm.io/gorm"
 )
 
 const (
@@ -40,35 +40,29 @@ type File struct {
 	rw        sync.RWMutex
 	mui       map[string]*sync.Once
 	repo      repository.File
-	store     repository.Store
 	directory repository.Directory
 }
 
 func NewFile(
 	repo repository.File,
 	directory repository.Directory,
-	store repository.Store,
 ) *File {
 	return &File{
 		mui:       make(map[string]*sync.Once),
 		rw:        sync.RWMutex{},
 		repo:      repo,
-		store:     store,
 		directory: directory,
 	}
 }
 
 // GetUserFile 获取用户指定的文件信息
 func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error) {
-
 	var (
 		err error
 		res *entity.File
 	)
 	if req.Id != nil {
 		res, err = u.repo.GetFile(ctx, *req.Id)
-	} else if req.Sha != nil {
-		res, err = u.repo.GetFileBySha(ctx, *req.Sha)
 	} else if req.Key != nil {
 		res, err = u.repo.GetFileByKey(ctx, *req.Key)
 	} else {
@@ -100,14 +94,28 @@ func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*en
 	return uf, nil
 }
 
+func (u *File) getStoreByKey(key string) (storetypes.Store, error) {
+	arr := strings.Split(key, "/")
+	if len(arr) == 2 {
+		return store.NewStore(arr[0])
+	}
+	return store.NewStore()
+}
+
+// GetFileBytes 获取文件二进制文件
 func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileBytesFunc) error {
 	// 获取key
-	file, err := u.repo.GetFileByKey(ctx, key)
+	fe, err := u.repo.GetFileByKey(ctx, key)
 	if err != nil {
 		return errors.NotExistFileError()
 	}
 
-	reader, err := u.store.Get(file.Key)
+	st, err := u.getStoreByKey(key)
+	if err != nil {
+		return err
+	}
+
+	reader, err := st.Get(fe.Key)
 	if err != nil {
 		return errors.GetError(err.Error())
 	}
@@ -157,11 +165,17 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	directoryId = limit.DirectoryId
 	chunkSize := pkg.GetKBSize(conf.ChunkSize)
 
+	st, err := store.NewStore(req.Store)
+	if err != nil {
+		return nil, errors.SystemError(err.Error())
+	}
+
 	// 校验是否存在上传记录
-	oldFile, err := u.repo.GetFileBySha(ctx, req.Sha)
+	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
 	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.UpdateError(err.Error())
 	}
+
 	if err == nil {
 		// 触发秒传
 		if oldFile.Status == STATUS_COMPLETED {
@@ -186,8 +200,9 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 				Sha:      proto.String(oldFile.Sha),
 			}, nil
 		}
+
 		// 触发断点续传
-		chunkFactory, err := u.store.NewPutChunkByUploadID(oldFile.Sha, oldFile.UploadId)
+		chunkFactory, err := st.NewPutChunkByUploadID(oldFile.Sha, oldFile.UploadId)
 		if err != nil {
 			ctx.Logger().Warnw("msg", "get upload chunks error", "err", err.Error())
 			return nil, errors.SystemError()
@@ -233,10 +248,11 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	}
 
 	// 构建文件对象
-	file := &entity.File{
+	fe := &entity.File{
+		Store:      st.Config().Keyword,
 		Size:       req.Size,
 		Sha:        req.Sha,
-		Key:        fmt.Sprintf("%s.%s", req.Sha, tp),
+		Key:        fmt.Sprintf("%s/%s.%s", st.Config().Keyword, req.Sha, tp),
 		Status:     STATUS_PROGRESS,
 		Type:       tp,
 		UploadId:   uuid.NewString(),
@@ -245,16 +261,16 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 
 	// 判断是否需要切片
 	if chunkSize < req.Size {
-		file.ChunkCount = uint32(math.Ceil(float64(req.Size) / float64(chunkSize)))
-		chunkFactory, err := u.store.NewPutChunk(file.Key)
+		fe.ChunkCount = uint32(math.Ceil(float64(req.Size) / float64(chunkSize)))
+		chunkFactory, err := st.NewPutChunk(fe.Key)
 		if err != nil {
 			return nil, errors.UpdateError(err.Error())
 		}
-		file.UploadId = chunkFactory.UploadID()
+		fe.UploadId = chunkFactory.UploadID()
 	}
 
 	err = ctx.Transaction(func(ctx core.Context) error {
-		id, err := u.repo.CreateFile(ctx, file)
+		id, err := u.repo.CreateFile(ctx, fe)
 		if err != nil {
 			return err
 		}
@@ -273,14 +289,15 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 
 	return &types.PrepareUploadFileReply{
 		Uploaded:     false,
-		UploadId:     proto.String(file.UploadId),
+		UploadId:     proto.String(fe.UploadId),
 		ChunkSize:    proto.Uint32(chunkSize),
-		ChunkCount:   proto.Uint32(file.ChunkCount),
+		ChunkCount:   proto.Uint32(fe.ChunkCount),
 		UploadChunks: nil,
 		Key:          proto.String(fmt.Sprintf("%s.%s", req.Sha, tp)),
 	}, nil
 }
 
+// UploadFile 上传文件信息
 func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*types.UploadFileReply, error) {
 	var (
 		err         error
@@ -297,8 +314,13 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 		return nil, errors.DatabaseError(err.Error())
 	}
 
+	st, err := store.NewStore(req.Store)
+	if err != nil {
+		return nil, errors.SystemError(err.Error())
+	}
+
 	// 校验是否存在上传记录
-	oldFile, err := u.repo.GetFileBySha(ctx, req.Sha)
+	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
 	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.UpdateError(err.Error())
 	}
@@ -337,10 +359,11 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 	}
 
 	// 构建文件对象
-	file := &entity.File{
+	fe := &entity.File{
+		Store:      st.Config().Keyword,
 		Size:       fileSize,
 		Sha:        req.Sha,
-		Key:        fmt.Sprintf("%s.%s", req.Sha, tp),
+		Key:        fmt.Sprintf("%s/%s.%s", st.Config().Keyword, req.Sha, tp),
 		Status:     STATUS_COMPLETED,
 		Type:       tp,
 		UploadId:   uuid.NewString(),
@@ -348,7 +371,7 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 	}
 
 	err = ctx.Transaction(func(ctx core.Context) error {
-		id, err := u.repo.CreateFile(ctx, file)
+		id, err := u.repo.CreateFile(ctx, fe)
 		if err != nil {
 			return err
 		}
@@ -359,7 +382,7 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 		}); err != nil {
 			return err
 		}
-		return u.store.PutBytes(file.Key, req.Data)
+		return st.PutBytes(fe.Key, req.Data)
 	})
 	if err != nil {
 		return nil, errors.UpdateError(err.Error())
@@ -367,17 +390,18 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 
 	return &types.UploadFileReply{
 		Sha: req.Sha,
-		Key: file.Key,
+		Key: fe.Key,
 	}, nil
 }
 
 // UploadChunkFile 上传文件信息
 func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileRequest) (*types.UploadFileReply, error) {
-	file, err := u.repo.GetFileByUploadId(ctx, req.UploadId)
+	fe, err := u.repo.GetFileByUploadId(ctx, req.UploadId)
 	if err != nil {
 		return nil, errors.UpdateError("不存在上传任务")
 	}
-	if file.Status == STATUS_COMPLETED {
+
+	if fe.Status == STATUS_COMPLETED {
 		return nil, errors.UpdateError("请勿重复上传")
 	}
 
@@ -385,19 +409,24 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 		return nil, errors.UpdateError(err.Error())
 	}
 
+	st, err := u.getStoreByKey(fe.Key)
+	if err != nil {
+		return nil, errors.SystemError(err.Error())
+	}
+
 	// 直接上传
-	if file.ChunkCount == 1 {
-		if err = u.store.PutBytes(file.Key, req.Data); err != nil {
+	if fe.ChunkCount == 1 {
+		if err = st.PutBytes(fe.Key, req.Data); err != nil {
 			return nil, err
 		}
 		if err = u.repo.UpdateFile(ctx, &entity.File{
-			BaseModel: model.BaseModel{Id: file.Id},
+			BaseModel: model.BaseModel{Id: fe.Id},
 			Status:    STATUS_COMPLETED,
 		}); err != nil {
 			return nil, errors.UploadFileError(err.Error())
 		}
 	} else {
-		chunkFactory, err := u.store.NewPutChunkByUploadID(file.Key, req.UploadId)
+		chunkFactory, err := st.NewPutChunkByUploadID(fe.Key, req.UploadId)
 		if err != nil {
 			return nil, errors.UpdateError(err.Error())
 		}
@@ -411,7 +440,7 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 		u.rw.Unlock()
 
 		// 当前已经上传完成
-		if chunkFactory.ChunkCount() == int(file.ChunkCount) {
+		if chunkFactory.ChunkCount() == int(fe.ChunkCount) {
 			u.rw.RLock()
 			if u.mui[req.UploadId] != nil {
 				var cErr error
@@ -428,12 +457,11 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 						return
 					}
 					if err := u.repo.UpdateFile(ctx, &entity.File{
-						BaseModel: model.BaseModel{Id: file.Id},
+						BaseModel: model.BaseModel{Id: fe.Id},
 						Status:    STATUS_COMPLETED,
 					}); err != nil {
 						cErr = err
 					}
-
 				})
 				if cErr != nil {
 					return nil, errors.UpdateError(err.Error())
@@ -443,8 +471,8 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 		}
 	}
 	return &types.UploadFileReply{
-		Sha: file.Sha,
-		Key: file.Key,
+		Sha: fe.Sha,
+		Key: fe.Key,
 	}, nil
 }
 
@@ -459,10 +487,15 @@ func (u *File) UpdateUserFile(ctx core.Context, req *entity.UserFile) error {
 // DeleteUserFile 删除文件信息
 func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
 	total, err := u.repo.DeleteUserFile(ctx, ids, func(file *entity.File) {
+		st, err := u.getStoreByKey(file.Key)
+		if err != nil {
+			return
+		}
+
 		if file.Status == STATUS_COMPLETED {
-			_ = u.store.Delete(file.Key)
+			_ = st.Delete(file.Key)
 		} else {
-			chunk, err := u.store.NewPutChunkByUploadID(file.Key, file.UploadId)
+			chunk, err := st.NewPutChunkByUploadID(file.Key, file.UploadId)
 			if err == nil {
 				_ = chunk.Abort()
 			}
@@ -474,7 +507,7 @@ func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
 	return total, nil
 }
 
-func (s *File) LocalPath(next http.Handler, src string) http.Handler {
+func (u *File) LocalPath(next http.Handler, src string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = src
 		next.ServeHTTP(w, r)
@@ -482,13 +515,9 @@ func (s *File) LocalPath(next http.Handler, src string) http.Handler {
 }
 
 // Redirect 重定向到目标网址
-func (s *File) Redirect() thttp.HandlerFunc {
+func (u *File) Redirect() thttp.HandlerFunc {
 	return func(ctx thttp.Context) error {
-		var (
-			req  file.StaticFileRequest
-			kctx = core.MustContext(ctx)
-			conf = kctx.Config()
-		)
+		var req file.StaticFileRequest
 		if err := ctx.BindQuery(&req); err != nil {
 			return err
 		}
@@ -496,7 +525,22 @@ func (s *File) Redirect() thttp.HandlerFunc {
 			return err
 		}
 
-		url := conf.Storage.ServerURL + "/" + req.Key
+		st, err := store.NewStore(req.Store)
+		if err != nil {
+			return err
+		}
+
+		queryEncode := st.ParserQuery(&storetypes.ParserQuery{
+			Expire:   req.Expire,
+			Sign:     req.Sign,
+			Width:    req.Width,
+			Height:   req.Height,
+			Mode:     req.Mode,
+			Download: req.Download,
+			SaveName: req.SaveName,
+		})
+
+		url := st.Config().ServerURL + "/" + req.Store + "/" + req.Key + "?" + queryEncode
 		ctx.Response().Header().Set("Location", url)
 		ctx.Response().WriteHeader(301)
 
@@ -504,13 +548,9 @@ func (s *File) Redirect() thttp.HandlerFunc {
 	}
 }
 
-func (s *File) KeyBlob() thttp.HandlerFunc {
+func (u *File) KeyBlob() thttp.HandlerFunc {
 	return func(ctx thttp.Context) error {
-		var (
-			req  file.StaticFileRequest
-			kctx = core.MustContext(ctx)
-			conf = kctx.Config()
-		)
+		var req file.StaticFileRequest
 		if err := ctx.BindQuery(&req); err != nil {
 			return err
 		}
@@ -518,9 +558,14 @@ func (s *File) KeyBlob() thttp.HandlerFunc {
 			return err
 		}
 
+		st, err := store.NewStore(req.Store)
+		if err != nil {
+			return err
+		}
+
 		blw := pkg.NewWriter()
-		fs := http.FileServer(http.Dir(conf.Storage.LocalDir))
-		fs = s.LocalPath(fs, req.Key)
+		fs := http.FileServer(http.Dir(st.Config().LocalDir))
+		fs = u.LocalPath(fs, req.Key)
 		fs.ServeHTTP(blw, ctx.Request())
 
 		// 处理图片裁剪

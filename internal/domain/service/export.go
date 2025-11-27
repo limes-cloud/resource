@@ -4,18 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/limes-cloud/kratosx"
-	"github.com/limes-cloud/kratosx/model"
-	"github.com/limes-cloud/resource/api/errors"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/limes-cloud/resource/internal/pkg/filex"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/limes-cloud/resource/internal/infra/store"
+	storetypes "github.com/limes-cloud/resource/internal/infra/store/types"
+
+	"github.com/google/uuid"
+	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/model"
+	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/internal/core"
+	"github.com/limes-cloud/resource/internal/pkg/filex"
 
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
 	"github.com/limes-cloud/kratosx/pkg/crypto"
@@ -37,20 +41,17 @@ const (
 )
 
 type Export struct {
-	repo  repository.Export
-	file  repository.File
-	store repository.Store
+	repo repository.Export
+	file repository.File
 }
 
 func NewExport(
 	repo repository.Export,
 	file repository.File,
-	store repository.Store,
 ) *Export {
 	export := &Export{
-		repo:  repo,
-		file:  file,
-		store: store,
+		repo: repo,
+		file: file,
 	}
 	go func() {
 		ctx := core.MustContext(context.Background(), kratosx.WithSkipDBHook())
@@ -134,31 +135,33 @@ func (u *Export) ExportExcel(ctx core.Context, req *types.ExportExcelRequest) (*
 	return &types.ExportExcelReply{Id: id, Sha: sha, Key: fmt.Sprintf("%s.zip", sha)}, nil
 }
 
-// nolint
-func (u *Export) getFileByValue(ctx core.Context, value string) (*os.File, error) {
-	key := value
-	if strings.Contains(value, "/") {
-		key = value[strings.Index(value, "/")+1:]
-	} else if !strings.Contains(value, ".") {
-		file, err := u.file.GetFileBySha(ctx, value)
-		if err != nil {
-			return nil, err
-		}
-		key = file.Key
+func (u *Export) getStoreByKey(key string) (storetypes.Store, error) {
+	arr := strings.Split(key, "/")
+	if len(arr) == 2 {
+		return store.NewStore(arr[0])
 	}
+	return store.NewStore()
+}
 
+// nolint
+func (u *Export) getFileByValue(ctx core.Context, key string) (*os.File, error) {
 	conf := ctx.Config()
 	fileName := conf.Export.LocalDir + "/tmp/" + key
 	if filex.IsExistFile(fileName) {
 		return os.Open(fileName)
 	}
 
-	reader, err := u.store.Get(key)
+	store, err := u.getStoreByKey(key)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0644)
+	reader, err := store.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +244,11 @@ func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExce
 	}
 
 	// 上传到存储系统
-	if err := u.store.PutFromLocal(key, path); err != nil {
+	export, err := store.NewExportStore()
+	if err != nil {
+		return 0, err
+	}
+	if err := export.PutFromLocal(key, path); err != nil {
 		return 0, err
 	}
 
@@ -259,30 +266,11 @@ func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExce
 
 // fetchFile 拉取文件, 返回文件路径和文件名
 func (u *Export) fetchFile(ctx core.Context, uid string, list []*types.ExportFileItem) (map[string]string, error) {
-	getKeyFunc := func(ctx core.Context, value string) (string, error) {
-		var key = value
-		if strings.Contains(value, "/") {
-			key = value[strings.Index(value, "/")+1:]
-		} else if !strings.Contains(value, ".") {
-			file, err := u.file.GetFileBySha(ctx, value)
-			if err != nil {
-				return "", err
-			}
-			key = file.Key
-		}
-		return key, nil
-	}
-
-	var exports = make(map[string]string)
+	exports := make(map[string]string)
 	for _, item := range list {
-		key, err := getKeyFunc(ctx, item.Value)
-		if err != nil {
-			ctx.Logger().Errorw("msg", "get file key error", "err", err.Error())
-			continue
-		}
-		exports[key] = key
+		exports[item.Value] = item.Value
 		if item.Rename != "" {
-			exports[key] = item.Rename + filepath.Ext(key)
+			exports[item.Value] = item.Rename + filepath.Ext(item.Value)
 		}
 	}
 
@@ -292,7 +280,7 @@ func (u *Export) fetchFile(ctx core.Context, uid string, list []*types.ExportFil
 		dir        = conf.Export.LocalDir + "/tmp/" + uid + "/"
 	)
 	if !filex.IsExistFolder(dir) {
-		_ = os.MkdirAll(dir, 0750)
+		_ = os.MkdirAll(dir, 0o750)
 	}
 	for key, rename := range exports {
 		path := dir + key
@@ -307,7 +295,12 @@ func (u *Export) fetchFile(ctx core.Context, uid string, list []*types.ExportFil
 			continue
 		}
 
-		reader, err := u.store.Get(key)
+		store, err := u.getStoreByKey(key)
+		if err != nil {
+			return nil, err
+		}
+
+		reader, err := store.Get(key)
 		if err != nil {
 			ctx.Logger().Errorw("msg", "get remote file error", "key", key, "err", err.Error())
 			continue
@@ -343,7 +336,12 @@ func (u *Export) exportFile(ctx core.Context, key string, list []*types.ExportFi
 	}
 
 	// 上传到存储系统
-	if err := u.store.PutFromLocal(key, path); err != nil {
+	export, err := store.NewExportStore()
+	if err != nil {
+		return 0, err
+	}
+
+	if err := export.PutFromLocal(key, path); err != nil {
 		return 0, err
 	}
 
@@ -422,7 +420,13 @@ func (u *Export) clearExportFile(ctx core.Context) {
 				if err = os.RemoveAll(dir + "/" + item.Key); err != nil {
 					ctx.Logger().Warnw("msg", "remove export file status error", "err", err.Error())
 				}
-				if err = u.store.Delete(item.Key); err != nil {
+
+				store, err := u.getStoreByKey(item.Key)
+				if err != nil {
+					continue
+				}
+
+				if err = store.Delete(item.Key); err != nil {
 					ctx.Logger().Warnw("msg", "delete export file status error", "err", err.Error())
 				}
 			}
@@ -533,7 +537,11 @@ func (u *Export) GetExport(ctx core.Context, req *types.GetExportRequest) (*enti
 
 // VerifyURL 验证url
 func (u *Export) VerifyURL(key, expire, sign string) error {
-	return u.store.VerifyTemporaryURL(key, expire, sign)
+	store, err := u.getStoreByKey(key)
+	if err != nil {
+		return err
+	}
+	return store.VerifyTemporaryURL(key, expire, sign)
 }
 
 func (s *Export) LocalPath(next http.Handler, key string) http.Handler {

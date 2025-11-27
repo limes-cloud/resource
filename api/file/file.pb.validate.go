@@ -58,7 +58,6 @@ func (m *GetUserFileRequest) validate(all bool) error {
 	var errors []error
 
 	if m.Directory != nil {
-
 		if utf8.RuneCountInString(m.GetDirectory()) < 1 {
 			err := GetUserFileRequestValidationError{
 				field:  "Directory",
@@ -69,11 +68,9 @@ func (m *GetUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.Id != nil {
-
 		if m.GetId() < 1 {
 			err := GetUserFileRequestValidationError{
 				field:  "Id",
@@ -84,11 +81,9 @@ func (m *GetUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.Key != nil {
-
 		if utf8.RuneCountInString(m.GetKey()) < 1 {
 			err := GetUserFileRequestValidationError{
 				field:  "Key",
@@ -99,22 +94,6 @@ func (m *GetUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
-	}
-
-	if m.Sha != nil {
-
-		if utf8.RuneCountInString(m.GetSha()) < 1 {
-			err := GetUserFileRequestValidationError{
-				field:  "Sha",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
 	}
 
 	if len(errors) > 0 {
@@ -336,6 +315,17 @@ func (m *StaticFileRequest) validate(all bool) error {
 	}
 
 	var errors []error
+
+	if utf8.RuneCountInString(m.GetStore()) < 1 {
+		err := StaticFileRequestValidationError{
+			field:  "Store",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if utf8.RuneCountInString(m.GetKey()) < 1 {
 		err := StaticFileRequestValidationError{
@@ -1148,7 +1138,6 @@ func (m *ListUserFileRequest) validate(all bool) error {
 	}
 
 	if m.Order != nil {
-
 		if _, ok := _ListUserFileRequest_Order_InLookup[m.GetOrder()]; !ok {
 			err := ListUserFileRequestValidationError{
 				field:  "Order",
@@ -1159,11 +1148,9 @@ func (m *ListUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.OrderBy != nil {
-
 		if _, ok := _ListUserFileRequest_OrderBy_InLookup[m.GetOrderBy()]; !ok {
 			err := ListUserFileRequestValidationError{
 				field:  "OrderBy",
@@ -1174,7 +1161,6 @@ func (m *ListUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.DirectoryId != nil {
@@ -1182,7 +1168,6 @@ func (m *ListUserFileRequest) validate(all bool) error {
 	}
 
 	if m.Status != nil {
-
 		if _, ok := _ListUserFileRequest_Status_InLookup[m.GetStatus()]; !ok {
 			err := ListUserFileRequestValidationError{
 				field:  "Status",
@@ -1193,7 +1178,6 @@ func (m *ListUserFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.Name != nil {
@@ -1489,8 +1473,9 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.DirectoryId != nil {
+	// no validation rules for Store
 
+	if m.DirectoryId != nil {
 		if m.GetDirectoryId() <= 0 {
 			err := PrepareUploadFileRequestValidationError{
 				field:  "DirectoryId",
@@ -1501,11 +1486,9 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.DirectoryPath != nil {
-
 		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
 			err := PrepareUploadFileRequestValidationError{
 				field:  "DirectoryPath",
@@ -1516,7 +1499,6 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if len(errors) > 0 {
@@ -2019,8 +2001,9 @@ func (m *UploadFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.DirectoryId != nil {
+	// no validation rules for Store
 
+	if m.DirectoryId != nil {
 		if m.GetDirectoryId() <= 0 {
 			err := UploadFileRequestValidationError{
 				field:  "DirectoryId",
@@ -2031,11 +2014,9 @@ func (m *UploadFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if m.DirectoryPath != nil {
-
 		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
 			err := UploadFileRequestValidationError{
 				field:  "DirectoryPath",
@@ -2046,7 +2027,6 @@ func (m *UploadFileRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		}
-
 	}
 
 	if len(errors) > 0 {

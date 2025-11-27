@@ -6,7 +6,6 @@ type GetUserFileRequest struct {
 	FileId      uint32
 	Directory   *string `json:"directory"`
 	Id          *uint32 `json:"id"`
-	Sha         *string `json:"sha"`
 	Key         *string `json:"key"`
 }
 
@@ -47,6 +46,7 @@ type ListUserFileRequest struct {
 type PrepareUploadFileRequest struct {
 	DirectoryId   *uint32 `json:"directoryId"`
 	DirectoryPath *string `json:"directoryPath"`
+	Store         string  `json:"store"`
 	Name          string  `json:"name"`
 	Size          uint32  `json:"size"`
 	Sha           string  `json:"sha"`
@@ -66,6 +66,7 @@ type PrepareUploadFileReply struct {
 type UploadFileRequest struct {
 	DirectoryId   *uint32 `json:"directoryId"`
 	DirectoryPath *string `json:"directoryPath"`
+	Store         string  `json:"store"`
 	Name          string  `json:"name"`
 	Sha           string  `json:"sha"`
 	Data          []byte  `json:"data"`
