@@ -8,11 +8,11 @@ require (
 	github.com/go-kratos/kratos/v2 v2.9.1
 	github.com/google/uuid v1.6.0
 	github.com/limes-cloud/configure v1.0.49
-	github.com/limes-cloud/kratosx v1.2.6
+	github.com/limes-cloud/kratosx v1.2.9
 	github.com/limes-cloud/manager/api v0.0.0-20251019104000-8ffec8944c5c
 	github.com/limes-cloud/resource/api v0.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/redis/go-redis/v9 v9.4.0
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/spf13/cast v1.9.2
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.49
 	github.com/xuri/excelize/v2 v2.8.1
@@ -110,12 +110,12 @@ require (
 	go.opentelemetry.io/proto/otlp v1.2.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797 // indirect
