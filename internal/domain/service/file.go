@@ -565,7 +565,7 @@ func (u *File) KeyBlob() thttp.HandlerFunc {
 
 		blw := pkg.NewWriter()
 		fs := http.FileServer(http.Dir(st.Config().LocalDir))
-		fs = u.LocalPath(fs, req.Key)
+		fs = u.LocalPath(fs, req.Store+"/"+req.Key)
 		fs.ServeHTTP(blw, ctx.Request())
 
 		// 处理图片裁剪

@@ -9,7 +9,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/limes-cloud/configure v1.0.49
 	github.com/limes-cloud/kratosx v1.2.9
-	github.com/limes-cloud/manager/api v0.0.0-20251019104000-8ffec8944c5c
 	github.com/limes-cloud/resource/api v0.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/redis/go-redis/v9 v9.7.3
@@ -70,6 +69,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lestrrat/go-file-rotatelogs v0.0.0-20180223000712-d3151e2a480f // indirect
 	github.com/lestrrat/go-strftime v0.0.0-20180220042222-ba3bf9c1d042 // indirect
+	github.com/limes-cloud/manager/api v0.0.0-20251129152247-b0c746c5fef5 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240408141607-282e7b5d6b74 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

@@ -2,6 +2,11 @@ package main
 
 import (
 	"context"
+
+	"github.com/limes-cloud/kratosx/library"
+	"github.com/limes-cloud/kratosx/library/db"
+	"github.com/limes-cloud/manager/api/scope"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/limes-cloud/kratosx"
 	"github.com/limes-cloud/resource/api/errors"
@@ -20,9 +25,9 @@ func main() {
 			c.Logger().Warnw("msg", "params validate error", "err", err)
 			return errors.ParamsError()
 		}),
-		//kratosx.WithLibraryOptions(
-		//	library.WithDBOptions(db.WithHookScope(scope.Hook)),
-		//),
+		kratosx.WithLibraryOptions(
+			library.WithDBOptions(db.WithHookScope(scope.Hook)),
+		),
 		kratosx.WithMiddleware(middleware.Middleware()...),
 	)
 
