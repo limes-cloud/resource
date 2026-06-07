@@ -23,7 +23,7 @@ type Export struct {
 
 func NewExport() *Export {
 	return &Export{
-		srv: service.NewExport(dbs.NewExport(), dbs.NewFile(), dbs.NewFile(), store.NewStore, store.NewExportStore),
+		srv: service.NewExport(dbs.NewExport(), dbs.NewFile(), dbs.NewUserFile(), store.NewStore, store.NewExportStore),
 	}
 }
 

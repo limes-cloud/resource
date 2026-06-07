@@ -26,7 +26,7 @@ type File struct {
 
 func NewFile() *File {
 	return &File{
-		srv: service.NewFile(dbs.NewFile(), dbs.NewFile(), dbs.NewDirectory(), store.NewStore),
+		srv: service.NewFile(dbs.NewFile(), dbs.NewUserFile(), dbs.NewDirectory(), store.NewStore),
 	}
 }
 
