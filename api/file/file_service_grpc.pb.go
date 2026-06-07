@@ -8,6 +8,7 @@ package file
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,6 +25,7 @@ const (
 	File_ListUserFile_FullMethodName      = "/resource.api.file.File/ListUserFile"
 	File_PrepareUploadFile_FullMethodName = "/resource.api.file.File/PrepareUploadFile"
 	File_UploadFile_FullMethodName        = "/resource.api.file.File/UploadFile"
+	File_UploadFileByURL_FullMethodName   = "/resource.api.file.File/UploadFileByURL"
 	File_UpdateUserFile_FullMethodName    = "/resource.api.file.File/UpdateUserFile"
 	File_DeleteUserFile_FullMethodName    = "/resource.api.file.File/DeleteUserFile"
 )
@@ -42,6 +44,8 @@ type FileClient interface {
 	PrepareUploadFile(ctx context.Context, in *PrepareUploadFileRequest, opts ...grpc.CallOption) (*PrepareUploadFileReply, error)
 	// UploadFile 上传文件
 	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileReply, error)
+	// UploadFileByURL 上传文件
+	UploadFileByURL(ctx context.Context, in *UploadFileByURLRequest, opts ...grpc.CallOption) (*UploadFileByURLReply, error)
 	// UpdateFile 更新文件信息
 	UpdateUserFile(ctx context.Context, in *UpdateUserFileRequest, opts ...grpc.CallOption) (*UpdateUserFileReply, error)
 	// DeleteUserFile 删除文件信息
@@ -124,6 +128,15 @@ func (c *fileClient) UploadFile(ctx context.Context, in *UploadFileRequest, opts
 	return out, nil
 }
 
+func (c *fileClient) UploadFileByURL(ctx context.Context, in *UploadFileByURLRequest, opts ...grpc.CallOption) (*UploadFileByURLReply, error) {
+	out := new(UploadFileByURLReply)
+	err := c.cc.Invoke(ctx, File_UploadFileByURL_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *fileClient) UpdateUserFile(ctx context.Context, in *UpdateUserFileRequest, opts ...grpc.CallOption) (*UpdateUserFileReply, error) {
 	out := new(UpdateUserFileReply)
 	err := c.cc.Invoke(ctx, File_UpdateUserFile_FullMethodName, in, out, opts...)
@@ -156,6 +169,8 @@ type FileServer interface {
 	PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error)
 	// UploadFile 上传文件
 	UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error)
+	// UploadFileByURL 上传文件
+	UploadFileByURL(context.Context, *UploadFileByURLRequest) (*UploadFileByURLReply, error)
 	// UpdateFile 更新文件信息
 	UpdateUserFile(context.Context, *UpdateUserFileRequest) (*UpdateUserFileReply, error)
 	// DeleteUserFile 删除文件信息
@@ -164,27 +179,36 @@ type FileServer interface {
 }
 
 // UnimplementedFileServer must be embedded to have forward compatible implementations.
-type UnimplementedFileServer struct {
-}
+type UnimplementedFileServer struct{}
 
 func (UnimplementedFileServer) GetUserFile(context.Context, *GetUserFileRequest) (*GetUserFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFile not implemented")
 }
+
 func (UnimplementedFileServer) GetFileBytes(*GetFileBytesRequest, File_GetFileBytesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetFileBytes not implemented")
 }
+
 func (UnimplementedFileServer) ListUserFile(context.Context, *ListUserFileRequest) (*ListUserFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserFile not implemented")
 }
+
 func (UnimplementedFileServer) PrepareUploadFile(context.Context, *PrepareUploadFileRequest) (*PrepareUploadFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepareUploadFile not implemented")
 }
+
 func (UnimplementedFileServer) UploadFile(context.Context, *UploadFileRequest) (*UploadFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
+
+func (UnimplementedFileServer) UploadFileByURL(context.Context, *UploadFileByURLRequest) (*UploadFileByURLReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadFileByURL not implemented")
+}
+
 func (UnimplementedFileServer) UpdateUserFile(context.Context, *UpdateUserFileRequest) (*UpdateUserFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserFile not implemented")
 }
+
 func (UnimplementedFileServer) DeleteUserFile(context.Context, *DeleteUserFileRequest) (*DeleteUserFileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFile not implemented")
 }
@@ -294,6 +318,24 @@ func _File_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _File_UploadFileByURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadFileByURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileServer).UploadFileByURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: File_UploadFileByURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileServer).UploadFileByURL(ctx, req.(*UploadFileByURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _File_UpdateUserFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateUserFileRequest)
 	if err := dec(in); err != nil {
@@ -352,6 +394,10 @@ var File_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadFile",
 			Handler:    _File_UploadFile_Handler,
+		},
+		{
+			MethodName: "UploadFileByURL",
+			Handler:    _File_UploadFileByURL_Handler,
 		},
 		{
 			MethodName: "UpdateUserFile",

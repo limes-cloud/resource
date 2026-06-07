@@ -9,19 +9,7 @@ type GetUserFileRequest struct {
 	Key         *string `json:"key"`
 }
 
-type GetFileBytesRequest struct {
-	Id  *uint32 `json:"id"`
-	Sha *string `json:"sha"`
-	Key *string `json:"key"`
-}
-
 type GetFileBytesFunc func([]byte) error
-
-type GetFileRequest struct {
-	Id  *uint32 `json:"id"`
-	Sha *string `json:"sha"`
-	Key *string `json:"key"`
-}
 
 type ListFileRequest struct {
 	Page        uint32   `json:"page"`
@@ -32,15 +20,6 @@ type ListFileRequest struct {
 	Status      *string  `json:"status"`
 	Name        *string  `json:"name"`
 	KeyList     []string `json:"keyList"`
-}
-
-type ListUserFileRequest struct {
-	Page        uint32  `json:"page"`
-	PageSize    uint32  `json:"pageSize"`
-	Order       *string `json:"order"`
-	OrderBy     *string `json:"orderBy"`
-	DirectoryId *uint32 `json:"directoryId"`
-	Name        *string `json:"name"`
 }
 
 type PrepareUploadFileRequest struct {
@@ -81,4 +60,27 @@ type UploadChunkFileRequest struct {
 type UploadFileReply struct {
 	Sha string `json:"sha"`
 	Key string `json:"key"`
+}
+
+type UploadFileByURLRequest struct {
+	DirectoryId   *uint32 `json:"directoryId"`
+	DirectoryPath *string `json:"directoryPath"`
+	Store         string  `json:"store"`
+	URL           string  `json:"url"`
+	Name          string  `json:"name"`
+}
+
+type UploadFileByURLReply struct {
+	Sha string `json:"sha"`
+	Key string `json:"key"`
+}
+
+type ParserQuery struct {
+	Expire   string
+	Sign     string
+	Width    uint32
+	Height   uint32
+	Mode     string
+	Download bool
+	SaveName string
 }

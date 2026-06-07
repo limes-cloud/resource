@@ -39,3 +39,5 @@ bin/
 web_ts/
 autocode/
 .env
+static/local/
+static/chunk/

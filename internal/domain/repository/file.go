@@ -7,8 +7,6 @@ import (
 )
 
 type File interface {
-	GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error)
-
 	// GetFile 获取指定的文件信息
 	GetFile(ctx core.Context, id uint32) (*entity.File, error)
 
@@ -29,6 +27,10 @@ type File interface {
 
 	// DeleteFile 删除文件信息
 	DeleteFile(ctx core.Context, ids []uint32, call func(file *entity.File)) (uint32, error)
+}
+
+type UserFile interface {
+	GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error)
 
 	// IsExistUserFile 判断是否存在文件
 	IsExistUserFile(ctx core.Context, uid, fid uint32) (bool, error)

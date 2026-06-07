@@ -2,10 +2,10 @@ package dbs
 
 import (
 	"errors"
-	"github.com/limes-cloud/resource/internal/core"
 	"strings"
 	"sync"
 
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 )
 

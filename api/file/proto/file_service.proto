@@ -38,6 +38,9 @@ service File{
   // UploadFile 上传文件
   rpc UploadFile(UploadFileRequest) returns (UploadFileReply){}
 
+  // UploadFileByURL 上传文件
+  rpc UploadFileByURL(UploadFileByURLRequest) returns (UploadFileByURLReply){}
+
   // UpdateFile 更新文件信息
   rpc UpdateUserFile (UpdateUserFileRequest) returns (UpdateUserFileReply) {
     option (google.api.http) = {

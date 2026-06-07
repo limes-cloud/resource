@@ -2213,6 +2213,251 @@ var _ interface {
 	ErrorName() string
 } = UploadFileReplyValidationError{}
 
+// Validate checks the field values on UploadFileByURLRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadFileByURLRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadFileByURLRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadFileByURLRequestMultiError, or nil if none found.
+func (m *UploadFileByURLRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadFileByURLRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetUrl()) < 1 {
+		err := UploadFileByURLRequestValidationError{
+			field:  "Url",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := UploadFileByURLRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Store
+
+	if m.DirectoryPath != nil {
+		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
+			err := UploadFileByURLRequestValidationError{
+				field:  "DirectoryPath",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+	}
+
+	if len(errors) > 0 {
+		return UploadFileByURLRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadFileByURLRequestMultiError is an error wrapping multiple validation
+// errors returned by UploadFileByURLRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UploadFileByURLRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadFileByURLRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadFileByURLRequestMultiError) AllErrors() []error { return m }
+
+// UploadFileByURLRequestValidationError is the validation error returned by
+// UploadFileByURLRequest.Validate if the designated constraints aren't met.
+type UploadFileByURLRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadFileByURLRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadFileByURLRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadFileByURLRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadFileByURLRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadFileByURLRequestValidationError) ErrorName() string {
+	return "UploadFileByURLRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadFileByURLRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadFileByURLRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadFileByURLRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadFileByURLRequestValidationError{}
+
+// Validate checks the field values on UploadFileByURLReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadFileByURLReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadFileByURLReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadFileByURLReplyMultiError, or nil if none found.
+func (m *UploadFileByURLReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadFileByURLReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Sha
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return UploadFileByURLReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadFileByURLReplyMultiError is an error wrapping multiple validation
+// errors returned by UploadFileByURLReply.ValidateAll() if the designated
+// constraints aren't met.
+type UploadFileByURLReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadFileByURLReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadFileByURLReplyMultiError) AllErrors() []error { return m }
+
+// UploadFileByURLReplyValidationError is the validation error returned by
+// UploadFileByURLReply.Validate if the designated constraints aren't met.
+type UploadFileByURLReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadFileByURLReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadFileByURLReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadFileByURLReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadFileByURLReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadFileByURLReplyValidationError) ErrorName() string {
+	return "UploadFileByURLReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadFileByURLReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadFileByURLReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadFileByURLReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadFileByURLReplyValidationError{}
+
 // Validate checks the field values on UpdateUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

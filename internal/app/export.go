@@ -6,12 +6,13 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/limes-cloud/kratosx/pkg/value"
-	"github.com/limes-cloud/resource/api/export"
-	"github.com/limes-cloud/resource/internal/core"
-	"github.com/limes-cloud/resource/internal/infra/dbs"
 
 	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/api/export"
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/service"
+	"github.com/limes-cloud/resource/internal/infra/dbs"
+	"github.com/limes-cloud/resource/internal/infra/store"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -22,7 +23,7 @@ type Export struct {
 
 func NewExport() *Export {
 	return &Export{
-		srv: service.NewExport(dbs.NewExport(), dbs.NewFile()),
+		srv: service.NewExport(dbs.NewExport(), dbs.NewFile(), dbs.NewFile(), store.NewStore, store.NewExportStore),
 	}
 }
 
@@ -31,12 +32,6 @@ func init() {
 		app := NewExport()
 		export.RegisterExportHTTPServer(hs, app)
 		export.RegisterExportServer(gs, app)
-
-		//cr := hs.Route("/")
-		//cr.GET("/resource/api/v1/download/{expire}/{sign}/{src}", app.srv.Download())
-		//cr.GET("/resource/api/v1/download/{src}", app.srv.Download())
-		//
-		//cr.GET("/resource/api/v1/target", app.srv.DownloadTarget())
 	})
 }
 

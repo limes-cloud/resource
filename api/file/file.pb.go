@@ -1237,6 +1237,132 @@ func (x *UploadFileReply) GetKey() string {
 	return ""
 }
 
+type UploadFileByURLRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DirectoryPath *string `protobuf:"bytes,1,opt,name=directoryPath,proto3,oneof" json:"directoryPath,omitempty"`
+	Url           string  `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Name          string  `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Store         string  `protobuf:"bytes,4,opt,name=store,proto3" json:"store,omitempty"`
+}
+
+func (x *UploadFileByURLRequest) Reset() {
+	*x = UploadFileByURLRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_file_proto_file_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UploadFileByURLRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileByURLRequest) ProtoMessage() {}
+
+func (x *UploadFileByURLRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_file_proto_file_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileByURLRequest.ProtoReflect.Descriptor instead.
+func (*UploadFileByURLRequest) Descriptor() ([]byte, []int) {
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UploadFileByURLRequest) GetDirectoryPath() string {
+	if x != nil && x.DirectoryPath != nil {
+		return *x.DirectoryPath
+	}
+	return ""
+}
+
+func (x *UploadFileByURLRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *UploadFileByURLRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UploadFileByURLRequest) GetStore() string {
+	if x != nil {
+		return x.Store
+	}
+	return ""
+}
+
+type UploadFileByURLReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sha string `protobuf:"bytes,1,opt,name=sha,proto3" json:"sha,omitempty"`
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *UploadFileByURLReply) Reset() {
+	*x = UploadFileByURLReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_file_proto_file_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UploadFileByURLReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileByURLReply) ProtoMessage() {}
+
+func (x *UploadFileByURLReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_file_proto_file_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileByURLReply.ProtoReflect.Descriptor instead.
+func (*UploadFileByURLReply) Descriptor() ([]byte, []int) {
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UploadFileByURLReply) GetSha() string {
+	if x != nil {
+		return x.Sha
+	}
+	return ""
+}
+
+func (x *UploadFileByURLReply) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
 type UpdateUserFileRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1250,7 +1376,7 @@ type UpdateUserFileRequest struct {
 func (x *UpdateUserFileRequest) Reset() {
 	*x = UpdateUserFileRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_file_proto_file_proto_msgTypes[17]
+		mi := &file_api_file_proto_file_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1263,7 +1389,7 @@ func (x *UpdateUserFileRequest) String() string {
 func (*UpdateUserFileRequest) ProtoMessage() {}
 
 func (x *UpdateUserFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_file_proto_file_proto_msgTypes[17]
+	mi := &file_api_file_proto_file_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1276,7 +1402,7 @@ func (x *UpdateUserFileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserFileRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserFileRequest) Descriptor() ([]byte, []int) {
-	return file_api_file_proto_file_proto_rawDescGZIP(), []int{17}
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdateUserFileRequest) GetId() uint32 {
@@ -1309,7 +1435,7 @@ type UpdateUserFileReply struct {
 func (x *UpdateUserFileReply) Reset() {
 	*x = UpdateUserFileReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_file_proto_file_proto_msgTypes[18]
+		mi := &file_api_file_proto_file_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1322,7 +1448,7 @@ func (x *UpdateUserFileReply) String() string {
 func (*UpdateUserFileReply) ProtoMessage() {}
 
 func (x *UpdateUserFileReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_file_proto_file_proto_msgTypes[18]
+	mi := &file_api_file_proto_file_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1335,7 +1461,7 @@ func (x *UpdateUserFileReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserFileReply.ProtoReflect.Descriptor instead.
 func (*UpdateUserFileReply) Descriptor() ([]byte, []int) {
-	return file_api_file_proto_file_proto_rawDescGZIP(), []int{18}
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{20}
 }
 
 type DeleteUserFileRequest struct {
@@ -1349,7 +1475,7 @@ type DeleteUserFileRequest struct {
 func (x *DeleteUserFileRequest) Reset() {
 	*x = DeleteUserFileRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_file_proto_file_proto_msgTypes[19]
+		mi := &file_api_file_proto_file_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1362,7 +1488,7 @@ func (x *DeleteUserFileRequest) String() string {
 func (*DeleteUserFileRequest) ProtoMessage() {}
 
 func (x *DeleteUserFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_file_proto_file_proto_msgTypes[19]
+	mi := &file_api_file_proto_file_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1375,7 +1501,7 @@ func (x *DeleteUserFileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserFileRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserFileRequest) Descriptor() ([]byte, []int) {
-	return file_api_file_proto_file_proto_rawDescGZIP(), []int{19}
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeleteUserFileRequest) GetIds() []uint32 {
@@ -1396,7 +1522,7 @@ type DeleteUserFileReply struct {
 func (x *DeleteUserFileReply) Reset() {
 	*x = DeleteUserFileReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_file_proto_file_proto_msgTypes[20]
+		mi := &file_api_file_proto_file_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1409,7 +1535,7 @@ func (x *DeleteUserFileReply) String() string {
 func (*DeleteUserFileReply) ProtoMessage() {}
 
 func (x *DeleteUserFileReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_file_proto_file_proto_msgTypes[20]
+	mi := &file_api_file_proto_file_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1422,7 +1548,7 @@ func (x *DeleteUserFileReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserFileReply.ProtoReflect.Descriptor instead.
 func (*DeleteUserFileReply) Descriptor() ([]byte, []int) {
-	return file_api_file_proto_file_proto_rawDescGZIP(), []int{20}
+	return file_api_file_proto_file_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DeleteUserFileReply) GetTotal() uint32 {
@@ -1451,7 +1577,7 @@ type ListUserFileReply_File struct {
 func (x *ListUserFileReply_File) Reset() {
 	*x = ListUserFileReply_File{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_file_proto_file_proto_msgTypes[21]
+		mi := &file_api_file_proto_file_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1464,7 +1590,7 @@ func (x *ListUserFileReply_File) String() string {
 func (*ListUserFileReply_File) ProtoMessage() {}
 
 func (x *ListUserFileReply_File) ProtoReflect() protoreflect.Message {
-	mi := &file_api_file_proto_file_proto_msgTypes[21]
+	mi := &file_api_file_proto_file_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1728,25 +1854,40 @@ var file_api_file_proto_file_proto_rawDesc = []byte{
 	0x68, 0x22, 0x35, 0x0a, 0x0f, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x46, 0x69, 0x6c, 0x65, 0x52,
 	0x65, 0x70, 0x6c, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x68, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x03, 0x73, 0x68, 0x61, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x78, 0x0a, 0x15, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x17, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x42, 0x07, 0xfa,
-	0x42, 0x04, 0x2a, 0x02, 0x20, 0x00, 0x52, 0x02, 0x69, 0x64, 0x12, 0x29, 0x0a, 0x0b, 0x64, 0x69,
-	0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x42,
-	0x07, 0xfa, 0x42, 0x04, 0x2a, 0x02, 0x20, 0x00, 0x52, 0x0b, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74,
-	0x6f, 0x72, 0x79, 0x49, 0x64, 0x12, 0x1b, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x22, 0x15, 0x0a, 0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72,
-	0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x37, 0x0a, 0x15, 0x44, 0x65, 0x6c,
-	0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x1e, 0x0a, 0x03, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0d, 0x42,
-	0x0c, 0xfa, 0x42, 0x09, 0x92, 0x01, 0x06, 0x08, 0x01, 0x10, 0x32, 0x18, 0x01, 0x52, 0x03, 0x69,
-	0x64, 0x73, 0x22, 0x2b, 0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72,
-	0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74,
-	0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42,
-	0x1d, 0x0a, 0x11, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e,
-	0x66, 0x69, 0x6c, 0x65, 0x50, 0x01, 0x5a, 0x06, 0x2e, 0x3b, 0x66, 0x69, 0x6c, 0x65, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0xac, 0x01, 0x0a, 0x16, 0x55, 0x70, 0x6c,
+	0x6f, 0x61, 0x64, 0x46, 0x69, 0x6c, 0x65, 0x42, 0x79, 0x55, 0x52, 0x4c, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x32, 0x0a, 0x0d, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79,
+	0x50, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72,
+	0x02, 0x10, 0x01, 0x48, 0x00, 0x52, 0x0d, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79,
+	0x50, 0x61, 0x74, 0x68, 0x88, 0x01, 0x01, 0x12, 0x19, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x03, 0x75,
+	0x72, 0x6c, 0x12, 0x1b, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12,
+	0x14, 0x0a, 0x05, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05,
+	0x73, 0x74, 0x6f, 0x72, 0x65, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74,
+	0x6f, 0x72, 0x79, 0x50, 0x61, 0x74, 0x68, 0x22, 0x3a, 0x0a, 0x14, 0x55, 0x70, 0x6c, 0x6f, 0x61,
+	0x64, 0x46, 0x69, 0x6c, 0x65, 0x42, 0x79, 0x55, 0x52, 0x4c, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12,
+	0x10, 0x0a, 0x03, 0x73, 0x68, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x73, 0x68,
+	0x61, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x6b, 0x65, 0x79, 0x22, 0x78, 0x0a, 0x15, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65,
+	0x72, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x02,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x2a, 0x02, 0x20,
+	0x00, 0x52, 0x02, 0x69, 0x64, 0x12, 0x29, 0x0a, 0x0b, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f,
+	0x72, 0x79, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x2a,
+	0x02, 0x20, 0x00, 0x52, 0x0b, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79, 0x49, 0x64,
+	0x12, 0x1b, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07,
+	0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x15, 0x0a,
+	0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x46, 0x69, 0x6c, 0x65, 0x52,
+	0x65, 0x70, 0x6c, 0x79, 0x22, 0x37, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73,
+	0x65, 0x72, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1e, 0x0a,
+	0x03, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0d, 0x42, 0x0c, 0xfa, 0x42, 0x09, 0x92,
+	0x01, 0x06, 0x08, 0x01, 0x10, 0x32, 0x18, 0x01, 0x52, 0x03, 0x69, 0x64, 0x73, 0x22, 0x2b, 0x0a,
+	0x13, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x46, 0x69, 0x6c, 0x65, 0x52,
+	0x65, 0x70, 0x6c, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0d, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42, 0x1d, 0x0a, 0x11, 0x72, 0x65,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x66, 0x69, 0x6c, 0x65, 0x50,
+	0x01, 0x5a, 0x06, 0x2e, 0x3b, 0x66, 0x69, 0x6c, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -1762,7 +1903,7 @@ func file_api_file_proto_file_proto_rawDescGZIP() []byte {
 }
 
 var (
-	file_api_file_proto_file_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+	file_api_file_proto_file_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 	file_api_file_proto_file_proto_goTypes  = []interface{}{
 		(*GetUserFileRequest)(nil),        // 0: resource.api.file.GetUserFileRequest
 		(*GetUserFileReply)(nil),          // 1: resource.api.file.GetUserFileReply
@@ -1781,16 +1922,18 @@ var (
 		(*UploadChunkFileReply)(nil),      // 14: resource.api.file.UploadChunkFileReply
 		(*UploadFileRequest)(nil),         // 15: resource.api.file.UploadFileRequest
 		(*UploadFileReply)(nil),           // 16: resource.api.file.UploadFileReply
-		(*UpdateUserFileRequest)(nil),     // 17: resource.api.file.UpdateUserFileRequest
-		(*UpdateUserFileReply)(nil),       // 18: resource.api.file.UpdateUserFileReply
-		(*DeleteUserFileRequest)(nil),     // 19: resource.api.file.DeleteUserFileRequest
-		(*DeleteUserFileReply)(nil),       // 20: resource.api.file.DeleteUserFileReply
-		(*ListUserFileReply_File)(nil),    // 21: resource.api.file.ListUserFileReply.File
+		(*UploadFileByURLRequest)(nil),    // 17: resource.api.file.UploadFileByURLRequest
+		(*UploadFileByURLReply)(nil),      // 18: resource.api.file.UploadFileByURLReply
+		(*UpdateUserFileRequest)(nil),     // 19: resource.api.file.UpdateUserFileRequest
+		(*UpdateUserFileReply)(nil),       // 20: resource.api.file.UpdateUserFileReply
+		(*DeleteUserFileRequest)(nil),     // 21: resource.api.file.DeleteUserFileRequest
+		(*DeleteUserFileReply)(nil),       // 22: resource.api.file.DeleteUserFileReply
+		(*ListUserFileReply_File)(nil),    // 23: resource.api.file.ListUserFileReply.File
 	}
 )
 
 var file_api_file_proto_file_proto_depIdxs = []int32{
-	21, // 0: resource.api.file.ListUserFileReply.list:type_name -> resource.api.file.ListUserFileReply.File
+	23, // 0: resource.api.file.ListUserFileReply.list:type_name -> resource.api.file.ListUserFileReply.File
 	1,  // [1:1] is the sub-list for method output_type
 	1,  // [1:1] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
@@ -2009,7 +2152,7 @@ func file_api_file_proto_file_proto_init() {
 			}
 		}
 		file_api_file_proto_file_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateUserFileRequest); i {
+			switch v := v.(*UploadFileByURLRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2021,7 +2164,7 @@ func file_api_file_proto_file_proto_init() {
 			}
 		}
 		file_api_file_proto_file_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateUserFileReply); i {
+			switch v := v.(*UploadFileByURLReply); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2033,7 +2176,7 @@ func file_api_file_proto_file_proto_init() {
 			}
 		}
 		file_api_file_proto_file_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteUserFileRequest); i {
+			switch v := v.(*UpdateUserFileRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2045,7 +2188,7 @@ func file_api_file_proto_file_proto_init() {
 			}
 		}
 		file_api_file_proto_file_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteUserFileReply); i {
+			switch v := v.(*UpdateUserFileReply); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2057,6 +2200,30 @@ func file_api_file_proto_file_proto_init() {
 			}
 		}
 		file_api_file_proto_file_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteUserFileRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_file_proto_file_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteUserFileReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_file_proto_file_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListUserFileReply_File); i {
 			case 0:
 				return &v.state
@@ -2074,13 +2241,14 @@ func file_api_file_proto_file_proto_init() {
 	file_api_file_proto_file_proto_msgTypes[11].OneofWrappers = []interface{}{}
 	file_api_file_proto_file_proto_msgTypes[12].OneofWrappers = []interface{}{}
 	file_api_file_proto_file_proto_msgTypes[15].OneofWrappers = []interface{}{}
+	file_api_file_proto_file_proto_msgTypes[17].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_file_proto_file_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   22,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

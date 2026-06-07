@@ -1,31 +1,25 @@
 package service
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
-	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	thttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/limes-cloud/kratosx/pkg/crypto"
+
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
 	"github.com/limes-cloud/kratosx/model"
 	"github.com/limes-cloud/kratosx/pkg/value"
 	"github.com/limes-cloud/resource/api/errors"
-	"github.com/limes-cloud/resource/api/file"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
-	"github.com/limes-cloud/resource/internal/infra/store"
-	storetypes "github.com/limes-cloud/resource/internal/infra/store/types"
 	"github.com/limes-cloud/resource/internal/pkg"
-	"github.com/limes-cloud/resource/internal/pkg/image"
 	"github.com/limes-cloud/resource/internal/types"
 	"google.golang.org/protobuf/proto"
 	"gorm.io/gorm"
@@ -40,18 +34,24 @@ type File struct {
 	rw        sync.RWMutex
 	mui       map[string]*sync.Once
 	repo      repository.File
+	userRepo  repository.UserFile
 	directory repository.Directory
+	newStore  func(keyword ...string) (repository.Store, error)
 }
 
 func NewFile(
 	repo repository.File,
+	userRepo repository.UserFile,
 	directory repository.Directory,
+	newStore func(keyword ...string) (repository.Store, error),
 ) *File {
 	return &File{
 		mui:       make(map[string]*sync.Once),
 		rw:        sync.RWMutex{},
 		repo:      repo,
+		userRepo:  userRepo,
 		directory: directory,
+		newStore:  newStore,
 	}
 }
 
@@ -85,7 +85,7 @@ func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*en
 
 	req.FileId = res.Id
 	req.UserId = ctx.Auth().UserId
-	uf, err := u.repo.GetUserFile(ctx, req)
+	uf, err := u.userRepo.GetUserFile(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +94,12 @@ func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*en
 	return uf, nil
 }
 
-func (u *File) getStoreByKey(key string) (storetypes.Store, error) {
-	arr := strings.Split(key, "/")
-	if len(arr) == 2 {
-		return store.NewStore(arr[0])
+func (u *File) getStoreByKey(key string) (repository.Store, error) {
+	parts := strings.SplitN(key, "/", 2)
+	if len(parts) == 2 {
+		return u.newStore(parts[0])
 	}
-	return store.NewStore()
+	return u.newStore()
 }
 
 // GetFileBytes 获取文件二进制文件
@@ -119,17 +119,19 @@ func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileByt
 	if err != nil {
 		return errors.GetError(err.Error())
 	}
-	buf := make([]byte, 2048)
+	buf := make([]byte, 32*1024)
 	for {
 		nr, er := reader.Read(buf)
-		if er != nil && er != io.EOF {
-			return er
-		}
 		if nr > 0 {
-			return reply(buf[:nr])
+			if err := reply(buf[:nr]); err != nil {
+				return err
+			}
 		}
 		if er == io.EOF {
 			break
+		}
+		if er != nil {
+			return er
 		}
 	}
 	return nil
@@ -137,7 +139,7 @@ func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileByt
 
 // ListUserFile 获取文件信息列表
 func (u *File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
-	list, total, err := u.repo.ListUserFile(ctx, req)
+	list, total, err := u.userRepo.ListUserFile(ctx, req)
 	if err != nil {
 		return nil, 0, errors.ListError(err.Error())
 	}
@@ -165,7 +167,7 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	directoryId = limit.DirectoryId
 	chunkSize := pkg.GetKBSize(conf.ChunkSize)
 
-	st, err := store.NewStore(req.Store)
+	st, err := u.newStore(req.Store)
 	if err != nil {
 		return nil, errors.SystemError(err.Error())
 	}
@@ -180,12 +182,12 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 		// 触发秒传
 		if oldFile.Status == STATUS_COMPLETED {
 			// 判断当前用户是否已经拥有了图片
-			has, err := u.repo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
+			has, err := u.userRepo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
 			if err != nil {
 				return nil, errors.UploadFileError(err.Error())
 			}
 			if !has {
-				if _, err := u.repo.CreateUserFile(ctx, &entity.UserFile{
+				if _, err := u.userRepo.CreateUserFile(ctx, &entity.UserFile{
 					DirectoryId: directoryId,
 					Name:        req.Name,
 					FileId:      oldFile.Id,
@@ -274,7 +276,7 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 		if err != nil {
 			return err
 		}
-		if _, err = u.repo.CreateUserFile(ctx, &entity.UserFile{
+		if _, err = u.userRepo.CreateUserFile(ctx, &entity.UserFile{
 			DirectoryId: directoryId,
 			Name:        req.Name,
 			FileId:      id,
@@ -297,12 +299,43 @@ func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileR
 	}, nil
 }
 
+// UploadFileByURL 上传文件信息
+func (u *File) UploadFileByURL(ctx core.Context, req *types.UploadFileByURLRequest) (*types.UploadFileByURLReply, error) {
+	// 下载URL
+	resp, err := http.Get(req.URL)
+	if err != nil {
+		return nil, errors.SystemError(err.Error())
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.SystemError(err.Error())
+	}
+
+	// 上传文件
+	reply, err := u.UploadFile(ctx, &types.UploadFileRequest{
+		DirectoryPath: req.DirectoryPath,
+		Store:         req.Store,
+		Name:          req.Name,
+		Data:          b,
+		Sha:           crypto.MD5(b),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.UploadFileByURLReply{
+		Sha: reply.Sha,
+		Key: reply.Key,
+	}, nil
+}
+
 // UploadFile 上传文件信息
 func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*types.UploadFileReply, error) {
 	var (
 		err         error
 		limit       *entity.DirectoryLimit
-		directoryId uint32
+		hasUserFile bool
 	)
 	if req.DirectoryId != nil {
 		limit, err = u.directory.GetDirectoryLimitById(ctx, *req.DirectoryId)
@@ -314,41 +347,14 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 		return nil, errors.DatabaseError(err.Error())
 	}
 
-	st, err := store.NewStore(req.Store)
+	st, err := u.newStore(req.Store)
 	if err != nil {
 		return nil, errors.SystemError(err.Error())
 	}
 
-	// 校验是否存在上传记录
-	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
-	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.UpdateError(err.Error())
-	}
-	if err == nil && oldFile.Status == STATUS_COMPLETED {
-		// 判断当前用户是否已经拥有了图片
-		has, err := u.repo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
-		if err != nil {
-			return nil, errors.UploadFileError(err.Error())
-		}
-		if !has {
-			if _, err := u.repo.CreateUserFile(ctx, &entity.UserFile{
-				DirectoryId: directoryId,
-				Name:        req.Name,
-				FileId:      oldFile.Id,
-			}); err != nil {
-				return nil, errors.UploadFileError(err.Error())
-			}
-		}
-
-		return &types.UploadFileReply{
-			Key: oldFile.Key,
-			Sha: oldFile.Sha,
-		}, nil
-	}
-
 	// 校验文件大小
-	fileSize := uint32(len(req.Data))
-	if size := pkg.GetKBSize(limit.MaxSize); size < fileSize {
+	fileSize := pkg.GetKBSize(uint32(len(req.Data)))
+	if size := pkg.GetKBSize(limit.MaxSize * 1024 * 1024); size < fileSize {
 		return nil, errors.ExceedMaxSizeError()
 	}
 
@@ -356,6 +362,37 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 	tp := pkg.GetFileType(req.Name)
 	if !value.InList(limit.Accepts, tp) {
 		return nil, errors.NoSupportFileTypeError()
+	}
+
+	// 校验是否存在上传记录
+	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
+	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.UpdateError(err.Error())
+	}
+	if err == nil {
+		// 判断当前用户是否已经拥有了图片
+		has, err := u.userRepo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
+		if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.UploadFileError(err.Error())
+		}
+		hasUserFile = has
+		if oldFile.Status == STATUS_COMPLETED {
+			if !has {
+				if _, err := u.userRepo.CreateUserFile(ctx, &entity.UserFile{
+					DirectoryId: limit.DirectoryId,
+					Name:        req.Name,
+					FileId:      oldFile.Id,
+				}); err != nil {
+					return nil, errors.UploadFileError(err.Error())
+				}
+			}
+
+			return &types.UploadFileReply{
+				Key: oldFile.Key,
+				Sha: oldFile.Sha,
+			}, nil
+		}
+
 	}
 
 	// 构建文件对象
@@ -371,17 +408,32 @@ func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*type
 	}
 
 	err = ctx.Transaction(func(ctx core.Context) error {
-		id, err := u.repo.CreateFile(ctx, fe)
-		if err != nil {
-			return err
+		var fileID uint32
+		if oldFile != nil && oldFile.Id != 0 {
+			fileID = oldFile.Id
+			if err = u.repo.UpdateFile(ctx, &entity.File{
+				BaseModel: model.BaseModel{Id: oldFile.Id},
+				Status:    STATUS_COMPLETED,
+				Size:      fileSize,
+			}); err != nil {
+				return err
+			}
+		} else {
+			fileID, err = u.repo.CreateFile(ctx, fe)
+			if err != nil {
+				return err
+			}
 		}
-		if _, err = u.repo.CreateUserFile(ctx, &entity.UserFile{
-			DirectoryId: directoryId,
-			Name:        req.Name,
-			FileId:      id,
-		}); err != nil {
-			return err
+		if !hasUserFile {
+			if _, err = u.userRepo.CreateUserFile(ctx, &entity.UserFile{
+				DirectoryId: limit.DirectoryId,
+				Name:        req.Name,
+				FileId:      fileID,
+			}); err != nil {
+				return err
+			}
 		}
+
 		return st.PutBytes(fe.Key, req.Data)
 	})
 	if err != nil {
@@ -403,10 +455,6 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 
 	if fe.Status == STATUS_COMPLETED {
 		return nil, errors.UpdateError("请勿重复上传")
-	}
-
-	if err != nil {
-		return nil, errors.UpdateError(err.Error())
 	}
 
 	st, err := u.getStoreByKey(fe.Key)
@@ -478,7 +526,7 @@ func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileReque
 
 // UpdateUserFile 更新文件信息
 func (u *File) UpdateUserFile(ctx core.Context, req *entity.UserFile) error {
-	if err := u.repo.UpdateUserFile(ctx, req); err != nil {
+	if err := u.userRepo.UpdateUserFile(ctx, req); err != nil {
 		return errors.UpdateError(err.Error())
 	}
 	return nil
@@ -486,7 +534,7 @@ func (u *File) UpdateUserFile(ctx core.Context, req *entity.UserFile) error {
 
 // DeleteUserFile 删除文件信息
 func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
-	total, err := u.repo.DeleteUserFile(ctx, ids, func(file *entity.File) {
+	total, err := u.userRepo.DeleteUserFile(ctx, ids, func(file *entity.File) {
 		st, err := u.getStoreByKey(file.Key)
 		if err != nil {
 			return
@@ -505,107 +553,4 @@ func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
 		return 0, errors.DeleteError(err.Error())
 	}
 	return total, nil
-}
-
-func (u *File) LocalPath(next http.Handler, src string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = src
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Redirect 重定向到目标网址
-func (u *File) Redirect() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var req file.StaticFileRequest
-		if err := ctx.BindQuery(&req); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&req); err != nil {
-			return err
-		}
-
-		st, err := store.NewStore(req.Store)
-		if err != nil {
-			return err
-		}
-
-		queryEncode := st.ParserQuery(&storetypes.ParserQuery{
-			Expire:   req.Expire,
-			Sign:     req.Sign,
-			Width:    req.Width,
-			Height:   req.Height,
-			Mode:     req.Mode,
-			Download: req.Download,
-			SaveName: req.SaveName,
-		})
-
-		url := st.Config().ServerURL + "/" + req.Store + "/" + req.Key + "?" + queryEncode
-		ctx.Response().Header().Set("Location", url)
-		ctx.Response().WriteHeader(301)
-
-		return nil
-	}
-}
-
-func (u *File) KeyBlob() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var req file.StaticFileRequest
-		if err := ctx.BindQuery(&req); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&req); err != nil {
-			return err
-		}
-
-		st, err := store.NewStore(req.Store)
-		if err != nil {
-			return err
-		}
-
-		blw := pkg.NewWriter()
-		fs := http.FileServer(http.Dir(st.Config().LocalDir))
-		fs = u.LocalPath(fs, req.Store+"/"+req.Key)
-		fs.ServeHTTP(blw, ctx.Request())
-
-		// 处理图片裁剪
-		cType := blw.Header().Get("Content-Type")
-		if strings.Contains(cType, "image/") && req.Width > 0 && req.Height > 0 {
-			blw.Header().Del("Content-Length")
-			tp := strings.Split(cType, "/")[1]
-			rb := blw.Body()
-			if img, err := image.New(tp, rb); err == nil {
-				if req.Mode == "" {
-					req.Mode = image.AspectFill
-				}
-				if nrb, err := img.Resize(int(req.Width), int(req.Height), req.Mode); err == nil {
-					blw.SetBody(bytes.NewBuffer(nrb))
-					blw.Header().Set("Content-Length", strconv.Itoa(len(nrb)))
-				}
-			}
-		}
-
-		// 处理返回
-		header := ctx.Response().Header()
-		blwHeader := blw.Header()
-		for key := range blwHeader {
-			header.Set(key, blwHeader.Get(key))
-		}
-
-		if req.Download {
-			fn := req.Key
-			if req.SaveName != "" {
-				fn = req.SaveName + filepath.Ext(req.Key)
-			}
-			header.Set("Content-Type", "application/octet-stream")
-			header.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fn))
-		}
-
-		ctx.Response().WriteHeader(blw.Code())
-		if _, err := ctx.Response().Write(blw.Body()); err != nil {
-			return errors.SystemError()
-		}
-
-		return nil
-	}
 }

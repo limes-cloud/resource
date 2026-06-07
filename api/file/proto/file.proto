@@ -140,6 +140,18 @@ message UploadFileReply{
   string key = 2;
 }
 
+message UploadFileByURLRequest{
+  optional string directoryPath = 1[(validate.rules).string = {min_len: 1}];
+  string url = 2[(validate.rules).string = {min_len: 1}];
+  string name = 3[(validate.rules).string = {min_len: 1}];
+  string store = 4;
+}
+
+message UploadFileByURLReply{
+  string sha = 1;
+  string key = 2;
+}
+
 message UpdateUserFileRequest {
   uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
   uint32 directoryId = 2[(validate.rules).uint32 = {gt: 0}];

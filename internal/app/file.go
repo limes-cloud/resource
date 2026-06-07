@@ -4,17 +4,18 @@ import (
 	"context"
 	"io"
 
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	thttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/limes-cloud/kratosx/model"
-	"github.com/limes-cloud/resource/api/file"
-	"github.com/limes-cloud/resource/internal/core"
 	"github.com/spf13/cast"
 
-	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/limes-cloud/resource/api/errors"
+	"github.com/limes-cloud/resource/api/file"
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
+	"github.com/limes-cloud/resource/internal/infra/store"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
@@ -25,19 +26,19 @@ type File struct {
 
 func NewFile() *File {
 	return &File{
-		srv: service.NewFile(dbs.NewFile(), dbs.NewDirectory()),
+		srv: service.NewFile(dbs.NewFile(), dbs.NewFile(), dbs.NewDirectory(), store.NewStore),
 	}
 }
 
 func init() {
-	register(func(hs *http.Server, gs *grpc.Server) {
+	register(func(hs *thttp.Server, gs *grpc.Server) {
 		app := NewFile()
 		file.RegisterFileHTTPServer(hs, app)
 		file.RegisterFileServer(gs, app)
 
 		cr := hs.Route("/")
-		cr.GET("/resource/api/static/{store}/{key}", app.srv.KeyBlob())
-		cr.GET("/resource/{store}/{key}", app.srv.Redirect())
+		cr.GET("/resource/redirect/{store}/{key}", app.Redirect())
+		cr.GET("/resource/api/file/download", app.Download())
 
 		cr.POST("/resource/api/chunk_upload", app.ChunkUpload())
 		cr.POST("/resource/api/upload", app.Upload())
@@ -78,7 +79,6 @@ func (s *File) GetFileBytes(req *file.GetFileBytesRequest, reply file.File_GetFi
 	)
 }
 
-// ListUserFile 获取文件信息列表
 func (s *File) ListUserFile(c context.Context, req *file.ListUserFileRequest) (*file.ListUserFileReply, error) {
 	list, total, err := s.srv.ListUserFile(core.MustContext(c), &types.ListFileRequest{
 		Page:        req.Page,
@@ -111,7 +111,6 @@ func (s *File) ListUserFile(c context.Context, req *file.ListUserFileRequest) (*
 	return &reply, nil
 }
 
-// PrepareUploadFile 预上传文件信息
 func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileRequest) (*file.PrepareUploadFileReply, error) {
 	if req.DirectoryPath == nil && req.DirectoryId == nil {
 		return nil, errors.ParamsError()
@@ -140,13 +139,13 @@ func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileR
 	}, nil
 }
 
-// UploadFile 上传文件信息
 func (s *File) UploadFile(c context.Context, req *file.UploadFileRequest) (*file.UploadFileReply, error) {
 	reply, err := s.srv.UploadFile(core.MustContext(c), &types.UploadFileRequest{
 		DirectoryId:   req.DirectoryId,
 		DirectoryPath: req.DirectoryPath,
 		Data:          req.Data,
 		Sha:           req.Sha,
+		Name:          req.Name,
 		Store:         req.Store,
 	})
 	if err != nil {
@@ -158,7 +157,22 @@ func (s *File) UploadFile(c context.Context, req *file.UploadFileRequest) (*file
 	}, nil
 }
 
-// UploadChunkFile 上传文件信息
+func (s *File) UploadFileByURL(c context.Context, req *file.UploadFileByURLRequest) (*file.UploadFileByURLReply, error) {
+	reply, err := s.srv.UploadFileByURL(core.MustContext(c), &types.UploadFileByURLRequest{
+		DirectoryPath: req.DirectoryPath,
+		Store:         req.Store,
+		URL:           req.Url,
+		Name:          req.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &file.UploadFileByURLReply{
+		Sha: reply.Sha,
+		Key: reply.Key,
+	}, nil
+}
+
 func (s *File) UploadChunkFile(c context.Context, req *file.UploadChunkFileRequest) (*file.UploadFileReply, error) {
 	reply, err := s.srv.UploadChunkFile(core.MustContext(c), &types.UploadChunkFileRequest{
 		UploadId: req.UploadId,
@@ -174,7 +188,6 @@ func (s *File) UploadChunkFile(c context.Context, req *file.UploadChunkFileReque
 	}, nil
 }
 
-// UpdateUserFile 更新文件信息
 func (s *File) UpdateUserFile(c context.Context, req *file.UpdateUserFileRequest) (*file.UpdateUserFileReply, error) {
 	if err := s.srv.UpdateUserFile(core.MustContext(c), &entity.UserFile{
 		BaseTenantUserModel: model.BaseTenantUserModel{Id: req.Id},
@@ -186,7 +199,6 @@ func (s *File) UpdateUserFile(c context.Context, req *file.UpdateUserFileRequest
 	return &file.UpdateUserFileReply{}, nil
 }
 
-// DeleteUserFile 删除文件信息
 func (s *File) DeleteUserFile(c context.Context, req *file.DeleteUserFileRequest) (*file.DeleteUserFileReply, error) {
 	total, err := s.srv.DeleteUserFile(core.MustContext(c), req.Ids)
 	if err != nil {
@@ -195,8 +207,8 @@ func (s *File) DeleteUserFile(c context.Context, req *file.DeleteUserFileRequest
 	return &file.DeleteUserFileReply{Total: total}, nil
 }
 
-func (s *File) ChunkUpload() http.HandlerFunc {
-	return func(ctx http.Context) error {
+func (s *File) ChunkUpload() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
 		var in file.UploadChunkFileRequest
 
 		in.UploadId = ctx.Request().FormValue("uploadId")
@@ -227,8 +239,8 @@ func (s *File) ChunkUpload() http.HandlerFunc {
 	}
 }
 
-func (s *File) Upload() http.HandlerFunc {
-	return func(ctx http.Context) error {
+func (s *File) Upload() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
 		var in file.UploadFileRequest
 
 		if ctx.Request().FormValue("directoryId") != "" {
@@ -261,5 +273,51 @@ func (s *File) Upload() http.HandlerFunc {
 		}
 		reply := out.(*file.UploadFileReply)
 		return ctx.Result(200, reply)
+	}
+}
+
+func (s *File) Download() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
+		key := ctx.Request().URL.Query().Get("key")
+		if key == "" {
+			return errors.ParamsError()
+		}
+		ctx.Response().Header().Set("Content-Type", "application/octet-stream")
+		return s.srv.GetFileBytes(core.MustContext(ctx.Request().Context()), key, func(b []byte) error {
+			_, err := ctx.Response().Write(b)
+			return err
+		})
+	}
+}
+
+func (s *File) Redirect() thttp.HandlerFunc {
+	return func(ctx thttp.Context) error {
+		var req file.StaticFileRequest
+		if err := ctx.BindQuery(&req); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&req); err != nil {
+			return err
+		}
+
+		st, err := store.NewStore(req.Store)
+		if err != nil {
+			return err
+		}
+
+		queryEncode := st.ParserQuery(&types.ParserQuery{
+			Expire:   req.Expire,
+			Sign:     req.Sign,
+			Width:    req.Width,
+			Height:   req.Height,
+			Mode:     req.Mode,
+			Download: req.Download,
+			SaveName: req.SaveName,
+		})
+
+		url := st.Config().ServerURL + "/" + req.Store + "/" + req.Key + "?" + queryEncode
+		ctx.Response().Header().Set("Location", url)
+		ctx.Response().WriteHeader(301)
+		return nil
 	}
 }

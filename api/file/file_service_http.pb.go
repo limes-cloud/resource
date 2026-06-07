@@ -8,22 +8,27 @@ package file
 
 import (
 	context "context"
+
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the kratos package it is being compiled against.
-var _ = new(context.Context)
-var _ = binding.EncodeURL
+var (
+	_ = new(context.Context)
+	_ = binding.EncodeURL
+)
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationFileDeleteUserFile = "/resource.api.file.File/DeleteUserFile"
-const OperationFileGetUserFile = "/resource.api.file.File/GetUserFile"
-const OperationFileListUserFile = "/resource.api.file.File/ListUserFile"
-const OperationFilePrepareUploadFile = "/resource.api.file.File/PrepareUploadFile"
-const OperationFileUpdateUserFile = "/resource.api.file.File/UpdateUserFile"
+const (
+	OperationFileDeleteUserFile    = "/resource.api.file.File/DeleteUserFile"
+	OperationFileGetUserFile       = "/resource.api.file.File/GetUserFile"
+	OperationFileListUserFile      = "/resource.api.file.File/ListUserFile"
+	OperationFilePrepareUploadFile = "/resource.api.file.File/PrepareUploadFile"
+	OperationFileUpdateUserFile    = "/resource.api.file.File/UpdateUserFile"
+)
 
 type FileHTTPServer interface {
 	// DeleteUserFile DeleteUserFile 删除文件信息

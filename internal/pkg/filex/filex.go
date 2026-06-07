@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 func IsExistFolder(folderPath string) bool {
@@ -24,52 +23,6 @@ func IsExistFile(filename string) bool {
 		}
 	}
 	return true
-}
-
-func ZipDir(dir, output string) error {
-	zipfile, err := os.Create(output)
-	if err != nil {
-		return err
-	}
-	defer zipfile.Close()
-
-	archive := zip.NewWriter(zipfile)
-	defer archive.Close()
-
-	// 递归遍历目录
-	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-
-		// 修正文件路径
-		header.Name = filepath.ToSlash(path[len(dir):])
-		if info.IsDir() {
-			header.Name += "/"
-		} else {
-			header.Method = zip.Deflate
-		}
-
-		writer, err := archive.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-
-		if !info.IsDir() {
-			file, er := os.Open(path)
-			if er != nil {
-				return er
-			}
-			defer file.Close()
-			_, err = io.Copy(writer, file)
-		}
-		return err
-	})
 }
 
 func ZipFiles(output string, files map[string]string) error {

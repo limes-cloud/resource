@@ -2,10 +2,10 @@ package core
 
 import (
 	"context"
-	"github.com/limes-cloud/manager/api/errors"
-	"github.com/limes-cloud/resource/internal/middleware/auth"
 
 	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/manager/api/authorize"
+	"github.com/limes-cloud/manager/api/errors"
 )
 
 type Context struct {
@@ -22,8 +22,8 @@ func (Context) Config() *Conf {
 	return conf
 }
 
-func (c Context) Auth() *auth.Info {
-	info := auth.Get(c.Context)
+func (c Context) Auth() *authorize.CheckAuthReply {
+	info := authorize.Get(c.Context)
 	if info == nil {
 		c.Exit(errors.NotLoginError())
 	}

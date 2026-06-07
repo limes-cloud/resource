@@ -5,14 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/limes-cloud/resource/internal/infra/store"
-	storetypes "github.com/limes-cloud/resource/internal/infra/store/types"
 
 	"github.com/google/uuid"
 	"github.com/limes-cloud/kratosx"
@@ -33,33 +29,39 @@ import (
 )
 
 const (
-	EXPORT_STATUS_FAIL = "FAIL"
-
-	// EXPORT_STATUS_PROGRESS  = "PROGRESS"
+	EXPORT_STATUS_FAIL      = "FAIL"
 	EXPORT_STATUS_COMPLETED = "COMPLETED"
 	EXPORT_STATUS_EXPIRED   = "EXPIRED"
 )
 
 type Export struct {
-	repo repository.Export
-	file repository.File
+	repo           repository.Export
+	file           repository.File
+	userFile       repository.UserFile
+	newStore       func(keyword ...string) (repository.Store, error)
+	newExportStore func() (repository.Store, error)
+	stopCleanup    context.CancelFunc
 }
 
 func NewExport(
 	repo repository.Export,
 	file repository.File,
+	userFile repository.UserFile,
+	newStore func(keyword ...string) (repository.Store, error),
+	newExportStore func() (repository.Store, error),
 ) *Export {
-	export := &Export{
-		repo: repo,
-		file: file,
-	}
+	cleanCtx, cancel := context.WithCancel(context.Background())
+	export := &Export{repo: repo, file: file, userFile: userFile, newStore: newStore, newExportStore: newExportStore, stopCleanup: cancel}
 	go func() {
-		ctx := core.MustContext(context.Background(), kratosx.WithSkipDBHook())
+		ctx := core.MustContext(cleanCtx, kratosx.WithSkipDBHook())
 		for {
-			// 清理临时文件
 			export.clearExportFile(ctx)
 			export.clearExportTmpCache()
-			time.Sleep(10 * time.Minute)
+			select {
+			case <-cleanCtx.Done():
+				return
+			case <-time.After(10 * time.Minute):
+			}
 		}
 	}()
 	return export
@@ -125,8 +127,6 @@ func (u *Export) ExportExcel(ctx core.Context, req *types.ExportExcelRequest) (*
 			exp.Reason = proto.String(err.Error())
 		}
 
-		// todo 上传到存储系统
-
 		if err := u.repo.UpdateExport(kCtx, exp); err != nil {
 			ctx.Logger().Errorw("msg", "update export status error", "err", err.Error())
 		}
@@ -135,40 +135,12 @@ func (u *Export) ExportExcel(ctx core.Context, req *types.ExportExcelRequest) (*
 	return &types.ExportExcelReply{Id: id, Sha: sha, Key: fmt.Sprintf("%s.zip", sha)}, nil
 }
 
-func (u *Export) getStoreByKey(key string) (storetypes.Store, error) {
-	arr := strings.Split(key, "/")
-	if len(arr) == 2 {
-		return store.NewStore(arr[0])
+func (u *Export) getStoreByKey(key string) (repository.Store, error) {
+	parts := strings.SplitN(key, "/", 2)
+	if len(parts) == 2 {
+		return u.newStore(parts[0])
 	}
-	return store.NewStore()
-}
-
-// nolint
-func (u *Export) getFileByValue(ctx core.Context, key string) (*os.File, error) {
-	conf := ctx.Config()
-	fileName := conf.Export.LocalDir + "/tmp/" + key
-	if filex.IsExistFile(fileName) {
-		return os.Open(fileName)
-	}
-
-	store, err := u.getStoreByKey(key)
-	if err != nil {
-		return nil, err
-	}
-
-	reader, err := store.Get(key)
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0o644)
-	if err != nil {
-		return nil, err
-	}
-	if _, err = io.Copy(file, reader); err != nil {
-		return nil, err
-	}
-	return file, nil
+	return u.newStore()
 }
 
 func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExcelRequest) (uint32, error) {
@@ -243,8 +215,15 @@ func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExce
 		return 0, err
 	}
 
+	// 获取文件大小（上传前）
+	stat, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+	size := uint32(stat.Size() / 1000)
+
 	// 上传到存储系统
-	export, err := store.NewExportStore()
+	export, err := u.newExportStore()
 	if err != nil {
 		return 0, err
 	}
@@ -256,12 +235,7 @@ func (u *Export) exportExcel(ctx core.Context, sha string, req *types.ExportExce
 	_ = os.Remove(path)
 	_ = os.Remove(conf.Export.LocalDir + "/tmp/" + uid)
 
-	// 获取文件大小
-	stat, err := os.Stat(path)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(stat.Size() / 1000), nil
+	return size, nil
 }
 
 // fetchFile 拉取文件, 返回文件路径和文件名
@@ -336,7 +310,7 @@ func (u *Export) exportFile(ctx core.Context, key string, list []*types.ExportFi
 	}
 
 	// 上传到存储系统
-	export, err := store.NewExportStore()
+	export, err := u.newExportStore()
 	if err != nil {
 		return 0, err
 	}
@@ -542,11 +516,4 @@ func (u *Export) VerifyURL(key, expire, sign string) error {
 		return err
 	}
 	return store.VerifyTemporaryURL(key, expire, sign)
-}
-
-func (s *Export) LocalPath(next http.Handler, key string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = key
-		next.ServeHTTP(w, r)
-	})
 }

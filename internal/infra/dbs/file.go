@@ -7,10 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/limes-cloud/resource/internal/core"
-
 	"google.golang.org/protobuf/proto"
 
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/types"
 )
@@ -63,53 +62,6 @@ func (r File) GetFile(ctx core.Context, id uint32) (*entity.File, error) {
 		fs   = []string{"*"}
 	)
 	return &file, ctx.DB().Select(fs).First(&file, id).Error
-}
-
-// ListFile 获取列表
-func (r File) ListFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.File, uint32, error) {
-	var (
-		list  []*entity.File
-		total int64
-		fs    = []string{"*"}
-	)
-
-	db := ctx.DB().Model(entity.File{}).Select(fs)
-
-	if req.DirectoryId != nil {
-		db = db.Where("directory_id = ?", *req.DirectoryId)
-	}
-	if req.Status != nil {
-		db = db.Where("status = ?", *req.Status)
-	}
-	if req.Name != nil && *req.Name != "" {
-		db = db.Where("name like ", *req.Name+"%")
-	}
-	if len(req.KeyList) != 0 {
-		shaList := make([]string, len(req.KeyList))
-		// 去除文件后缀
-		for i, key := range req.KeyList {
-			shaList[i] = strings.TrimSuffix(key, filepath.Ext(key))
-		}
-		db = db.Where("sha in ?", shaList)
-	}
-
-	if err := db.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-	db = db.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize))
-
-	if req.OrderBy == nil || *req.OrderBy == "" {
-		req.OrderBy = proto.String("id")
-	}
-	if req.Order == nil || *req.Order == "" {
-		req.Order = proto.String("asc")
-	}
-	db = db.Order(fmt.Sprintf("%s %s", *req.OrderBy, *req.Order))
-	if *req.OrderBy != "id" {
-		db = db.Order("id asc")
-	}
-
-	return list, uint32(total), db.Find(&list).Error
 }
 
 // CreateFile 创建数据

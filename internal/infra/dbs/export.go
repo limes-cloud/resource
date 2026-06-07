@@ -2,13 +2,13 @@ package dbs
 
 import (
 	"fmt"
-	"github.com/limes-cloud/resource/internal/core"
 	"strings"
 	"sync"
 	"time"
 
 	"google.golang.org/protobuf/proto"
 
+	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/types"
 )

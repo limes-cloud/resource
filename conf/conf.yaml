@@ -2,7 +2,7 @@ name: resource
 env: TEST
 server:
   http:
-    host: 127.0.0.1
+    host: 0.0.0.0
     port: 7020
     timeout: 10s
     marshal:
@@ -64,7 +64,7 @@ business:
     - keyword: local
       type: local
       isExporter: true
-      serverUrl: http://127.0.0.1:7020/resource/api/static
+      serverUrl: http://127.0.0.1:7020/resource/static
       localDir: static
   export:
     localDir: static/export
