@@ -10,7 +10,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.9.1
 	github.com/limes-cloud/configure v1.0.49
 	github.com/limes-cloud/kratosx v1.3.3
-	github.com/limes-cloud/manager/api v0.0.0-20251129152247-b0c746c5fef5
+	github.com/limes-cloud/manager/api v0.0.0-20261026110354-b57fe642f908
 	github.com/limes-cloud/resource/api v0.0.0
 	github.com/redis/go-redis/v9 v9.7.3
 	go.uber.org/automaxprocs v1.5.3
@@ -125,7 +125,4 @@ require (
 	gorm.io/driver/sqlserver v1.6.1 // indirect
 )
 
-replace (
-	github.com/limes-cloud/manager/api v0.0.0-20251129152247-b0c746c5fef5 => ../manager/api
-	github.com/limes-cloud/resource/api v0.0.0 => ./api
-)
+replace github.com/limes-cloud/resource/api v0.0.0 => ./api
