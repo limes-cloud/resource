@@ -1,0 +1,16 @@
+# 构建上下文里不要带凭证与开发期文件。
+# CI（.github/workflows/docker-image.yaml）用 context: . 构建，没有这个文件时
+# .env 会被送进 builder；虽然最终镜像不 COPY 它，但没必要让凭证离开本机。
+.git
+.github
+.gitignore
+.env
+.env.*
+.prd
+.workbuddy-ai
+.claude
+.vscode
+.DS_Store
+*.log
+tmp
+nohup.out

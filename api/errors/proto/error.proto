@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package resource.api.errors;
+
+import "errorsx/errors.proto";
+
+option go_package = "resource/api/errors;errors";
+option java_multiple_files = true;
+option java_package = "resource.api.errors";
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (.errors.default_code) = 500;
+
+  ParamsError    = 0 [(.errors.message) = "参数错误"];
+  SystemError    = 1 [(.errors.message) = "系统错误"];
+  DatabaseError  = 2 [(.errors.message) = "数据库错误"];
+  TransformError = 3 [(.errors.message) = "数据转换失败"];
+  GetError       = 4 [(.errors.message) = "获取数据失败"];
+  ListError      = 5 [(.errors.message) = "获取列表数据失败"];
+  CreateError    = 6 [(.errors.message) = "创建数据失败"];
+  UpdateError    = 7 [(.errors.message) = "更新数据失败"];
+  DeleteError    = 8 [(.errors.message) = "删除数据失败"];
+
+  // 业务错误
+  AppNotConfiguredError      = 20 [(.errors.message) = "应用未配置"];
+  StoreDisabledError         = 21 [(.errors.message) = "存储后端已停用"];
+  PathTooDeepError           = 22 [(.errors.message) = "目录层级过深"];
+  PathConflictError          = 23 [(.errors.message) = "目标位置已存在同名目录"];
+  NameInvalidError           = 24 [(.errors.message) = "目录名不合法"];
+  FileTooLargeError          = 25 [(.errors.message) = "文件过大"];
+  FileTypeNotAllowedError    = 26 [(.errors.message) = "文件类型不允许"];
+  SizeMismatchError          = 27 [(.errors.message) = "文件大小校验失败"];
+  UploadSessionNotFoundError = 28 [(.errors.message) = "上传会话不存在"];
+  ChunkNotCompleteError      = 29 [(.errors.message) = "分片未传完"];
+  ExportNotRetryableError    = 30 [(.errors.message) = "当前状态不可重试"];
+
+  // 以下两类不是数据库错误（DB 错误统一用 gorm.ErrRecordNotFound / gorm.ErrDuplicatedKey 表达）
+  DuplicateError      = 31 [(.errors.message) = "数据已存在"];
+  ObjectNotFoundError = 32 [(.errors.message) = "对象不存在"];
+
+  QuotaExceededError  = 33 [(.errors.message) = "存储配额已满"];
+}

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package resource.api.app_config;
+
+import "google/api/annotations.proto";
+import "api/app_config/proto/app_config.proto";
+
+option go_package = "resource/api/app_config;app_config";
+
+// 约定：不使用 {path} 路径参数，所有入参均经 Request 的 query / body 绑定。
+service AppConfigService {
+  // ListAppConfig 分页查询应用配置
+  rpc ListAppConfig(ListAppConfigRequest) returns (ListAppConfigResponse) {
+    option (google.api.http) = {get: "/resource/api/app-config"};
+  }
+
+  // GetAppConfig 按 app 读取应用配置
+  rpc GetAppConfig(GetAppConfigRequest) returns (GetAppConfigResponse) {
+    option (google.api.http) = {get: "/resource/api/app-config/detail"};
+  }
+
+  // CreateAppConfig 创建应用配置
+  rpc CreateAppConfig(CreateAppConfigRequest) returns (CreateAppConfigResponse) {
+    option (google.api.http) = {post: "/resource/api/app-config" body: "*"};
+  }
+
+  // UpdateAppConfig 更新应用配置（写动词自带缓存延迟双删）
+  rpc UpdateAppConfig(UpdateAppConfigRequest) returns (UpdateAppConfigResponse) {
+    option (google.api.http) = {put: "/resource/api/app-config" body: "*"};
+  }
+
+  // RecalcAppConfigUsage 按明细重算已用量（对账，纠正 used_bytes 漂移）
+  rpc RecalcAppConfigUsage(RecalcAppConfigUsageRequest) returns (RecalcAppConfigUsageResponse) {
+    option (google.api.http) = {post: "/resource/api/app-config/recalc" body: "*"};
+  }
+}

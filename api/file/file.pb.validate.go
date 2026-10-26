@@ -35,6 +35,229 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on FileItem with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FileItem) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileItem with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileItemMultiError, or nil
+// if none found.
+func (m *FileItem) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileItem) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for App
+
+	// no validation rules for UserId
+
+	// no validation rules for DirectoryId
+
+	// no validation rules for Name
+
+	// no validation rules for ObjectId
+
+	// no validation rules for Size
+
+	// no validation rules for Ext
+
+	// no validation rules for Url
+
+	// no validation rules for CreatedAt
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return FileItemMultiError(errors)
+	}
+
+	return nil
+}
+
+// FileItemMultiError is an error wrapping multiple validation errors returned
+// by FileItem.ValidateAll() if the designated constraints aren't met.
+type FileItemMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileItemMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileItemMultiError) AllErrors() []error { return m }
+
+// FileItemValidationError is the validation error returned by
+// FileItem.Validate if the designated constraints aren't met.
+type FileItemValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FileItemValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FileItemValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FileItemValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FileItemValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FileItemValidationError) ErrorName() string { return "FileItemValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FileItemValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFileItem.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FileItemValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FileItemValidationError{}
+
+// Validate checks the field values on PartURL with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PartURL) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PartURL with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in PartURLMultiError, or nil if none found.
+func (m *PartURL) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PartURL) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PartNumber
+
+	// no validation rules for Url
+
+	if len(errors) > 0 {
+		return PartURLMultiError(errors)
+	}
+
+	return nil
+}
+
+// PartURLMultiError is an error wrapping multiple validation errors returned
+// by PartURL.ValidateAll() if the designated constraints aren't met.
+type PartURLMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PartURLMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PartURLMultiError) AllErrors() []error { return m }
+
+// PartURLValidationError is the validation error returned by PartURL.Validate
+// if the designated constraints aren't met.
+type PartURLValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PartURLValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PartURLValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PartURLValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PartURLValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PartURLValidationError) ErrorName() string { return "PartURLValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PartURLValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPartURL.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PartURLValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PartURLValidationError{}
+
 // Validate checks the field values on GetUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -57,43 +280,15 @@ func (m *GetUserFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.Directory != nil {
-		if utf8.RuneCountInString(m.GetDirectory()) < 1 {
-			err := GetUserFileRequestValidationError{
-				field:  "Directory",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if m.GetId() < 1 {
+		err := GetUserFileRequestValidationError{
+			field:  "Id",
+			reason: "value must be greater than or equal to 1",
 		}
-	}
-
-	if m.Id != nil {
-		if m.GetId() < 1 {
-			err := GetUserFileRequestValidationError{
-				field:  "Id",
-				reason: "value must be greater than or equal to 1",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+		if !all {
+			return err
 		}
-	}
-
-	if m.Key != nil {
-		if utf8.RuneCountInString(m.GetKey()) < 1 {
-			err := GetUserFileRequestValidationError{
-				field:  "Key",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {
@@ -176,534 +371,71 @@ var _ interface {
 	ErrorName() string
 } = GetUserFileRequestValidationError{}
 
-// Validate checks the field values on GetUserFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *GetUserFileReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetUserFileReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// GetUserFileReplyMultiError, or nil if none found.
-func (m *GetUserFileReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetUserFileReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Id
-
-	// no validation rules for DirectoryId
-
-	// no validation rules for Name
-
-	// no validation rules for Type
-
-	// no validation rules for Size
-
-	// no validation rules for Sha
-
-	// no validation rules for Key
-
-	// no validation rules for CreatedAt
-
-	// no validation rules for UpdatedAt
-
-	if len(errors) > 0 {
-		return GetUserFileReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetUserFileReplyMultiError is an error wrapping multiple validation errors
-// returned by GetUserFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type GetUserFileReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetUserFileReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetUserFileReplyMultiError) AllErrors() []error { return m }
-
-// GetUserFileReplyValidationError is the validation error returned by
-// GetUserFileReply.Validate if the designated constraints aren't met.
-type GetUserFileReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetUserFileReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetUserFileReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetUserFileReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetUserFileReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetUserFileReplyValidationError) ErrorName() string { return "GetUserFileReplyValidationError" }
-
-// Error satisfies the builtin error interface
-func (e GetUserFileReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGetUserFileReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GetUserFileReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetUserFileReplyValidationError{}
-
-// Validate checks the field values on StaticFileRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *StaticFileRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on StaticFileRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// StaticFileRequestMultiError, or nil if none found.
-func (m *StaticFileRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *StaticFileRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetStore()) < 1 {
-		err := StaticFileRequestValidationError{
-			field:  "Store",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
-		err := StaticFileRequestValidationError{
-			field:  "Key",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for Expire
-
-	// no validation rules for Sign
-
-	// no validation rules for Width
-
-	// no validation rules for Height
-
-	// no validation rules for Mode
-
-	// no validation rules for Download
-
-	// no validation rules for SaveName
-
-	if len(errors) > 0 {
-		return StaticFileRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// StaticFileRequestMultiError is an error wrapping multiple validation errors
-// returned by StaticFileRequest.ValidateAll() if the designated constraints
-// aren't met.
-type StaticFileRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m StaticFileRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m StaticFileRequestMultiError) AllErrors() []error { return m }
-
-// StaticFileRequestValidationError is the validation error returned by
-// StaticFileRequest.Validate if the designated constraints aren't met.
-type StaticFileRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e StaticFileRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e StaticFileRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e StaticFileRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e StaticFileRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e StaticFileRequestValidationError) ErrorName() string {
-	return "StaticFileRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e StaticFileRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sStaticFileRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = StaticFileRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = StaticFileRequestValidationError{}
-
-// Validate checks the field values on StaticFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *StaticFileReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on StaticFileReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// StaticFileReplyMultiError, or nil if none found.
-func (m *StaticFileReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *StaticFileReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Data
-
-	// no validation rules for Mime
-
-	if len(errors) > 0 {
-		return StaticFileReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// StaticFileReplyMultiError is an error wrapping multiple validation errors
-// returned by StaticFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type StaticFileReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m StaticFileReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m StaticFileReplyMultiError) AllErrors() []error { return m }
-
-// StaticFileReplyValidationError is the validation error returned by
-// StaticFileReply.Validate if the designated constraints aren't met.
-type StaticFileReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e StaticFileReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e StaticFileReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e StaticFileReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e StaticFileReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e StaticFileReplyValidationError) ErrorName() string { return "StaticFileReplyValidationError" }
-
-// Error satisfies the builtin error interface
-func (e StaticFileReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sStaticFileReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = StaticFileReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = StaticFileReplyValidationError{}
-
-// Validate checks the field values on DownloadTargetFileRequest with the rules
+// Validate checks the field values on GetUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *DownloadTargetFileRequest) Validate() error {
+func (m *GetUserFileResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on DownloadTargetFileRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on GetUserFileResponse with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// DownloadTargetFileRequestMultiError, or nil if none found.
-func (m *DownloadTargetFileRequest) ValidateAll() error {
+// GetUserFileResponseMultiError, or nil if none found.
+func (m *GetUserFileResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *DownloadTargetFileRequest) validate(all bool) error {
+func (m *GetUserFileResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
-		err := DownloadTargetFileRequestValidationError{
-			field:  "Key",
-			reason: "value length must be at least 1 runes",
+	if all {
+		switch v := interface{}(m.GetFile()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetUserFileResponseValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetUserFileResponseValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
 		}
-		if !all {
-			return err
+	} else if v, ok := interface{}(m.GetFile()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetUserFileResponseValidationError{
+				field:  "File",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
-		errors = append(errors, err)
 	}
 
-	// no validation rules for SaveName
-
 	if len(errors) > 0 {
-		return DownloadTargetFileRequestMultiError(errors)
+		return GetUserFileResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// DownloadTargetFileRequestMultiError is an error wrapping multiple validation
-// errors returned by DownloadTargetFileRequest.ValidateAll() if the
-// designated constraints aren't met.
-type DownloadTargetFileRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DownloadTargetFileRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DownloadTargetFileRequestMultiError) AllErrors() []error { return m }
-
-// DownloadTargetFileRequestValidationError is the validation error returned by
-// DownloadTargetFileRequest.Validate if the designated constraints aren't met.
-type DownloadTargetFileRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e DownloadTargetFileRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e DownloadTargetFileRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e DownloadTargetFileRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e DownloadTargetFileRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e DownloadTargetFileRequestValidationError) ErrorName() string {
-	return "DownloadTargetFileRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e DownloadTargetFileRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sDownloadTargetFileRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = DownloadTargetFileRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = DownloadTargetFileRequestValidationError{}
-
-// Validate checks the field values on DownloadFileRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *DownloadFileRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on DownloadFileRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// DownloadFileRequestMultiError, or nil if none found.
-func (m *DownloadFileRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *DownloadFileRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
-		err := DownloadFileRequestValidationError{
-			field:  "Key",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for Expire
-
-	// no validation rules for Sign
-
-	// no validation rules for SaveName
-
-	if len(errors) > 0 {
-		return DownloadFileRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// DownloadFileRequestMultiError is an error wrapping multiple validation
-// errors returned by DownloadFileRequest.ValidateAll() if the designated
+// GetUserFileResponseMultiError is an error wrapping multiple validation
+// errors returned by GetUserFileResponse.ValidateAll() if the designated
 // constraints aren't met.
-type DownloadFileRequestMultiError []error
+type GetUserFileResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m DownloadFileRequestMultiError) Error() string {
+func (m GetUserFileResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -712,11 +444,11 @@ func (m DownloadFileRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m DownloadFileRequestMultiError) AllErrors() []error { return m }
+func (m GetUserFileResponseMultiError) AllErrors() []error { return m }
 
-// DownloadFileRequestValidationError is the validation error returned by
-// DownloadFileRequest.Validate if the designated constraints aren't met.
-type DownloadFileRequestValidationError struct {
+// GetUserFileResponseValidationError is the validation error returned by
+// GetUserFileResponse.Validate if the designated constraints aren't met.
+type GetUserFileResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -724,24 +456,24 @@ type DownloadFileRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e DownloadFileRequestValidationError) Field() string { return e.field }
+func (e GetUserFileResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e DownloadFileRequestValidationError) Reason() string { return e.reason }
+func (e GetUserFileResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e DownloadFileRequestValidationError) Cause() error { return e.cause }
+func (e GetUserFileResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e DownloadFileRequestValidationError) Key() bool { return e.key }
+func (e GetUserFileResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e DownloadFileRequestValidationError) ErrorName() string {
-	return "DownloadFileRequestValidationError"
+func (e GetUserFileResponseValidationError) ErrorName() string {
+	return "GetUserFileResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e DownloadFileRequestValidationError) Error() string {
+func (e GetUserFileResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -753,14 +485,14 @@ func (e DownloadFileRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sDownloadFileRequest.%s: %s%s",
+		"invalid %sGetUserFileResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = DownloadFileRequestValidationError{}
+var _ error = GetUserFileResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -768,330 +500,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = DownloadFileRequestValidationError{}
-
-// Validate checks the field values on DownloadFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *DownloadFileReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on DownloadFileReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// DownloadFileReplyMultiError, or nil if none found.
-func (m *DownloadFileReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *DownloadFileReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Data
-
-	// no validation rules for Mime
-
-	if len(errors) > 0 {
-		return DownloadFileReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// DownloadFileReplyMultiError is an error wrapping multiple validation errors
-// returned by DownloadFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type DownloadFileReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DownloadFileReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DownloadFileReplyMultiError) AllErrors() []error { return m }
-
-// DownloadFileReplyValidationError is the validation error returned by
-// DownloadFileReply.Validate if the designated constraints aren't met.
-type DownloadFileReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e DownloadFileReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e DownloadFileReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e DownloadFileReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e DownloadFileReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e DownloadFileReplyValidationError) ErrorName() string {
-	return "DownloadFileReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e DownloadFileReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sDownloadFileReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = DownloadFileReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = DownloadFileReplyValidationError{}
-
-// Validate checks the field values on GetFileBytesRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetFileBytesRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetFileBytesRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// GetFileBytesRequestMultiError, or nil if none found.
-func (m *GetFileBytesRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetFileBytesRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
-		err := GetFileBytesRequestValidationError{
-			field:  "Key",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return GetFileBytesRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetFileBytesRequestMultiError is an error wrapping multiple validation
-// errors returned by GetFileBytesRequest.ValidateAll() if the designated
-// constraints aren't met.
-type GetFileBytesRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetFileBytesRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetFileBytesRequestMultiError) AllErrors() []error { return m }
-
-// GetFileBytesRequestValidationError is the validation error returned by
-// GetFileBytesRequest.Validate if the designated constraints aren't met.
-type GetFileBytesRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetFileBytesRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetFileBytesRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetFileBytesRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetFileBytesRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetFileBytesRequestValidationError) ErrorName() string {
-	return "GetFileBytesRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e GetFileBytesRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGetFileBytesRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GetFileBytesRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetFileBytesRequestValidationError{}
-
-// Validate checks the field values on GetFileBytesReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *GetFileBytesReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetFileBytesReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// GetFileBytesReplyMultiError, or nil if none found.
-func (m *GetFileBytesReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetFileBytesReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Data
-
-	if len(errors) > 0 {
-		return GetFileBytesReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetFileBytesReplyMultiError is an error wrapping multiple validation errors
-// returned by GetFileBytesReply.ValidateAll() if the designated constraints
-// aren't met.
-type GetFileBytesReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetFileBytesReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetFileBytesReplyMultiError) AllErrors() []error { return m }
-
-// GetFileBytesReplyValidationError is the validation error returned by
-// GetFileBytesReply.Validate if the designated constraints aren't met.
-type GetFileBytesReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetFileBytesReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetFileBytesReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetFileBytesReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetFileBytesReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetFileBytesReplyValidationError) ErrorName() string {
-	return "GetFileBytesReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e GetFileBytesReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGetFileBytesReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GetFileBytesReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetFileBytesReplyValidationError{}
+} = GetUserFileResponseValidationError{}
 
 // Validate checks the field values on ListUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1115,74 +524,11 @@ func (m *ListUserFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetPage() <= 0 {
-		err := ListUserFileRequestValidationError{
-			field:  "Page",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for UserId
 
-	if val := m.GetPageSize(); val <= 0 || val > 50 {
-		err := ListUserFileRequestValidationError{
-			field:  "PageSize",
-			reason: "value must be inside range (0, 50]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Page
 
-	if m.Order != nil {
-		if _, ok := _ListUserFileRequest_Order_InLookup[m.GetOrder()]; !ok {
-			err := ListUserFileRequestValidationError{
-				field:  "Order",
-				reason: "value must be in list [asc desc]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if m.OrderBy != nil {
-		if _, ok := _ListUserFileRequest_OrderBy_InLookup[m.GetOrderBy()]; !ok {
-			err := ListUserFileRequestValidationError{
-				field:  "OrderBy",
-				reason: "value must be in list [id created_at updated_at]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if m.DirectoryId != nil {
-		// no validation rules for DirectoryId
-	}
-
-	if m.Status != nil {
-		if _, ok := _ListUserFileRequest_Status_InLookup[m.GetStatus()]; !ok {
-			err := ListUserFileRequestValidationError{
-				field:  "Status",
-				reason: "value must be in list [PROGRESS COMPLETED]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if m.Name != nil {
-		// no validation rules for Name
-	}
+	// no validation rules for PageSize
 
 	if len(errors) > 0 {
 		return ListUserFileRequestMultiError(errors)
@@ -1264,45 +610,27 @@ var _ interface {
 	ErrorName() string
 } = ListUserFileRequestValidationError{}
 
-var _ListUserFileRequest_Order_InLookup = map[string]struct{}{
-	"asc":  {},
-	"desc": {},
-}
-
-var _ListUserFileRequest_OrderBy_InLookup = map[string]struct{}{
-	"id":         {},
-	"created_at": {},
-	"updated_at": {},
-}
-
-var _ListUserFileRequest_Status_InLookup = map[string]struct{}{
-	"PROGRESS":  {},
-	"COMPLETED": {},
-}
-
-// Validate checks the field values on ListUserFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *ListUserFileReply) Validate() error {
+// Validate checks the field values on ListUserFileResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListUserFileResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListUserFileReply with the rules
+// ValidateAll checks the field values on ListUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListUserFileReplyMultiError, or nil if none found.
-func (m *ListUserFileReply) ValidateAll() error {
+// ListUserFileResponseMultiError, or nil if none found.
+func (m *ListUserFileResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListUserFileReply) validate(all bool) error {
+func (m *ListUserFileResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
-
-	// no validation rules for Total
 
 	for idx, item := range m.GetList() {
 		_, _ = idx, item
@@ -1311,7 +639,7 @@ func (m *ListUserFileReply) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListUserFileReplyValidationError{
+					errors = append(errors, ListUserFileResponseValidationError{
 						field:  fmt.Sprintf("List[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1319,7 +647,7 @@ func (m *ListUserFileReply) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, ListUserFileReplyValidationError{
+					errors = append(errors, ListUserFileResponseValidationError{
 						field:  fmt.Sprintf("List[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1328,7 +656,7 @@ func (m *ListUserFileReply) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return ListUserFileReplyValidationError{
+				return ListUserFileResponseValidationError{
 					field:  fmt.Sprintf("List[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1338,20 +666,22 @@ func (m *ListUserFileReply) validate(all bool) error {
 
 	}
 
+	// no validation rules for Total
+
 	if len(errors) > 0 {
-		return ListUserFileReplyMultiError(errors)
+		return ListUserFileResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListUserFileReplyMultiError is an error wrapping multiple validation errors
-// returned by ListUserFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type ListUserFileReplyMultiError []error
+// ListUserFileResponseMultiError is an error wrapping multiple validation
+// errors returned by ListUserFileResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListUserFileResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListUserFileReplyMultiError) Error() string {
+func (m ListUserFileResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1360,11 +690,11 @@ func (m ListUserFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListUserFileReplyMultiError) AllErrors() []error { return m }
+func (m ListUserFileResponseMultiError) AllErrors() []error { return m }
 
-// ListUserFileReplyValidationError is the validation error returned by
-// ListUserFileReply.Validate if the designated constraints aren't met.
-type ListUserFileReplyValidationError struct {
+// ListUserFileResponseValidationError is the validation error returned by
+// ListUserFileResponse.Validate if the designated constraints aren't met.
+type ListUserFileResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1372,24 +702,24 @@ type ListUserFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListUserFileReplyValidationError) Field() string { return e.field }
+func (e ListUserFileResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListUserFileReplyValidationError) Reason() string { return e.reason }
+func (e ListUserFileResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListUserFileReplyValidationError) Cause() error { return e.cause }
+func (e ListUserFileResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListUserFileReplyValidationError) Key() bool { return e.key }
+func (e ListUserFileResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListUserFileReplyValidationError) ErrorName() string {
-	return "ListUserFileReplyValidationError"
+func (e ListUserFileResponseValidationError) ErrorName() string {
+	return "ListUserFileResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ListUserFileReplyValidationError) Error() string {
+func (e ListUserFileResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1401,14 +731,14 @@ func (e ListUserFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListUserFileReply.%s: %s%s",
+		"invalid %sListUserFileResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListUserFileReplyValidationError{}
+var _ error = ListUserFileResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -1416,7 +746,468 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListUserFileReplyValidationError{}
+} = ListUserFileResponseValidationError{}
+
+// Validate checks the field values on ListFileRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ListFileRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListFileRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListFileRequestMultiError, or nil if none found.
+func (m *ListFileRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListFileRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DirectoryId
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListFileRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListFileRequestMultiError is an error wrapping multiple validation errors
+// returned by ListFileRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ListFileRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListFileRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListFileRequestMultiError) AllErrors() []error { return m }
+
+// ListFileRequestValidationError is the validation error returned by
+// ListFileRequest.Validate if the designated constraints aren't met.
+type ListFileRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListFileRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListFileRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListFileRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListFileRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListFileRequestValidationError) ErrorName() string { return "ListFileRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ListFileRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListFileRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListFileRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListFileRequestValidationError{}
+
+// Validate checks the field values on ListFileResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ListFileResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListFileResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListFileResponseMultiError, or nil if none found.
+func (m *ListFileResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListFileResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetList() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListFileResponseValidationError{
+						field:  fmt.Sprintf("List[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListFileResponseValidationError{
+						field:  fmt.Sprintf("List[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListFileResponseValidationError{
+					field:  fmt.Sprintf("List[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	if len(errors) > 0 {
+		return ListFileResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListFileResponseMultiError is an error wrapping multiple validation errors
+// returned by ListFileResponse.ValidateAll() if the designated constraints
+// aren't met.
+type ListFileResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListFileResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListFileResponseMultiError) AllErrors() []error { return m }
+
+// ListFileResponseValidationError is the validation error returned by
+// ListFileResponse.Validate if the designated constraints aren't met.
+type ListFileResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListFileResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListFileResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListFileResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListFileResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListFileResponseValidationError) ErrorName() string { return "ListFileResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ListFileResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListFileResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListFileResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListFileResponseValidationError{}
+
+// Validate checks the field values on GetUploadChunkSizeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetUploadChunkSizeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUploadChunkSizeRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUploadChunkSizeRequestMultiError, or nil if none found.
+func (m *GetUploadChunkSizeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUploadChunkSizeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetTotalSize()) < 1 {
+		err := GetUploadChunkSizeRequestValidationError{
+			field:  "TotalSize",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetUploadChunkSizeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUploadChunkSizeRequestMultiError is an error wrapping multiple validation
+// errors returned by GetUploadChunkSizeRequest.ValidateAll() if the
+// designated constraints aren't met.
+type GetUploadChunkSizeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUploadChunkSizeRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUploadChunkSizeRequestMultiError) AllErrors() []error { return m }
+
+// GetUploadChunkSizeRequestValidationError is the validation error returned by
+// GetUploadChunkSizeRequest.Validate if the designated constraints aren't met.
+type GetUploadChunkSizeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUploadChunkSizeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUploadChunkSizeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUploadChunkSizeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUploadChunkSizeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUploadChunkSizeRequestValidationError) ErrorName() string {
+	return "GetUploadChunkSizeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUploadChunkSizeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUploadChunkSizeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUploadChunkSizeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUploadChunkSizeRequestValidationError{}
+
+// Validate checks the field values on GetUploadChunkSizeResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetUploadChunkSizeResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUploadChunkSizeResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUploadChunkSizeResponseMultiError, or nil if none found.
+func (m *GetUploadChunkSizeResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUploadChunkSizeResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ChunkSize
+
+	// no validation rules for ChunkCount
+
+	if len(errors) > 0 {
+		return GetUploadChunkSizeResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUploadChunkSizeResponseMultiError is an error wrapping multiple
+// validation errors returned by GetUploadChunkSizeResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetUploadChunkSizeResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUploadChunkSizeResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUploadChunkSizeResponseMultiError) AllErrors() []error { return m }
+
+// GetUploadChunkSizeResponseValidationError is the validation error returned
+// by GetUploadChunkSizeResponse.Validate if the designated constraints aren't met.
+type GetUploadChunkSizeResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUploadChunkSizeResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUploadChunkSizeResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUploadChunkSizeResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUploadChunkSizeResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUploadChunkSizeResponseValidationError) ErrorName() string {
+	return "GetUploadChunkSizeResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUploadChunkSizeResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUploadChunkSizeResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUploadChunkSizeResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUploadChunkSizeResponseValidationError{}
 
 // Validate checks the field values on PrepareUploadFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1440,10 +1231,21 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetName()) < 1 {
+	if utf8.RuneCountInString(m.GetPath()) > 660 {
+		err := PrepareUploadFileRequestValidationError{
+			field:  "Path",
+			reason: "value length must be at most 660 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 255 {
 		err := PrepareUploadFileRequestValidationError{
 			field:  "Name",
-			reason: "value length must be at least 1 runes",
+			reason: "value length must be between 1 and 255 runes, inclusive",
 		}
 		if !all {
 			return err
@@ -1451,54 +1253,49 @@ func (m *PrepareUploadFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetSize() <= 0 {
+	if utf8.RuneCountInString(m.GetExt()) > 16 {
+		err := PrepareUploadFileRequestValidationError{
+			field:  "Ext",
+			reason: "value length must be at most 16 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_PrepareUploadFileRequest_Ext_Pattern.MatchString(m.GetExt()) {
+		err := PrepareUploadFileRequestValidationError{
+			field:  "Ext",
+			reason: "value does not match regex pattern \"^[a-z0-9]*$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetMd5()) != 32 {
+		err := PrepareUploadFileRequestValidationError{
+			field:  "Md5",
+			reason: "value length must be 32 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
+
+	if utf8.RuneCountInString(m.GetSize()) < 1 {
 		err := PrepareUploadFileRequestValidationError{
 			field:  "Size",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetSha()) < 1 {
-		err := PrepareUploadFileRequestValidationError{
-			field:  "Sha",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
-	}
-
-	// no validation rules for Store
-
-	if m.DirectoryId != nil {
-		if m.GetDirectoryId() <= 0 {
-			err := PrepareUploadFileRequestValidationError{
-				field:  "DirectoryId",
-				reason: "value must be greater than 0",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if m.DirectoryPath != nil {
-		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
-			err := PrepareUploadFileRequestValidationError{
-				field:  "DirectoryPath",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
 	}
 
 	if len(errors) > 0 {
@@ -1581,64 +1378,58 @@ var _ interface {
 	ErrorName() string
 } = PrepareUploadFileRequestValidationError{}
 
-// Validate checks the field values on PrepareUploadFileReply with the rules
+var _PrepareUploadFileRequest_Ext_Pattern = regexp.MustCompile("^[a-z0-9]*$")
+
+// Validate checks the field values on PrepareUploadFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *PrepareUploadFileReply) Validate() error {
+func (m *PrepareUploadFileResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on PrepareUploadFileReply with the rules
-// defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on PrepareUploadFileResponse with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// PrepareUploadFileReplyMultiError, or nil if none found.
-func (m *PrepareUploadFileReply) ValidateAll() error {
+// PrepareUploadFileResponseMultiError, or nil if none found.
+func (m *PrepareUploadFileResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *PrepareUploadFileReply) validate(all bool) error {
+func (m *PrepareUploadFileResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for Uploaded
+	// no validation rules for UploadId
 
-	if m.Key != nil {
-		// no validation rules for Key
-	}
+	// no validation rules for Md5
 
-	if m.ChunkSize != nil {
-		// no validation rules for ChunkSize
-	}
+	// no validation rules for ChunkSize
 
-	if m.ChunkCount != nil {
-		// no validation rules for ChunkCount
-	}
+	// no validation rules for ChunkCount
 
-	if m.UploadId != nil {
-		// no validation rules for UploadId
-	}
+	// no validation rules for Skipped
 
-	if m.Sha != nil {
-		// no validation rules for Sha
-	}
+	// no validation rules for Url
+
+	// no validation rules for Key
 
 	if len(errors) > 0 {
-		return PrepareUploadFileReplyMultiError(errors)
+		return PrepareUploadFileResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// PrepareUploadFileReplyMultiError is an error wrapping multiple validation
-// errors returned by PrepareUploadFileReply.ValidateAll() if the designated
-// constraints aren't met.
-type PrepareUploadFileReplyMultiError []error
+// PrepareUploadFileResponseMultiError is an error wrapping multiple validation
+// errors returned by PrepareUploadFileResponse.ValidateAll() if the
+// designated constraints aren't met.
+type PrepareUploadFileResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m PrepareUploadFileReplyMultiError) Error() string {
+func (m PrepareUploadFileResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1647,11 +1438,11 @@ func (m PrepareUploadFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m PrepareUploadFileReplyMultiError) AllErrors() []error { return m }
+func (m PrepareUploadFileResponseMultiError) AllErrors() []error { return m }
 
-// PrepareUploadFileReplyValidationError is the validation error returned by
-// PrepareUploadFileReply.Validate if the designated constraints aren't met.
-type PrepareUploadFileReplyValidationError struct {
+// PrepareUploadFileResponseValidationError is the validation error returned by
+// PrepareUploadFileResponse.Validate if the designated constraints aren't met.
+type PrepareUploadFileResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1659,24 +1450,24 @@ type PrepareUploadFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e PrepareUploadFileReplyValidationError) Field() string { return e.field }
+func (e PrepareUploadFileResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e PrepareUploadFileReplyValidationError) Reason() string { return e.reason }
+func (e PrepareUploadFileResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e PrepareUploadFileReplyValidationError) Cause() error { return e.cause }
+func (e PrepareUploadFileResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e PrepareUploadFileReplyValidationError) Key() bool { return e.key }
+func (e PrepareUploadFileResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e PrepareUploadFileReplyValidationError) ErrorName() string {
-	return "PrepareUploadFileReplyValidationError"
+func (e PrepareUploadFileResponseValidationError) ErrorName() string {
+	return "PrepareUploadFileResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e PrepareUploadFileReplyValidationError) Error() string {
+func (e PrepareUploadFileResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1688,14 +1479,14 @@ func (e PrepareUploadFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sPrepareUploadFileReply.%s: %s%s",
+		"invalid %sPrepareUploadFileResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = PrepareUploadFileReplyValidationError{}
+var _ error = PrepareUploadFileResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -1703,43 +1494,32 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = PrepareUploadFileReplyValidationError{}
+} = PrepareUploadFileResponseValidationError{}
 
-// Validate checks the field values on UploadChunkFileRequest with the rules
+// Validate checks the field values on GetUploadPartURLsRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UploadChunkFileRequest) Validate() error {
+func (m *GetUploadPartURLsRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UploadChunkFileRequest with the rules
-// defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on GetUploadPartURLsRequest with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UploadChunkFileRequestMultiError, or nil if none found.
-func (m *UploadChunkFileRequest) ValidateAll() error {
+// GetUploadPartURLsRequestMultiError, or nil if none found.
+func (m *GetUploadPartURLsRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UploadChunkFileRequest) validate(all bool) error {
+func (m *GetUploadPartURLsRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if len(m.GetData()) < 0 {
-		err := UploadChunkFileRequestValidationError{
-			field:  "Data",
-			reason: "value length must be at least 0 bytes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if utf8.RuneCountInString(m.GetUploadId()) < 1 {
-		err := UploadChunkFileRequestValidationError{
+		err := GetUploadPartURLsRequestValidationError{
 			field:  "UploadId",
 			reason: "value length must be at least 1 runes",
 		}
@@ -1749,10 +1529,10 @@ func (m *UploadChunkFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetIndex() <= 0 {
-		err := UploadChunkFileRequestValidationError{
-			field:  "Index",
-			reason: "value must be greater than 0",
+	if l := len(m.GetPartNumbers()); l < 1 || l > 200 {
+		err := GetUploadPartURLsRequestValidationError{
+			field:  "PartNumbers",
+			reason: "value must contain between 1 and 200 items, inclusive",
 		}
 		if !all {
 			return err
@@ -1761,19 +1541,19 @@ func (m *UploadChunkFileRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return UploadChunkFileRequestMultiError(errors)
+		return GetUploadPartURLsRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// UploadChunkFileRequestMultiError is an error wrapping multiple validation
-// errors returned by UploadChunkFileRequest.ValidateAll() if the designated
+// GetUploadPartURLsRequestMultiError is an error wrapping multiple validation
+// errors returned by GetUploadPartURLsRequest.ValidateAll() if the designated
 // constraints aren't met.
-type UploadChunkFileRequestMultiError []error
+type GetUploadPartURLsRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UploadChunkFileRequestMultiError) Error() string {
+func (m GetUploadPartURLsRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1782,11 +1562,11 @@ func (m UploadChunkFileRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UploadChunkFileRequestMultiError) AllErrors() []error { return m }
+func (m GetUploadPartURLsRequestMultiError) AllErrors() []error { return m }
 
-// UploadChunkFileRequestValidationError is the validation error returned by
-// UploadChunkFileRequest.Validate if the designated constraints aren't met.
-type UploadChunkFileRequestValidationError struct {
+// GetUploadPartURLsRequestValidationError is the validation error returned by
+// GetUploadPartURLsRequest.Validate if the designated constraints aren't met.
+type GetUploadPartURLsRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1794,24 +1574,24 @@ type UploadChunkFileRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e UploadChunkFileRequestValidationError) Field() string { return e.field }
+func (e GetUploadPartURLsRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UploadChunkFileRequestValidationError) Reason() string { return e.reason }
+func (e GetUploadPartURLsRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UploadChunkFileRequestValidationError) Cause() error { return e.cause }
+func (e GetUploadPartURLsRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UploadChunkFileRequestValidationError) Key() bool { return e.key }
+func (e GetUploadPartURLsRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UploadChunkFileRequestValidationError) ErrorName() string {
-	return "UploadChunkFileRequestValidationError"
+func (e GetUploadPartURLsRequestValidationError) ErrorName() string {
+	return "GetUploadPartURLsRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UploadChunkFileRequestValidationError) Error() string {
+func (e GetUploadPartURLsRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1823,14 +1603,14 @@ func (e UploadChunkFileRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUploadChunkFileRequest.%s: %s%s",
+		"invalid %sGetUploadPartURLsRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UploadChunkFileRequestValidationError{}
+var _ error = GetUploadPartURLsRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -1838,48 +1618,297 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UploadChunkFileRequestValidationError{}
+} = GetUploadPartURLsRequestValidationError{}
 
-// Validate checks the field values on UploadChunkFileReply with the rules
+// Validate checks the field values on GetUploadPartURLsResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UploadChunkFileReply) Validate() error {
+func (m *GetUploadPartURLsResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UploadChunkFileReply with the rules
-// defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on GetUploadPartURLsResponse with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UploadChunkFileReplyMultiError, or nil if none found.
-func (m *UploadChunkFileReply) ValidateAll() error {
+// GetUploadPartURLsResponseMultiError, or nil if none found.
+func (m *GetUploadPartURLsResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UploadChunkFileReply) validate(all bool) error {
+func (m *GetUploadPartURLsResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for Sha
+	for idx, item := range m.GetUrls() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetUploadPartURLsResponseValidationError{
+						field:  fmt.Sprintf("Urls[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetUploadPartURLsResponseValidationError{
+						field:  fmt.Sprintf("Urls[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetUploadPartURLsResponseValidationError{
+					field:  fmt.Sprintf("Urls[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetUploadPartURLsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUploadPartURLsResponseMultiError is an error wrapping multiple validation
+// errors returned by GetUploadPartURLsResponse.ValidateAll() if the
+// designated constraints aren't met.
+type GetUploadPartURLsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUploadPartURLsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUploadPartURLsResponseMultiError) AllErrors() []error { return m }
+
+// GetUploadPartURLsResponseValidationError is the validation error returned by
+// GetUploadPartURLsResponse.Validate if the designated constraints aren't met.
+type GetUploadPartURLsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUploadPartURLsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUploadPartURLsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUploadPartURLsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUploadPartURLsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUploadPartURLsResponseValidationError) ErrorName() string {
+	return "GetUploadPartURLsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUploadPartURLsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUploadPartURLsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUploadPartURLsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUploadPartURLsResponseValidationError{}
+
+// Validate checks the field values on CompleteUploadRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CompleteUploadRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CompleteUploadRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CompleteUploadRequestMultiError, or nil if none found.
+func (m *CompleteUploadRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CompleteUploadRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetUploadId()) < 1 {
+		err := CompleteUploadRequestValidationError{
+			field:  "UploadId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CompleteUploadRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CompleteUploadRequestMultiError is an error wrapping multiple validation
+// errors returned by CompleteUploadRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CompleteUploadRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CompleteUploadRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CompleteUploadRequestMultiError) AllErrors() []error { return m }
+
+// CompleteUploadRequestValidationError is the validation error returned by
+// CompleteUploadRequest.Validate if the designated constraints aren't met.
+type CompleteUploadRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CompleteUploadRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CompleteUploadRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CompleteUploadRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CompleteUploadRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CompleteUploadRequestValidationError) ErrorName() string {
+	return "CompleteUploadRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CompleteUploadRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCompleteUploadRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CompleteUploadRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CompleteUploadRequestValidationError{}
+
+// Validate checks the field values on CompleteUploadResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CompleteUploadResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CompleteUploadResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CompleteUploadResponseMultiError, or nil if none found.
+func (m *CompleteUploadResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CompleteUploadResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Url
 
 	// no validation rules for Key
 
 	if len(errors) > 0 {
-		return UploadChunkFileReplyMultiError(errors)
+		return CompleteUploadResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// UploadChunkFileReplyMultiError is an error wrapping multiple validation
-// errors returned by UploadChunkFileReply.ValidateAll() if the designated
+// CompleteUploadResponseMultiError is an error wrapping multiple validation
+// errors returned by CompleteUploadResponse.ValidateAll() if the designated
 // constraints aren't met.
-type UploadChunkFileReplyMultiError []error
+type CompleteUploadResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UploadChunkFileReplyMultiError) Error() string {
+func (m CompleteUploadResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1888,11 +1917,11 @@ func (m UploadChunkFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UploadChunkFileReplyMultiError) AllErrors() []error { return m }
+func (m CompleteUploadResponseMultiError) AllErrors() []error { return m }
 
-// UploadChunkFileReplyValidationError is the validation error returned by
-// UploadChunkFileReply.Validate if the designated constraints aren't met.
-type UploadChunkFileReplyValidationError struct {
+// CompleteUploadResponseValidationError is the validation error returned by
+// CompleteUploadResponse.Validate if the designated constraints aren't met.
+type CompleteUploadResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1900,24 +1929,24 @@ type UploadChunkFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e UploadChunkFileReplyValidationError) Field() string { return e.field }
+func (e CompleteUploadResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UploadChunkFileReplyValidationError) Reason() string { return e.reason }
+func (e CompleteUploadResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UploadChunkFileReplyValidationError) Cause() error { return e.cause }
+func (e CompleteUploadResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UploadChunkFileReplyValidationError) Key() bool { return e.key }
+func (e CompleteUploadResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UploadChunkFileReplyValidationError) ErrorName() string {
-	return "UploadChunkFileReplyValidationError"
+func (e CompleteUploadResponseValidationError) ErrorName() string {
+	return "CompleteUploadResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UploadChunkFileReplyValidationError) Error() string {
+func (e CompleteUploadResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1929,14 +1958,14 @@ func (e UploadChunkFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUploadChunkFileReply.%s: %s%s",
+		"invalid %sCompleteUploadResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UploadChunkFileReplyValidationError{}
+var _ error = CompleteUploadResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -1944,519 +1973,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UploadChunkFileReplyValidationError{}
-
-// Validate checks the field values on UploadFileRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *UploadFileRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UploadFileRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UploadFileRequestMultiError, or nil if none found.
-func (m *UploadFileRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UploadFileRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := UploadFileRequestValidationError{
-			field:  "Name",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetSha()) < 1 {
-		err := UploadFileRequestValidationError{
-			field:  "Sha",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(m.GetData()) < 0 {
-		err := UploadFileRequestValidationError{
-			field:  "Data",
-			reason: "value length must be at least 0 bytes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for Store
-
-	if m.DirectoryId != nil {
-		if m.GetDirectoryId() <= 0 {
-			err := UploadFileRequestValidationError{
-				field:  "DirectoryId",
-				reason: "value must be greater than 0",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if m.DirectoryPath != nil {
-		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
-			err := UploadFileRequestValidationError{
-				field:  "DirectoryPath",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if len(errors) > 0 {
-		return UploadFileRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// UploadFileRequestMultiError is an error wrapping multiple validation errors
-// returned by UploadFileRequest.ValidateAll() if the designated constraints
-// aren't met.
-type UploadFileRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UploadFileRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UploadFileRequestMultiError) AllErrors() []error { return m }
-
-// UploadFileRequestValidationError is the validation error returned by
-// UploadFileRequest.Validate if the designated constraints aren't met.
-type UploadFileRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UploadFileRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UploadFileRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UploadFileRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UploadFileRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UploadFileRequestValidationError) ErrorName() string {
-	return "UploadFileRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UploadFileRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUploadFileRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UploadFileRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UploadFileRequestValidationError{}
-
-// Validate checks the field values on UploadFileReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *UploadFileReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UploadFileReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UploadFileReplyMultiError, or nil if none found.
-func (m *UploadFileReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UploadFileReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Sha
-
-	// no validation rules for Key
-
-	if len(errors) > 0 {
-		return UploadFileReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// UploadFileReplyMultiError is an error wrapping multiple validation errors
-// returned by UploadFileReply.ValidateAll() if the designated constraints
-// aren't met.
-type UploadFileReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UploadFileReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UploadFileReplyMultiError) AllErrors() []error { return m }
-
-// UploadFileReplyValidationError is the validation error returned by
-// UploadFileReply.Validate if the designated constraints aren't met.
-type UploadFileReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UploadFileReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UploadFileReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UploadFileReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UploadFileReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UploadFileReplyValidationError) ErrorName() string { return "UploadFileReplyValidationError" }
-
-// Error satisfies the builtin error interface
-func (e UploadFileReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUploadFileReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UploadFileReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UploadFileReplyValidationError{}
-
-// Validate checks the field values on UploadFileByURLRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UploadFileByURLRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UploadFileByURLRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UploadFileByURLRequestMultiError, or nil if none found.
-func (m *UploadFileByURLRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UploadFileByURLRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetUrl()) < 1 {
-		err := UploadFileByURLRequestValidationError{
-			field:  "Url",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := UploadFileByURLRequestValidationError{
-			field:  "Name",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for Store
-
-	if m.DirectoryPath != nil {
-		if utf8.RuneCountInString(m.GetDirectoryPath()) < 1 {
-			err := UploadFileByURLRequestValidationError{
-				field:  "DirectoryPath",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-	}
-
-	if len(errors) > 0 {
-		return UploadFileByURLRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// UploadFileByURLRequestMultiError is an error wrapping multiple validation
-// errors returned by UploadFileByURLRequest.ValidateAll() if the designated
-// constraints aren't met.
-type UploadFileByURLRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UploadFileByURLRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UploadFileByURLRequestMultiError) AllErrors() []error { return m }
-
-// UploadFileByURLRequestValidationError is the validation error returned by
-// UploadFileByURLRequest.Validate if the designated constraints aren't met.
-type UploadFileByURLRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UploadFileByURLRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UploadFileByURLRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UploadFileByURLRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UploadFileByURLRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UploadFileByURLRequestValidationError) ErrorName() string {
-	return "UploadFileByURLRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UploadFileByURLRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUploadFileByURLRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UploadFileByURLRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UploadFileByURLRequestValidationError{}
-
-// Validate checks the field values on UploadFileByURLReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UploadFileByURLReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UploadFileByURLReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UploadFileByURLReplyMultiError, or nil if none found.
-func (m *UploadFileByURLReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UploadFileByURLReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Sha
-
-	// no validation rules for Key
-
-	if len(errors) > 0 {
-		return UploadFileByURLReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// UploadFileByURLReplyMultiError is an error wrapping multiple validation
-// errors returned by UploadFileByURLReply.ValidateAll() if the designated
-// constraints aren't met.
-type UploadFileByURLReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UploadFileByURLReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UploadFileByURLReplyMultiError) AllErrors() []error { return m }
-
-// UploadFileByURLReplyValidationError is the validation error returned by
-// UploadFileByURLReply.Validate if the designated constraints aren't met.
-type UploadFileByURLReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UploadFileByURLReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UploadFileByURLReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UploadFileByURLReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UploadFileByURLReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UploadFileByURLReplyValidationError) ErrorName() string {
-	return "UploadFileByURLReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UploadFileByURLReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUploadFileByURLReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UploadFileByURLReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UploadFileByURLReplyValidationError{}
+} = CompleteUploadResponseValidationError{}
 
 // Validate checks the field values on UpdateUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -2480,10 +1997,10 @@ func (m *UpdateUserFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetId() <= 0 {
+	if m.GetId() < 1 {
 		err := UpdateUserFileRequestValidationError{
 			field:  "Id",
-			reason: "value must be greater than 0",
+			reason: "value must be greater than or equal to 1",
 		}
 		if !all {
 			return err
@@ -2491,26 +2008,34 @@ func (m *UpdateUserFileRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetDirectoryId() <= 0 {
-		err := UpdateUserFileRequestValidationError{
-			field:  "DirectoryId",
-			reason: "value must be greater than 0",
+	if m.Name != nil {
+
+		if utf8.RuneCountInString(m.GetName()) < 1 {
+			err := UpdateUserFileRequestValidationError{
+				field:  "Name",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := UpdateUserFileRequestValidationError{
-			field:  "Name",
-			reason: "value length must be at least 1 runes",
+	if m.DirectoryId != nil {
+
+		if m.GetDirectoryId() < 1 {
+			err := UpdateUserFileRequestValidationError{
+				field:  "DirectoryId",
+				reason: "value must be greater than or equal to 1",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	if len(errors) > 0 {
@@ -2593,42 +2118,71 @@ var _ interface {
 	ErrorName() string
 } = UpdateUserFileRequestValidationError{}
 
-// Validate checks the field values on UpdateUserFileReply with the rules
+// Validate checks the field values on UpdateUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpdateUserFileReply) Validate() error {
+func (m *UpdateUserFileResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpdateUserFileReply with the rules
+// ValidateAll checks the field values on UpdateUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UpdateUserFileReplyMultiError, or nil if none found.
-func (m *UpdateUserFileReply) ValidateAll() error {
+// UpdateUserFileResponseMultiError, or nil if none found.
+func (m *UpdateUserFileResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpdateUserFileReply) validate(all bool) error {
+func (m *UpdateUserFileResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
+	if all {
+		switch v := interface{}(m.GetFile()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateUserFileResponseValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateUserFileResponseValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFile()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateUserFileResponseValidationError{
+				field:  "File",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
-		return UpdateUserFileReplyMultiError(errors)
+		return UpdateUserFileResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpdateUserFileReplyMultiError is an error wrapping multiple validation
-// errors returned by UpdateUserFileReply.ValidateAll() if the designated
+// UpdateUserFileResponseMultiError is an error wrapping multiple validation
+// errors returned by UpdateUserFileResponse.ValidateAll() if the designated
 // constraints aren't met.
-type UpdateUserFileReplyMultiError []error
+type UpdateUserFileResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpdateUserFileReplyMultiError) Error() string {
+func (m UpdateUserFileResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2637,11 +2191,11 @@ func (m UpdateUserFileReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpdateUserFileReplyMultiError) AllErrors() []error { return m }
+func (m UpdateUserFileResponseMultiError) AllErrors() []error { return m }
 
-// UpdateUserFileReplyValidationError is the validation error returned by
-// UpdateUserFileReply.Validate if the designated constraints aren't met.
-type UpdateUserFileReplyValidationError struct {
+// UpdateUserFileResponseValidationError is the validation error returned by
+// UpdateUserFileResponse.Validate if the designated constraints aren't met.
+type UpdateUserFileResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2649,24 +2203,24 @@ type UpdateUserFileReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpdateUserFileReplyValidationError) Field() string { return e.field }
+func (e UpdateUserFileResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpdateUserFileReplyValidationError) Reason() string { return e.reason }
+func (e UpdateUserFileResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpdateUserFileReplyValidationError) Cause() error { return e.cause }
+func (e UpdateUserFileResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpdateUserFileReplyValidationError) Key() bool { return e.key }
+func (e UpdateUserFileResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpdateUserFileReplyValidationError) ErrorName() string {
-	return "UpdateUserFileReplyValidationError"
+func (e UpdateUserFileResponseValidationError) ErrorName() string {
+	return "UpdateUserFileResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UpdateUserFileReplyValidationError) Error() string {
+func (e UpdateUserFileResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2678,14 +2232,14 @@ func (e UpdateUserFileReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpdateUserFileReply.%s: %s%s",
+		"invalid %sUpdateUserFileResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpdateUserFileReplyValidationError{}
+var _ error = UpdateUserFileResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -2693,7 +2247,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpdateUserFileReplyValidationError{}
+} = UpdateUserFileResponseValidationError{}
 
 // Validate checks the field values on DeleteUserFileRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -2717,36 +2271,15 @@ func (m *DeleteUserFileRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := len(m.GetIds()); l < 1 || l > 50 {
+	if m.GetId() < 1 {
 		err := DeleteUserFileRequestValidationError{
-			field:  "Ids",
-			reason: "value must contain between 1 and 50 items, inclusive",
+			field:  "Id",
+			reason: "value must be greater than or equal to 1",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
-	}
-
-	_DeleteUserFileRequest_Ids_Unique := make(map[uint32]struct{}, len(m.GetIds()))
-
-	for idx, item := range m.GetIds() {
-		_, _ = idx, item
-
-		if _, exists := _DeleteUserFileRequest_Ids_Unique[item]; exists {
-			err := DeleteUserFileRequestValidationError{
-				field:  fmt.Sprintf("Ids[%v]", idx),
-				reason: "repeated value must contain unique items",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		} else {
-			_DeleteUserFileRequest_Ids_Unique[item] = struct{}{}
-		}
-
-		// no validation rules for Ids[idx]
 	}
 
 	if len(errors) > 0 {
@@ -2829,126 +2362,22 @@ var _ interface {
 	ErrorName() string
 } = DeleteUserFileRequestValidationError{}
 
-// Validate checks the field values on DeleteUserFileReply with the rules
+// Validate checks the field values on DeleteUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *DeleteUserFileReply) Validate() error {
+func (m *DeleteUserFileResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on DeleteUserFileReply with the rules
+// ValidateAll checks the field values on DeleteUserFileResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// DeleteUserFileReplyMultiError, or nil if none found.
-func (m *DeleteUserFileReply) ValidateAll() error {
+// DeleteUserFileResponseMultiError, or nil if none found.
+func (m *DeleteUserFileResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *DeleteUserFileReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Total
-
-	if len(errors) > 0 {
-		return DeleteUserFileReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// DeleteUserFileReplyMultiError is an error wrapping multiple validation
-// errors returned by DeleteUserFileReply.ValidateAll() if the designated
-// constraints aren't met.
-type DeleteUserFileReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DeleteUserFileReplyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DeleteUserFileReplyMultiError) AllErrors() []error { return m }
-
-// DeleteUserFileReplyValidationError is the validation error returned by
-// DeleteUserFileReply.Validate if the designated constraints aren't met.
-type DeleteUserFileReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e DeleteUserFileReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e DeleteUserFileReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e DeleteUserFileReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e DeleteUserFileReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e DeleteUserFileReplyValidationError) ErrorName() string {
-	return "DeleteUserFileReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e DeleteUserFileReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sDeleteUserFileReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = DeleteUserFileReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = DeleteUserFileReplyValidationError{}
-
-// Validate checks the field values on ListUserFileReply_File with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListUserFileReply_File) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListUserFileReply_File with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListUserFileReply_FileMultiError, or nil if none found.
-func (m *ListUserFileReply_File) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListUserFileReply_File) validate(all bool) error {
+func (m *DeleteUserFileResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -2957,36 +2386,20 @@ func (m *ListUserFileReply_File) validate(all bool) error {
 
 	// no validation rules for Id
 
-	// no validation rules for DirectoryId
-
-	// no validation rules for Name
-
-	// no validation rules for Type
-
-	// no validation rules for Size
-
-	// no validation rules for Sha
-
-	// no validation rules for Key
-
-	// no validation rules for CreatedAt
-
-	// no validation rules for UpdatedAt
-
 	if len(errors) > 0 {
-		return ListUserFileReply_FileMultiError(errors)
+		return DeleteUserFileResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListUserFileReply_FileMultiError is an error wrapping multiple validation
-// errors returned by ListUserFileReply_File.ValidateAll() if the designated
+// DeleteUserFileResponseMultiError is an error wrapping multiple validation
+// errors returned by DeleteUserFileResponse.ValidateAll() if the designated
 // constraints aren't met.
-type ListUserFileReply_FileMultiError []error
+type DeleteUserFileResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListUserFileReply_FileMultiError) Error() string {
+func (m DeleteUserFileResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2995,11 +2408,11 @@ func (m ListUserFileReply_FileMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListUserFileReply_FileMultiError) AllErrors() []error { return m }
+func (m DeleteUserFileResponseMultiError) AllErrors() []error { return m }
 
-// ListUserFileReply_FileValidationError is the validation error returned by
-// ListUserFileReply_File.Validate if the designated constraints aren't met.
-type ListUserFileReply_FileValidationError struct {
+// DeleteUserFileResponseValidationError is the validation error returned by
+// DeleteUserFileResponse.Validate if the designated constraints aren't met.
+type DeleteUserFileResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -3007,24 +2420,24 @@ type ListUserFileReply_FileValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListUserFileReply_FileValidationError) Field() string { return e.field }
+func (e DeleteUserFileResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListUserFileReply_FileValidationError) Reason() string { return e.reason }
+func (e DeleteUserFileResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListUserFileReply_FileValidationError) Cause() error { return e.cause }
+func (e DeleteUserFileResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListUserFileReply_FileValidationError) Key() bool { return e.key }
+func (e DeleteUserFileResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListUserFileReply_FileValidationError) ErrorName() string {
-	return "ListUserFileReply_FileValidationError"
+func (e DeleteUserFileResponseValidationError) ErrorName() string {
+	return "DeleteUserFileResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ListUserFileReply_FileValidationError) Error() string {
+func (e DeleteUserFileResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -3036,14 +2449,14 @@ func (e ListUserFileReply_FileValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListUserFileReply_File.%s: %s%s",
+		"invalid %sDeleteUserFileResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListUserFileReply_FileValidationError{}
+var _ error = DeleteUserFileResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -3051,4 +2464,475 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListUserFileReply_FileValidationError{}
+} = DeleteUserFileResponseValidationError{}
+
+// Validate checks the field values on UploadFileByURLRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadFileByURLRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadFileByURLRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadFileByURLRequestMultiError, or nil if none found.
+func (m *UploadFileByURLRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadFileByURLRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if l := utf8.RuneCountInString(m.GetUrl()); l < 1 || l > 2048 {
+		err := UploadFileByURLRequestValidationError{
+			field:  "Url",
+			reason: "value length must be between 1 and 2048 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 255 {
+		err := UploadFileByURLRequestValidationError{
+			field:  "Name",
+			reason: "value length must be between 1 and 255 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStore()) > 64 {
+		err := UploadFileByURLRequestValidationError{
+			field:  "Store",
+			reason: "value length must be at most 64 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.DirectoryPath != nil {
+
+		if utf8.RuneCountInString(m.GetDirectoryPath()) > 660 {
+			err := UploadFileByURLRequestValidationError{
+				field:  "DirectoryPath",
+				reason: "value length must be at most 660 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return UploadFileByURLRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadFileByURLRequestMultiError is an error wrapping multiple validation
+// errors returned by UploadFileByURLRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UploadFileByURLRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadFileByURLRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadFileByURLRequestMultiError) AllErrors() []error { return m }
+
+// UploadFileByURLRequestValidationError is the validation error returned by
+// UploadFileByURLRequest.Validate if the designated constraints aren't met.
+type UploadFileByURLRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadFileByURLRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadFileByURLRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadFileByURLRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadFileByURLRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadFileByURLRequestValidationError) ErrorName() string {
+	return "UploadFileByURLRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadFileByURLRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadFileByURLRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadFileByURLRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadFileByURLRequestValidationError{}
+
+// Validate checks the field values on UploadFileByURLResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadFileByURLResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadFileByURLResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadFileByURLResponseMultiError, or nil if none found.
+func (m *UploadFileByURLResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadFileByURLResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return UploadFileByURLResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadFileByURLResponseMultiError is an error wrapping multiple validation
+// errors returned by UploadFileByURLResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UploadFileByURLResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadFileByURLResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadFileByURLResponseMultiError) AllErrors() []error { return m }
+
+// UploadFileByURLResponseValidationError is the validation error returned by
+// UploadFileByURLResponse.Validate if the designated constraints aren't met.
+type UploadFileByURLResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadFileByURLResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadFileByURLResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadFileByURLResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadFileByURLResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadFileByURLResponseValidationError) ErrorName() string {
+	return "UploadFileByURLResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadFileByURLResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadFileByURLResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadFileByURLResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadFileByURLResponseValidationError{}
+
+// Validate checks the field values on GetFileURLByKeyRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetFileURLByKeyRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetFileURLByKeyRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetFileURLByKeyRequestMultiError, or nil if none found.
+func (m *GetFileURLByKeyRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetFileURLByKeyRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := GetFileURLByKeyRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetFileURLByKeyRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetFileURLByKeyRequestMultiError is an error wrapping multiple validation
+// errors returned by GetFileURLByKeyRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetFileURLByKeyRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetFileURLByKeyRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetFileURLByKeyRequestMultiError) AllErrors() []error { return m }
+
+// GetFileURLByKeyRequestValidationError is the validation error returned by
+// GetFileURLByKeyRequest.Validate if the designated constraints aren't met.
+type GetFileURLByKeyRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetFileURLByKeyRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetFileURLByKeyRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetFileURLByKeyRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetFileURLByKeyRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetFileURLByKeyRequestValidationError) ErrorName() string {
+	return "GetFileURLByKeyRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetFileURLByKeyRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetFileURLByKeyRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetFileURLByKeyRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetFileURLByKeyRequestValidationError{}
+
+// Validate checks the field values on GetFileURLByKeyReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetFileURLByKeyReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetFileURLByKeyReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetFileURLByKeyReplyMultiError, or nil if none found.
+func (m *GetFileURLByKeyReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetFileURLByKeyReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Url
+
+	if len(errors) > 0 {
+		return GetFileURLByKeyReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetFileURLByKeyReplyMultiError is an error wrapping multiple validation
+// errors returned by GetFileURLByKeyReply.ValidateAll() if the designated
+// constraints aren't met.
+type GetFileURLByKeyReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetFileURLByKeyReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetFileURLByKeyReplyMultiError) AllErrors() []error { return m }
+
+// GetFileURLByKeyReplyValidationError is the validation error returned by
+// GetFileURLByKeyReply.Validate if the designated constraints aren't met.
+type GetFileURLByKeyReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetFileURLByKeyReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetFileURLByKeyReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetFileURLByKeyReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetFileURLByKeyReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetFileURLByKeyReplyValidationError) ErrorName() string {
+	return "GetFileURLByKeyReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetFileURLByKeyReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetFileURLByKeyReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetFileURLByKeyReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetFileURLByKeyReplyValidationError{}

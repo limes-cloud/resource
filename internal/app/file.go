@@ -3,321 +3,275 @@ package app
 import (
 	"context"
 	"io"
+	"net/http"
+	"strconv"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	thttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/kratosx/model"
-	"github.com/spf13/cast"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/limes-cloud/resource/api/errors"
-	"github.com/limes-cloud/resource/api/file"
+	reserrors "github.com/limes-cloud/resource/api/errors"
+	fileapi "github.com/limes-cloud/resource/api/file"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
-	"github.com/limes-cloud/resource/internal/infra/store"
 	"github.com/limes-cloud/resource/internal/types"
 )
 
-type File struct {
-	file.UnimplementedFileServer
-	srv *service.File
+// fileHandler 实现 file.FileServiceHTTPServer / file.FileServiceServer（同一批方法签名）。
+type fileHandler struct {
+	fileapi.UnimplementedFileServiceServer
+	file   *service.File
+	upload *service.Upload
 }
 
-func NewFile() *File {
-	return &File{
-		srv: service.NewFile(dbs.NewFile(), dbs.NewUserFile(), dbs.NewDirectory(), store.NewStore),
-	}
-}
-
+// init 自注册 FileService（HTTP 与 gRPC）。
 func init() {
-	register(func(hs *thttp.Server, gs *grpc.Server) {
-		app := NewFile()
-		file.RegisterFileHTTPServer(hs, app)
-		file.RegisterFileServer(gs, app)
-
-		cr := hs.Route("/")
-		cr.GET("/resource/redirect/{store}/{key}", app.Redirect())
-		cr.GET("/resource/api/file/download", app.Download())
-
-		cr.POST("/resource/api/chunk_upload", app.ChunkUpload())
-		cr.POST("/resource/api/upload", app.Upload())
+	register(func(hs *khttp.Server, gs *grpc.Server) {
+		dir := service.NewDirectory(dbs.NewDirectory(), dbs.NewAppConfig())
+		h := &fileHandler{
+			file:   service.NewFile(dbs.NewFile(), dbs.NewObject(), dbs.NewStore(), dbs.NewAppConfig(), dir),
+			upload: service.NewUpload(dbs.NewUpload(), dbs.NewObject(), dbs.NewFile(), dbs.NewStore(), dbs.NewAppConfig(), dir),
+		}
+		fileapi.RegisterFileServiceHTTPServer(hs, h)
+		fileapi.RegisterFileServiceServer(gs, h)
+		// 302 快速展示：<img src=".../object-by-key?key=xxx"> 直接跟随重定向到真实地址
+		// （对象按 md5 全局内容寻址，无需 app 定位存储；仅读操作，无副作用）
+		hs.Route("/resource/api/file").GET("/object-by-key", h.redirectByKey)
+		// 服务端读流：存储（如 OSS）未开 CORS 时 <img> 可显示但 fetch 取不到字节，经此接口原样返回内容
+		hs.Route("/resource/api/file").GET("/read-by-key", h.readByKey)
 	})
 }
 
-func (s *File) GetUserFile(c context.Context, req *file.GetUserFileRequest) (*file.GetUserFileReply, error) {
-	res, err := s.srv.GetUserFile(core.MustContext(c), &types.GetUserFileRequest{
-		Directory: req.Directory,
-		Id:        req.Id,
-		Key:       req.Key,
+// GetUserFile 取单个文件（响应含完整 url 与 size）。
+func (h *fileHandler) GetUserFile(ctx context.Context, req *fileapi.GetUserFileRequest) (*fileapi.GetUserFileResponse, error) {
+	item, err := h.file.GetFile(core.MustContext(ctx), uint32(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.GetUserFileResponse{File: toFileItem(item)}, nil
+}
+
+// ListUserFile 我的文件分页（app/user_id 取自登录态，忽略请求体，防越权列举他人文件）。
+func (h *fileHandler) ListUserFile(ctx context.Context, req *fileapi.ListUserFileRequest) (*fileapi.ListUserFileResponse, error) {
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	list, total, err := h.file.ListFileByUser(core.MustContext(ctx), app, uint32(core.MustContext(ctx).Auth().UserId), &types.PageRequest{Page: req.Page, PageSize: req.PageSize})
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.ListUserFileResponse{List: toFileItems(list), Total: total}, nil
+}
+
+// ListFile 目录内文件分页。
+func (h *fileHandler) ListFile(ctx context.Context, req *fileapi.ListFileRequest) (*fileapi.ListFileResponse, error) {
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	list, total, err := h.file.ListFileByDirectory(core.MustContext(ctx), app, uint32(req.DirectoryId), &types.PageRequest{Page: req.Page, PageSize: req.PageSize})
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.ListFileResponse{List: toFileItems(list), Total: total}, nil
+}
+
+// UploadFileByURL 服务端从 URL 下载并上传（生成内容落库；应用标识取自 X-App-Key）。
+func (h *fileHandler) UploadFileByURL(ctx context.Context, req *fileapi.UploadFileByURLRequest) (*fileapi.UploadFileByURLResponse, error) {
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	reply, err := h.upload.UploadFileByURL(core.MustContext(ctx), &types.UploadFileByURLRequest{
+		App:           app,
+		Url:           req.Url,
+		Name:          req.Name,
+		DirectoryPath: req.DirectoryPath,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &file.GetUserFileReply{
-		Id:          res.Id,
-		DirectoryId: res.DirectoryId,
-		Name:        res.Name,
-		Type:        res.File.Type,
-		Size:        res.File.Size,
-		Sha:         res.File.Sha,
-		Key:         res.File.Key,
-		CreatedAt:   uint32(res.CreatedAt),
-		UpdatedAt:   uint32(res.UpdatedAt),
+	return &fileapi.UploadFileByURLResponse{Key: reply.Key}, nil
+}
+
+// GetFileURLByKey 按对象 key 取可访问地址。
+func (h *fileHandler) GetFileURLByKey(ctx context.Context, req *fileapi.GetFileURLByKeyRequest) (*fileapi.GetFileURLByKeyReply, error) {
+	reply, err := h.file.GetFileURLByKey(core.MustContext(ctx), req.GetKey())
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.GetFileURLByKeyReply{Url: reply.Url}, nil
+}
+
+// redirectByKey 按对象 key 取可访问地址（图像快速展示 302 重定向；仅 key 即可，无需 app）。
+func (h *fileHandler) redirectByKey(ctx khttp.Context) error {
+	key := ctx.Query().Get("key")
+	if key == "" {
+		return reserrors.ParamsError("缺少对象key")
+	}
+	reply, err := h.file.GetFileURLByKey(core.MustContext(ctx), key)
+	if err != nil {
+		return err
+	}
+	w := ctx.Response()
+	w.Header().Set("Location", reply.Url)
+	w.WriteHeader(http.StatusFound)
+	return nil
+}
+
+// readByKey 按对象 key 服务端读取并返回文件内容（同源返回字节流，规避对象存储 CORS 限制）。
+func (h *fileHandler) readByKey(ctx khttp.Context) error {
+	key := ctx.Query().Get("key")
+	if key == "" {
+		return reserrors.ParamsError("缺少对象key")
+	}
+	rc, contentType, err := h.file.ReadFileByKey(core.MustContext(ctx), key)
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	w := ctx.Response()
+	w.Header().Set("Content-Type", contentType)
+	if _, err := io.Copy(w, rc); err != nil {
+		return reserrors.SystemError()
+	}
+	return nil
+}
+
+// GetUploadChunkSize 取分片大小与片数（纯函数）。
+func (h *fileHandler) GetUploadChunkSize(ctx context.Context, req *fileapi.GetUploadChunkSizeRequest) (*fileapi.GetUploadChunkSizeResponse, error) {
+	total, err := strconv.ParseUint(req.TotalSize, 10, 64)
+	if err != nil {
+		return nil, reserrors.ParamsError()
+	}
+	reply, err := h.upload.GetUploadChunkSize(core.MustContext(ctx), &types.GetUploadChunkSizeRequest{TotalSize: total})
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.GetUploadChunkSizeResponse{ChunkSize: reply.ChunkSize, ChunkCount: reply.ChunkCount}, nil
+}
+
+// PrepareUploadFile 预上传：秒传判定 / 召回 / 建会话。
+func (h *fileHandler) PrepareUploadFile(ctx context.Context, req *fileapi.PrepareUploadFileRequest) (*fileapi.PrepareUploadFileResponse, error) {
+	size, err := strconv.ParseUint(req.Size, 10, 64)
+	if err != nil {
+		return nil, reserrors.ParamsError()
+	}
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	reply, err := h.upload.PrepareUploadFile(core.MustContext(ctx), &types.PrepareUploadFileRequest{
+		App:  app,
+		Path: req.Path,
+		Name: req.Name,
+		Ext:  req.Ext,
+		Md5:  req.Md5,
+		Size: size,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.PrepareUploadFileResponse{
+		UploadId:     reply.UploadId,
+		Md5:          reply.Md5,
+		ChunkSize:    reply.ChunkSize,
+		ChunkCount:   reply.ChunkCount,
+		UploadChunks: reply.UploadedParts,
+		Skipped:      reply.Skipped,
+		Url:          reply.Url,
+		Key:          reply.Key,
 	}, nil
 }
 
-func (s *File) GetFileBytes(req *file.GetFileBytesRequest, reply file.File_GetFileBytesServer) error {
-	return s.srv.GetFileBytes(
-		core.MustContext(reply.Context()),
-		req.Key,
-		func(bytes []byte) error {
-			return reply.Send(&file.GetFileBytesReply{
-				Data: bytes,
-			})
-		},
-	)
+// GetUploadPartURLs 按批取分片上传预签名地址。
+func (h *fileHandler) GetUploadPartURLs(ctx context.Context, req *fileapi.GetUploadPartURLsRequest) (*fileapi.GetUploadPartURLsResponse, error) {
+	reply, err := h.upload.GetUploadPartURLs(core.MustContext(ctx), &types.GetUploadPartURLsRequest{
+		UploadId:    req.UploadId,
+		PartNumbers: req.PartNumbers,
+	})
+	if err != nil {
+		return nil, err
+	}
+	urls := make([]*fileapi.PartURL, 0, len(reply.Urls))
+	for _, u := range reply.Urls {
+		urls = append(urls, &fileapi.PartURL{PartNumber: u.PartNumber, Url: u.Url})
+	}
+	return &fileapi.GetUploadPartURLsResponse{Urls: urls}, nil
 }
 
-func (s *File) ListUserFile(c context.Context, req *file.ListUserFileRequest) (*file.ListUserFileReply, error) {
-	list, total, err := s.srv.ListUserFile(core.MustContext(c), &types.ListFileRequest{
-		Page:        req.Page,
-		PageSize:    req.PageSize,
-		Order:       req.Order,
-		OrderBy:     req.OrderBy,
-		DirectoryId: req.DirectoryId,
-		Status:      req.Status,
+// CompleteUpload 完成分片上传。
+func (h *fileHandler) CompleteUpload(ctx context.Context, req *fileapi.CompleteUploadRequest) (*fileapi.CompleteUploadResponse, error) {
+	reply, err := h.upload.CompleteUpload(core.MustContext(ctx), &types.CompleteUploadRequest{UploadId: req.UploadId})
+	if err != nil {
+		return nil, err
+	}
+	return &fileapi.CompleteUploadResponse{Url: reply.Url, Key: reply.Key}, nil
+}
+
+// UpdateUserFile 改名 / 移动。
+func (h *fileHandler) UpdateUserFile(ctx context.Context, req *fileapi.UpdateUserFileRequest) (*fileapi.UpdateUserFileResponse, error) {
+	// 文件名文法 proto 表达不了，传了才校验
+	if req.Name != nil {
+		if err := entity.ValidateName(*req.Name); err != nil {
+			return nil, reserrors.ParamsError(err.Error())
+		}
+	}
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	item, err := h.file.UpdateFile(core.MustContext(ctx), &types.UpdateFileRequest{
+		App:         app,
+		Id:          uint32(req.Id),
 		Name:        req.Name,
-		KeyList:     req.KeyList,
+		DirectoryId: req.DirectoryId,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	reply := file.ListUserFileReply{Total: total}
-	for _, item := range list {
-		reply.List = append(reply.List, &file.ListUserFileReply_File{
-			Id:          item.Id,
-			DirectoryId: item.DirectoryId,
-			Name:        item.Name,
-			Type:        item.File.Type,
-			Size:        item.File.Size,
-			Sha:         item.File.Sha,
-			Key:         item.File.Key,
-			CreatedAt:   uint32(item.CreatedAt),
-			UpdatedAt:   uint32(item.UpdatedAt),
-		})
-	}
-	return &reply, nil
+	return &fileapi.UpdateUserFileResponse{File: toFileItem(item)}, nil
 }
 
-func (s *File) PrepareUploadFile(c context.Context, req *file.PrepareUploadFileRequest) (*file.PrepareUploadFileReply, error) {
-	if req.DirectoryPath == nil && req.DirectoryId == nil {
-		return nil, errors.ParamsError()
-	}
-
-	res, err := s.srv.PrepareUploadFile(core.MustContext(c), &types.PrepareUploadFileRequest{
-		DirectoryId:   req.DirectoryId,
-		DirectoryPath: req.DirectoryPath,
-		Name:          req.Name,
-		Size:          req.Size,
-		Sha:           req.Sha,
-		Store:         req.Store,
-	})
+// DeleteUserFile 删除文件（触发对象回收）。
+func (h *fileHandler) DeleteUserFile(ctx context.Context, req *fileapi.DeleteUserFileRequest) (*fileapi.DeleteUserFileResponse, error) {
+	app, err := currentApp(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	return &file.PrepareUploadFileReply{
-		Uploaded:     res.Uploaded,
-		ChunkSize:    res.ChunkSize,
-		ChunkCount:   res.ChunkCount,
-		UploadId:     res.UploadId,
-		UploadChunks: res.UploadChunks,
-		Sha:          res.Sha,
-		Key:          res.Key,
-	}, nil
-}
-
-func (s *File) UploadFile(c context.Context, req *file.UploadFileRequest) (*file.UploadFileReply, error) {
-	reply, err := s.srv.UploadFile(core.MustContext(c), &types.UploadFileRequest{
-		DirectoryId:   req.DirectoryId,
-		DirectoryPath: req.DirectoryPath,
-		Data:          req.Data,
-		Sha:           req.Sha,
-		Name:          req.Name,
-		Store:         req.Store,
-	})
-	if err != nil {
+	if err := h.file.DeleteFile(core.MustContext(ctx), app, uint32(req.Id)); err != nil {
 		return nil, err
 	}
-	return &file.UploadFileReply{
-		Sha: reply.Sha,
-		Key: reply.Key,
-	}, nil
+	return &fileapi.DeleteUserFileResponse{Id: req.Id}, nil
 }
 
-func (s *File) UploadFileByURL(c context.Context, req *file.UploadFileByURLRequest) (*file.UploadFileByURLReply, error) {
-	reply, err := s.srv.UploadFileByURL(core.MustContext(c), &types.UploadFileByURLRequest{
-		DirectoryPath: req.DirectoryPath,
-		Store:         req.Store,
-		URL:           req.Url,
-		Name:          req.Name,
-	})
-	if err != nil {
-		return nil, err
+// toFileItems 批量转 proto 列表项。
+func toFileItems(items []*types.FileItem) []*fileapi.FileItem {
+	out := make([]*fileapi.FileItem, 0, len(items))
+	for _, it := range items {
+		out = append(out, toFileItem(it))
 	}
-	return &file.UploadFileByURLReply{
-		Sha: reply.Sha,
-		Key: reply.Key,
-	}, nil
+	return out
 }
 
-func (s *File) UploadChunkFile(c context.Context, req *file.UploadChunkFileRequest) (*file.UploadFileReply, error) {
-	reply, err := s.srv.UploadChunkFile(core.MustContext(c), &types.UploadChunkFileRequest{
-		UploadId: req.UploadId,
-		Index:    req.Index,
-		Data:     req.Data,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &file.UploadFileReply{
-		Sha: reply.Sha,
-		Key: reply.Key,
-	}, nil
-}
-
-func (s *File) UpdateUserFile(c context.Context, req *file.UpdateUserFileRequest) (*file.UpdateUserFileReply, error) {
-	if err := s.srv.UpdateUserFile(core.MustContext(c), &entity.UserFile{
-		BaseTenantUserModel: model.BaseTenantUserModel{Id: req.Id},
-		DirectoryId:         req.DirectoryId,
-		Name:                req.Name,
-	}); err != nil {
-		return nil, err
-	}
-	return &file.UpdateUserFileReply{}, nil
-}
-
-func (s *File) DeleteUserFile(c context.Context, req *file.DeleteUserFileRequest) (*file.DeleteUserFileReply, error) {
-	total, err := s.srv.DeleteUserFile(core.MustContext(c), req.Ids)
-	if err != nil {
-		return nil, err
-	}
-	return &file.DeleteUserFileReply{Total: total}, nil
-}
-
-func (s *File) ChunkUpload() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var in file.UploadChunkFileRequest
-
-		in.UploadId = ctx.Request().FormValue("uploadId")
-		in.Index = cast.ToUint32(ctx.Request().FormValue("index"))
-		fileByte, _, err := ctx.Request().FormFile("data")
-		if err != nil {
-			return errors.UploadFileError(err.Error())
-		}
-
-		in.Data, err = io.ReadAll(fileByte)
-		if err != nil {
-			return errors.UploadFileError(err.Error())
-		}
-		if in.UploadId == "" || int(in.Index) <= 0 || len(in.Data) == 0 {
-			return errors.ParamsError()
-		}
-
-		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
-			return s.UploadChunkFile(ctx, req.(*file.UploadChunkFileRequest))
-		})
-
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*file.UploadFileReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func (s *File) Upload() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var in file.UploadFileRequest
-
-		if ctx.Request().FormValue("directoryId") != "" {
-			v := cast.ToUint32(ctx.Request().FormValue("directoryId"))
-			in.DirectoryId = &v
-		}
-		if ctx.Request().FormValue("directoryPath") != "" {
-			v := ctx.Request().FormValue("directoryPath")
-			in.DirectoryPath = &v
-		}
-		in.Sha = ctx.Request().FormValue("sha")
-		in.Name = ctx.Request().FormValue("name")
-		fileByte, _, err := ctx.Request().FormFile("data")
-		if err != nil {
-			return errors.UploadFileError(err.Error())
-		}
-
-		in.Data, err = io.ReadAll(fileByte)
-		if err != nil {
-			return errors.UploadFileError(err.Error())
-		}
-
-		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
-			return s.UploadFile(ctx, req.(*file.UploadFileRequest))
-		})
-
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*file.UploadFileReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func (s *File) Download() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		key := ctx.Request().URL.Query().Get("key")
-		if key == "" {
-			return errors.ParamsError()
-		}
-		ctx.Response().Header().Set("Content-Type", "application/octet-stream")
-		return s.srv.GetFileBytes(core.MustContext(ctx.Request().Context()), key, func(b []byte) error {
-			_, err := ctx.Response().Write(b)
-			return err
-		})
-	}
-}
-
-func (s *File) Redirect() thttp.HandlerFunc {
-	return func(ctx thttp.Context) error {
-		var req file.StaticFileRequest
-		if err := ctx.BindQuery(&req); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&req); err != nil {
-			return err
-		}
-
-		st, err := store.NewStore(req.Store)
-		if err != nil {
-			return err
-		}
-
-		queryEncode := st.ParserQuery(&types.ParserQuery{
-			Expire:   req.Expire,
-			Sign:     req.Sign,
-			Width:    req.Width,
-			Height:   req.Height,
-			Mode:     req.Mode,
-			Download: req.Download,
-			SaveName: req.SaveName,
-		})
-
-		url := st.Config().ServerURL + "/" + req.Store + "/" + req.Key + "?" + queryEncode
-		ctx.Response().Header().Set("Location", url)
-		ctx.Response().WriteHeader(301)
-		return nil
+// toFileItem 领域 FileItem → proto FileItem（size uint32→string、时间戳→uint32）。
+func toFileItem(it *types.FileItem) *fileapi.FileItem {
+	return &fileapi.FileItem{
+		Id:          uint32(it.Id),
+		App:         it.App,
+		UserId:      uint32(it.UserId),
+		DirectoryId: uint32(it.DirectoryId),
+		Name:        it.Name,
+		ObjectId:    uint32(it.ObjectId),
+		Size:        strconv.FormatUint(it.Size, 10),
+		Ext:         it.Ext,
+		Url:         it.Url,
+		Key:         it.Key,
+		CreatedAt:   uint32(it.CreatedAt),
 	}
 }

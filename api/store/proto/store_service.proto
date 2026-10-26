@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package resource.api.store;
+
+import "google/api/annotations.proto";
+import "api/store/proto/store.proto";
+
+option go_package = "resource/api/store;store";
+
+// 约定：不使用 {path} 路径参数，所有入参均经 Request 的 query / body 绑定。
+service StoreService {
+  // ListStore 分页查询存储后端
+  rpc ListStore(ListStoreRequest) returns (ListStoreResponse) {
+    option (google.api.http) = {get: "/resource/api/store"};
+  }
+
+  // GetStore 按主键查询存储后端
+  rpc GetStore(GetStoreRequest) returns (GetStoreResponse) {
+    option (google.api.http) = {get: "/resource/api/store/detail"};
+  }
+
+  // CreateStore 新建存储后端
+  rpc CreateStore(CreateStoreRequest) returns (CreateStoreResponse) {
+    option (google.api.http) = {post: "/resource/api/store" body: "*"};
+  }
+
+  // UpdateStore 更新存储后端
+  rpc UpdateStore(UpdateStoreRequest) returns (UpdateStoreResponse) {
+    option (google.api.http) = {put: "/resource/api/store" body: "*"};
+  }
+
+  // ListProvider 返回代码里已注册的厂商清单
+  rpc ListProvider(ListProviderRequest) returns (ListProviderResponse) {
+    option (google.api.http) = {get: "/resource/api/store/provider"};
+  }
+
+  // CheckStore 测试存储配置连通性（不落库）
+  rpc CheckStore(CheckStoreRequest) returns (CheckStoreResponse) {
+    option (google.api.http) = {post: "/resource/api/store/check" body: "*"};
+  }
+}

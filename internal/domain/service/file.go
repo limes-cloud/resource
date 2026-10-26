@@ -1,450 +1,273 @@
 package service
 
 import (
-	"fmt"
 	"io"
-	"math"
-	"net/http"
-	"strings"
 
-	"github.com/limes-cloud/kratosx/pkg/crypto"
-
-	"github.com/google/uuid"
-	"github.com/limes-cloud/kratosx/library/db/gormtranserror"
-	"github.com/limes-cloud/kratosx/model"
-	"github.com/limes-cloud/kratosx/pkg/value"
 	"github.com/limes-cloud/resource/api/errors"
 	"github.com/limes-cloud/resource/internal/core"
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/repository"
-	"github.com/limes-cloud/resource/internal/pkg"
+	"github.com/limes-cloud/resource/internal/pkg/objectkey"
 	"github.com/limes-cloud/resource/internal/types"
-	"google.golang.org/protobuf/proto"
-	"gorm.io/gorm"
 )
 
-const (
-	STATUS_PROGRESS  = "PROGRESS"
-	STATUS_COMPLETED = "COMPLETED"
-)
-
+// File 文件读路径服务（列表 / 取 URL / 改名 / 移动）。
 type File struct {
-	repo      repository.File
-	userRepo  repository.UserFile
-	directory repository.Directory
-	newStore  func(keyword ...string) (repository.Store, error)
+	repo       repository.File
+	objectRepo repository.Object
+	storeRepo  repository.Store
+	appConfig  repository.AppConfig
+	directory  *Directory
 }
 
-func NewFile(
-	repo repository.File,
-	userRepo repository.UserFile,
-	directory repository.Directory,
-	newStore func(keyword ...string) (repository.Store, error),
-) *File {
-	return &File{repo: repo, userRepo: userRepo, directory: directory, newStore: newStore}
+// NewFile 构造文件服务
+func NewFile(repo repository.File, objectRepo repository.Object, storeRepo repository.Store, appConfig repository.AppConfig, directory *Directory) *File {
+	return &File{repo: repo, objectRepo: objectRepo, storeRepo: storeRepo, appConfig: appConfig, directory: directory}
 }
 
-func (u *File) getStoreByKey(key string) (repository.Store, error) {
-	parts := strings.SplitN(key, "/", 2)
-	if len(parts) == 2 {
-		return u.newStore(parts[0])
-	}
-	return u.newStore()
-}
-
-func (u *File) getDirectoryLimit(ctx core.Context, dirId *uint32, dirPath *string) (*entity.DirectoryLimit, error) {
-	if dirId != nil {
-		return u.directory.GetDirectoryLimitById(ctx, *dirId)
-	}
-	return u.directory.GetDirectoryLimitByPath(ctx, strings.Split(*dirPath, "/"))
-}
-
-// GetUserFile 获取用户指定的文件信息
-func (u *File) GetUserFile(ctx core.Context, req *types.GetUserFileRequest) (*entity.UserFile, error) {
-	var (
-		err error
-		res *entity.File
-	)
-	if req.Id != nil {
-		res, err = u.repo.GetFile(ctx, *req.Id)
-	} else if req.Key != nil {
-		res, err = u.repo.GetFileByKey(ctx, *req.Key)
-	} else {
-		return nil, errors.ParamsError()
-	}
+// GetFile 取单个文件 + 派生 URL（仅本人文件）。
+func (f *File) GetFile(ctx core.Context, id uint32) (*types.FileItem, error) {
+	file, err := f.repo.GetFile(ctx, id)
 	if err != nil {
-		return nil, errors.NotExistFileError(err.Error())
-	}
-	if res.Status != STATUS_COMPLETED {
-		return nil, errors.NotExistFileError()
-	}
-
-	if req.Directory != nil {
-		dir, err := u.directory.GetDirectoryLimitByPath(ctx, strings.Split(*req.Directory, "/"))
-		if err != nil {
-			return nil, errors.GetError()
+		if isNotFound(err) {
+			return nil, errors.ObjectNotFoundError()
 		}
-		req.DirectoryId = dir.DirectoryId
+		ctx.Logger().Warnw("msg", "get file error", "id", id, "err", err.Error())
+		return nil, errors.GetError()
 	}
-
-	req.FileId = res.Id
-	req.UserId = ctx.Auth().UserId
-	uf, err := u.userRepo.GetUserFile(ctx, req)
-	if err != nil {
-		return nil, err
+	if file.UserId != uint32(ctx.Auth().UserId) {
+		return nil, errors.ObjectNotFoundError()
 	}
-	uf.File = res
-	return uf, nil
+	return f.toItem(ctx, file)
 }
 
-// GetFileBytes 获取文件二进制文件
-func (u *File) GetFileBytes(ctx core.Context, key string, reply types.GetFileBytesFunc) error {
-	fe, err := u.repo.GetFileByKey(ctx, key)
+// ListFileByDirectory 目录内文件分页 + 批量派生 URL。
+func (f *File) ListFileByDirectory(ctx core.Context, app string, directoryID uint32, req *types.PageRequest) ([]*types.FileItem, uint32, error) {
+	files, total, err := f.repo.ListFileByDirectory(ctx, app, directoryID, req)
 	if err != nil {
-		return errors.NotExistFileError()
+		ctx.Logger().Warnw("msg", "list file by directory error", "app", app, "directoryId", directoryID, "err", err.Error())
+		return nil, 0, errors.GetError()
 	}
-	st, err := u.getStoreByKey(key)
+	items, err := f.toItems(ctx, app, files)
 	if err != nil {
-		return err
+		return nil, 0, err
 	}
-	reader, err := st.Get(fe.Key)
+	return items, total, nil
+}
+
+// ListFileByUser 我的文件分页 + 批量派生 URL。
+func (f *File) ListFileByUser(ctx core.Context, app string, userID uint32, req *types.PageRequest) ([]*types.FileItem, uint32, error) {
+	files, total, err := f.repo.ListFileByUser(ctx, app, userID, req)
 	if err != nil {
-		return errors.GetError(err.Error())
+		ctx.Logger().Warnw("msg", "list file by user error", "app", app, "userId", userID, "err", err.Error())
+		return nil, 0, errors.GetError()
 	}
-	buf := make([]byte, 32*1024)
-	for {
-		nr, er := reader.Read(buf)
-		if nr > 0 {
-			if err := reply(buf[:nr]); err != nil {
-				return err
-			}
+	items, err := f.toItems(ctx, app, files)
+	if err != nil {
+		return nil, 0, err
+	}
+	return items, total, nil
+}
+
+// UpdateFile 改名 / 移动（file.app ≡ directory.app 不变量；仅本人文件；传了才改）。
+func (f *File) UpdateFile(ctx core.Context, req *types.UpdateFileRequest) (*types.FileItem, error) {
+	file, err := f.repo.GetFile(ctx, req.Id)
+	if err != nil {
+		if isNotFound(err) {
+			return nil, errors.ObjectNotFoundError()
 		}
-		if er == io.EOF {
-			break
+		ctx.Logger().Warnw("msg", "get file error", "id", req.Id, "err", err.Error())
+		return nil, errors.GetError()
+	}
+	// 归属：仅本人文件；app 一致性：文件必须属于请求方 app
+	if file.UserId != uint32(ctx.Auth().UserId) || file.App != req.App {
+		return nil, errors.ObjectNotFoundError()
+	}
+
+	ent := &entity.File{}
+	ent.Id = req.Id
+	if req.Name != nil {
+		ent.Name = *req.Name
+	}
+	if req.DirectoryId != nil {
+		dir, derr := f.directory.GetDirectoryById(ctx, uint32(*req.DirectoryId))
+		if derr != nil {
+			return nil, derr
 		}
-		if er != nil {
-			return er
+		if dir.App != file.App {
+			return nil, errors.ParamsError("目标目录不属于当前应用")
 		}
+		ent.DirectoryId = uint32(*req.DirectoryId)
+	}
+	// name 不能空、directory_id 不能为 0，两者都未落值即无变更
+	if ent.Name == "" && ent.DirectoryId == 0 {
+		return f.toItem(ctx, file)
+	}
+	if uerr := f.repo.UpdateFile(ctx, ent); uerr != nil {
+		ctx.Logger().Warnw("msg", "update file error", "id", req.Id, "err", uerr.Error())
+		return nil, errors.UpdateError()
+	}
+	return f.GetFile(ctx, req.Id)
+}
+
+// DeleteFile 单文件删除：删 file 行 → 零引用则删 object 行 → 提交后删桶对象。
+func (f *File) DeleteFile(ctx core.Context, app string, id uint32) error {
+	file, err := f.repo.GetFile(ctx, id)
+	if err != nil {
+		if isNotFound(err) {
+			return errors.ObjectNotFoundError()
+		}
+		ctx.Logger().Warnw("msg", "get file error", "id", id, "err", err.Error())
+		return errors.GetError()
+	}
+	if file.UserId != uint32(ctx.Auth().UserId) || file.App != app {
+		return errors.ObjectNotFoundError()
+	}
+
+	// 删行前读出对象信息（桶删对象时用；可能已被前一轮回收掉）
+	obj, err := f.objectRepo.GetObject(ctx, file.ObjectId)
+	if err != nil && !isNotFound(err) {
+		ctx.Logger().Warnw("msg", "get object error", "objectId", file.ObjectId, "err", err.Error())
+		return errors.GetError()
+	}
+
+	// 同一事务读己之写：删 file 行 + 零引用才 CAS 删 object 行
+	delBucket := false
+	if terr := ctx.Transaction(func(tx core.Context) error {
+		if e := f.repo.DeleteFile(tx, id); e != nil {
+			return e
+		}
+		if obj == nil {
+			return nil
+		}
+		// 归还配额：file 行创建时按引用 object 的 size 计入，删除按同口径归还（逻辑计量）
+		if e := f.appConfig.ReleaseQuota(tx, app, obj.Size); e != nil {
+			return e
+		}
+		deleted, e := f.objectRepo.DeleteObjectIfUnreferenced(tx, obj.Id)
+		if e != nil {
+			return e
+		}
+		delBucket = deleted
+		return nil
+	}); terr != nil {
+		ctx.Logger().Warnw("msg", "delete file tx error", "id", id, "err", terr.Error())
+		return errors.DeleteError()
+	}
+	if !delBucket {
+		return nil
+	}
+
+	// 提交后删桶对象：先查 (store_keyword, md5) 是否因重新上传出现新行，命中即放弃
+	if exists, e := f.objectRepo.ExistsObject(ctx, obj.StoreKeyword, obj.Md5); e == nil && exists {
+		return nil
+	}
+	if client, ok := f.storeRepo.GetClient(obj.StoreKeyword); ok {
+		_ = client.Delete(ctx, objectkey.ObjectName(obj.Md5, obj.Ext))
 	}
 	return nil
 }
 
-// ListUserFile 获取文件信息列表
-func (u *File) ListUserFile(ctx core.Context, req *types.ListFileRequest) ([]*entity.UserFile, uint32, error) {
-	list, total, err := u.userRepo.ListUserFile(ctx, req)
-	if err != nil {
-		return nil, 0, errors.ListError(err.Error())
+// toItems 批量派生 URL（按 app 取一次 TTL，按 object_id 批量取对象，避免逐行点查）。
+func (f *File) toItems(ctx core.Context, app string, files []*entity.File) ([]*types.FileItem, error) {
+	if len(files) == 0 {
+		return nil, nil
 	}
-	return list, total, nil
+	ids := make([]uint32, 0, len(files))
+	for _, fl := range files {
+		ids = append(ids, fl.ObjectId)
+	}
+	objs, err := f.objectRepo.ListObjectByIDs(ctx, ids)
+	if err != nil {
+		ctx.Logger().Warnw("msg", "list object by ids error", "err", err.Error())
+		return nil, errors.GetError()
+	}
+	objMap := make(map[uint32]*entity.Object, len(objs))
+	for _, o := range objs {
+		objMap[o.Id] = o
+	}
+	ttl := resolveURLTtl(ctx, f.appConfig, app)
+	items := make([]*types.FileItem, 0, len(files))
+	for _, fl := range files {
+		item := fileItemFrom(fl)
+		if o, ok := objMap[fl.ObjectId]; ok {
+			item.Size = o.Size
+			item.Ext = o.Ext
+			item.Url = genFileURL(ctx, f.storeRepo, o, ttl)
+			item.Key = objectkey.ObjectName(o.Md5, o.Ext)
+		}
+		items = append(items, item)
+	}
+	return items, nil
 }
 
-// PrepareUploadFile 预上传文件信息
-func (u *File) PrepareUploadFile(ctx core.Context, req *types.PrepareUploadFileRequest) (*types.PrepareUploadFileReply, error) {
-	limit, err := u.getDirectoryLimit(ctx, req.DirectoryId, req.DirectoryPath)
-	if err != nil {
-		return nil, errors.DatabaseError(err.Error())
-	}
-
-	st, err := u.newStore(req.Store)
-	if err != nil {
-		return nil, errors.SystemError(err.Error())
-	}
-
-	chunkSize := pkg.GetKBSize(ctx.Config().ChunkSize)
-
-	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
-	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.UpdateError(err.Error())
-	}
-
-	if err == nil {
-		// 秒传
-		if oldFile.Status == STATUS_COMPLETED {
-			has, err := u.userRepo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
-			if err != nil {
-				return nil, errors.UploadFileError(err.Error())
-			}
-			if !has {
-				if _, err := u.userRepo.CreateUserFile(ctx, &entity.UserFile{
-					DirectoryId: limit.DirectoryId,
-					Name:        req.Name,
-					FileId:      oldFile.Id,
-				}); err != nil {
-					return nil, errors.UploadFileError(err.Error())
-				}
-			}
-			return &types.PrepareUploadFileReply{
-				Uploaded: true,
-				Key:      proto.String(oldFile.Key),
-				Sha:      proto.String(oldFile.Sha),
-			}, nil
-		}
-
-		// 断点续传
-		chunkFactory, err := st.NewPutChunkByUploadID(oldFile.Key, oldFile.UploadId)
-		if err != nil {
-			ctx.Logger().Warnw("msg", "get upload chunks error", "err", err.Error())
-			return nil, errors.SystemError()
-		}
-		uploadedChunks := chunkFactory.UploadedChunkIndex()
-		if len(uploadedChunks) == int(oldFile.ChunkCount) {
-			if err := chunkFactory.Complete(); err != nil {
-				return nil, errors.SystemError(err.Error())
-			}
-			if err := u.repo.UpdateFile(ctx, &entity.File{
-				BaseModel: model.BaseModel{Id: oldFile.Id},
-				Status:    STATUS_COMPLETED,
-			}); err != nil {
-				return nil, errors.SystemError(err.Error())
-			}
-			return &types.PrepareUploadFileReply{
-				Uploaded: true,
-				Sha:      proto.String(oldFile.Sha),
-				Key:      proto.String(oldFile.Key),
-			}, nil
-		}
-		return &types.PrepareUploadFileReply{
-			Uploaded:     false,
-			UploadId:     proto.String(oldFile.UploadId),
-			ChunkSize:    proto.Uint32(chunkSize),
-			ChunkCount:   proto.Uint32(oldFile.ChunkCount),
-			UploadChunks: uploadedChunks,
-			Sha:          proto.String(oldFile.Sha),
-			Key:          proto.String(oldFile.Key),
-		}, nil
-	}
-
-	// 校验文件大小和类型
-	if size := pkg.GetKBSize(limit.MaxSize); size < req.Size {
-		return nil, errors.ExceedMaxSizeError()
-	}
-	tp := pkg.GetFileType(req.Name)
-	if !value.InList(limit.Accepts, tp) {
-		return nil, errors.NoSupportFileTypeError()
-	}
-
-	fe := &entity.File{
-		Store:      st.Config().Keyword,
-		Size:       req.Size,
-		Sha:        req.Sha,
-		Key:        fmt.Sprintf("%s/%s.%s", st.Config().Keyword, req.Sha, tp),
-		Status:     STATUS_PROGRESS,
-		Type:       tp,
-		UploadId:   uuid.NewString(),
-		ChunkCount: 1,
-	}
-	if chunkSize < req.Size {
-		fe.ChunkCount = uint32(math.Ceil(float64(req.Size) / float64(chunkSize)))
-		chunkFactory, err := st.NewPutChunk(fe.Key)
-		if err != nil {
-			return nil, errors.UpdateError(err.Error())
-		}
-		fe.UploadId = chunkFactory.UploadID()
-	}
-
-	err = ctx.Transaction(func(ctx core.Context) error {
-		id, err := u.repo.CreateFile(ctx, fe)
-		if err != nil {
-			return err
-		}
-		_, err = u.userRepo.CreateUserFile(ctx, &entity.UserFile{
-			DirectoryId: limit.DirectoryId,
-			Name:        req.Name,
-			FileId:      id,
-		})
-		return err
-	})
-	if err != nil {
-		return nil, errors.UpdateError(err.Error())
-	}
-
-	return &types.PrepareUploadFileReply{
-		Uploaded:   false,
-		UploadId:   proto.String(fe.UploadId),
-		ChunkSize:  proto.Uint32(chunkSize),
-		ChunkCount: proto.Uint32(fe.ChunkCount),
-		Key:        proto.String(fe.Key),
-	}, nil
-}
-
-// UploadFileByURL 上传文件信息
-func (u *File) UploadFileByURL(ctx core.Context, req *types.UploadFileByURLRequest) (*types.UploadFileByURLReply, error) {
-	resp, err := http.Get(req.URL)
-	if err != nil {
-		return nil, errors.SystemError(err.Error())
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.SystemError(err.Error())
-	}
-
-	reply, err := u.UploadFile(ctx, &types.UploadFileRequest{
-		DirectoryPath: req.DirectoryPath,
-		Store:         req.Store,
-		Name:          req.Name,
-		Data:          b,
-		Sha:           crypto.MD5(b),
-	})
+// toItem 单个文件派生 URL。
+func (f *File) toItem(ctx core.Context, file *entity.File) (*types.FileItem, error) {
+	items, err := f.toItems(ctx, file.App, []*entity.File{file})
 	if err != nil {
 		return nil, err
 	}
-	return &types.UploadFileByURLReply{Sha: reply.Sha, Key: reply.Key}, nil
+	if len(items) == 0 {
+		return nil, errors.ObjectNotFoundError()
+	}
+	return items[0], nil
 }
 
-// UploadFile 上传文件信息
-func (u *File) UploadFile(ctx core.Context, req *types.UploadFileRequest) (*types.UploadFileReply, error) {
-	limit, err := u.getDirectoryLimit(ctx, req.DirectoryId, req.DirectoryPath)
-	if err != nil {
-		return nil, errors.DatabaseError(err.Error())
+// fileItemFrom 由 file 行构造列表项（size/ext/url 待对象补齐）。
+func fileItemFrom(fl *entity.File) *types.FileItem {
+	return &types.FileItem{
+		Id:          fl.Id,
+		App:         fl.App,
+		UserId:      fl.UserId,
+		DirectoryId: fl.DirectoryId,
+		Name:        fl.Name,
+		ObjectId:    fl.ObjectId,
+		CreatedAt:   fl.CreatedAt,
 	}
-
-	st, err := u.newStore(req.Store)
-	if err != nil {
-		return nil, errors.SystemError(err.Error())
-	}
-
-	fileSize := uint32(len(req.Data)) / 1024
-	if size := pkg.GetKBSize(limit.MaxSize); size < fileSize {
-		return nil, errors.ExceedMaxSizeError()
-	}
-
-	tp := pkg.GetFileType(req.Name)
-	if !value.InList(limit.Accepts, tp) {
-		return nil, errors.NoSupportFileTypeError()
-	}
-
-	fileKey := fmt.Sprintf("%s/%s.%s", st.Config().Keyword, req.Sha, tp)
-
-	oldFile, err := u.repo.GetFileBySha(ctx, st.Config().Keyword, req.Sha)
-	if err != nil && !gormtranserror.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.UpdateError(err.Error())
-	}
-	if err == nil && oldFile.Status == STATUS_COMPLETED {
-		has, err := u.userRepo.IsExistUserFile(ctx, ctx.Auth().UserId, oldFile.Id)
-		if err != nil {
-			return nil, errors.UploadFileError(err.Error())
-		}
-		if !has {
-			if _, err := u.userRepo.CreateUserFile(ctx, &entity.UserFile{
-				DirectoryId: limit.DirectoryId,
-				Name:        req.Name,
-				FileId:      oldFile.Id,
-			}); err != nil {
-				return nil, errors.UploadFileError(err.Error())
-			}
-		}
-		return &types.UploadFileReply{Key: oldFile.Key, Sha: oldFile.Sha}, nil
-	}
-
-	fe := &entity.File{
-		Store:      st.Config().Keyword,
-		Size:       fileSize,
-		Sha:        req.Sha,
-		Key:        fileKey,
-		Status:     STATUS_COMPLETED,
-		Type:       tp,
-		UploadId:   uuid.NewString(),
-		ChunkCount: 1,
-	}
-
-	err = ctx.Transaction(func(ctx core.Context) error {
-		var fileID uint32
-		if oldFile != nil && oldFile.Id != 0 {
-			fileID = oldFile.Id
-			if err := u.repo.UpdateFile(ctx, &entity.File{
-				BaseModel: model.BaseModel{Id: oldFile.Id},
-				Status:    STATUS_COMPLETED,
-				Size:      fileSize,
-			}); err != nil {
-				return err
-			}
-		} else {
-			var err error
-			fileID, err = u.repo.CreateFile(ctx, fe)
-			if err != nil {
-				return err
-			}
-		}
-		if _, err := u.userRepo.CreateUserFile(ctx, &entity.UserFile{
-			DirectoryId: limit.DirectoryId,
-			Name:        req.Name,
-			FileId:      fileID,
-		}); err != nil {
-			return err
-		}
-		return st.PutBytes(fe.Key, req.Data)
-	})
-	if err != nil {
-		return nil, errors.UpdateError(err.Error())
-	}
-	return &types.UploadFileReply{Sha: req.Sha, Key: fe.Key}, nil
 }
 
-// UploadChunkFile 上传分片文件
-func (u *File) UploadChunkFile(ctx core.Context, req *types.UploadChunkFileRequest) (*types.UploadFileReply, error) {
-	fe, err := u.repo.GetFileByUploadId(ctx, req.UploadId)
+// GetFileURLByKey 按对象 key（内容指纹 md5.ext）取可访问地址；对象不存在返回对象未找到。
+// app 不参与定位：对象按 md5 全局内容寻址，URL 由对象自带的 store_keyword 生成。
+func (f *File) GetFileURLByKey(ctx core.Context, key string) (*types.GetFileURLByKeyReply, error) {
+	md5hex, _, err := objectkey.ParseObjectName(key)
 	if err != nil {
-		return nil, errors.UpdateError("不存在上传任务")
+		return nil, errors.ParamsError("对象key不合法")
 	}
-	if fe.Status == STATUS_COMPLETED {
-		return &types.UploadFileReply{Sha: fe.Sha, Key: fe.Key}, nil
-	}
-
-	st, err := u.getStoreByKey(fe.Key)
+	obj, err := f.objectRepo.GetObjectByMd5Any(ctx, md5hex)
 	if err != nil {
-		return nil, errors.SystemError(err.Error())
-	}
-
-	chunkFactory, err := st.NewPutChunkByUploadID(fe.Key, req.UploadId)
-	if err != nil {
-		return nil, errors.UpdateError(err.Error())
-	}
-	if err = chunkFactory.AppendBytes(req.Data, int(req.Index)); err != nil {
-		return nil, err
-	}
-
-	// 最后一片到达时合并
-	if int(req.Index) == int(fe.ChunkCount) {
-		if err := chunkFactory.Complete(); err != nil {
-			return nil, errors.UpdateError(err.Error())
+		if isNotFound(err) {
+			return nil, errors.ObjectNotFoundError()
 		}
-		if err := u.repo.UpdateFile(ctx, &entity.File{
-			BaseModel: model.BaseModel{Id: fe.Id},
-			Status:    STATUS_COMPLETED,
-		}); err != nil {
-			return nil, errors.UploadFileError(err.Error())
-		}
+		ctx.Logger().Warnw("msg", "get object by md5 error", "md5", md5hex, "err", err.Error())
+		return nil, errors.GetError()
 	}
-
-	return &types.UploadFileReply{Sha: fe.Sha, Key: fe.Key}, nil
+	return &types.GetFileURLByKeyReply{Url: genFileURL(ctx, f.storeRepo, obj, defaultURLTtl)}, nil
 }
 
-// UpdateUserFile 更新文件信息
-func (u *File) UpdateUserFile(ctx core.Context, req *entity.UserFile) error {
-	if err := u.userRepo.UpdateUserFile(ctx, req); err != nil {
-		return errors.UpdateError(err.Error())
-	}
-	return nil
-}
-
-// DeleteUserFile 删除文件信息
-func (u *File) DeleteUserFile(ctx core.Context, ids []uint32) (uint32, error) {
-	total, err := u.userRepo.DeleteUserFile(ctx, ids, func(file *entity.File) {
-		st, err := u.getStoreByKey(file.Key)
-		if err != nil {
-			return
-		}
-		if file.Status == STATUS_COMPLETED {
-			_ = st.Delete(file.Key)
-		} else {
-			if chunk, err := st.NewPutChunkByUploadID(file.Key, file.UploadId); err == nil {
-				_ = chunk.Abort()
-			}
-		}
-	})
+// ReadFileByKey 按对象 key 服务端读取文件内容（返回读流与 Content-Type）。
+// 用于前端跨域读取受限的场景：对象存储（如 OSS）未开 CORS 时，<img> 可显示但 fetch 无法取字节，
+// 由服务端代理读出后原样返回，规避存储侧 CORS 限制。
+func (f *File) ReadFileByKey(ctx core.Context, key string) (io.ReadCloser, string, error) {
+	md5hex, ext, err := objectkey.ParseObjectName(key)
 	if err != nil {
-		return 0, errors.DeleteError(err.Error())
+		return nil, "", errors.ParamsError("对象key不合法")
 	}
-	return total, nil
+	obj, err := f.objectRepo.GetObjectByMd5Any(ctx, md5hex)
+	if err != nil {
+		if isNotFound(err) {
+			return nil, "", errors.ObjectNotFoundError()
+		}
+		ctx.Logger().Warnw("msg", "get object by md5 error", "md5", md5hex, "err", err.Error())
+		return nil, "", errors.GetError()
+	}
+	client, ok := f.storeRepo.GetClient(obj.StoreKeyword)
+	if !ok {
+		return nil, "", errors.StoreDisabledError()
+	}
+	rc, err := client.Get(ctx, objectkey.ObjectName(obj.Md5, obj.Ext))
+	if err != nil {
+		ctx.Logger().Warnw("msg", "get object content error", "key", objectkey.ObjectName(obj.Md5, obj.Ext), "err", err.Error())
+		return nil, "", errors.GetError()
+	}
+	return rc, objectkey.ContentType(ext), nil
 }

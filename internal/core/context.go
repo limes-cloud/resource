@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/limes-cloud/kratosx"
+	"github.com/limes-cloud/kratosx/library/lock"
 	"github.com/limes-cloud/manager/api/authorize"
 	"github.com/limes-cloud/manager/api/errors"
 )
@@ -32,6 +33,11 @@ func (c Context) Auth() *authorize.CheckAuthReply {
 
 func (c Context) Clone() Context {
 	return MustContext(context.WithoutCancel(c.Context))
+}
+
+// Lock 取一把基于 Redis 的分布式锁（kratosx 提供，进程退出时自动释放）。
+func (c Context) Lock(key string, opts ...lock.LockOption) lock.Lock {
+	return lock.New(c.Ctx(), key, opts...)
 }
 
 func MustContext(ctx context.Context, opts ...kratosx.ContextOptionFunc) Context {

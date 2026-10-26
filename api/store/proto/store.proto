@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package resource.api.store;
+
+import "validate/validate.proto";
+
+option go_package = "resource/api/store;store";
+
+// Store 存储后端视图（ak 完整返回，sk 掩码返回）
+message Store {
+  uint32 id            = 1;
+  string keyword       = 2;
+  string provider      = 3;
+  string name          = 4;
+  string endpoint      = 5;
+  string region        = 6;
+  string bucket        = 7;
+  string ak            = 8;  // 访问密钥 ID，完整返回
+  string sk            = 9;  // 访问密钥，掩码返回（前 3 后 3，中间 *）
+  string public_base_url = 10;
+  string cdn_auth_type = 11;
+  string cdn_auth_key  = 12; // 回显掩码由服务端控制（明文仅在写入路径接受）
+  uint32 status        = 13;
+  string description   = 14;
+  uint32 updated_by    = 15;
+  uint32 created_at    = 16;
+  uint32 updated_at    = 17;
+}
+
+// Provider 厂商下拉项
+message Provider {
+  string value       = 1;
+  string label       = 2;
+  bool   implemented = 3;
+}
+
+// ---- GetStore ----
+message GetStoreRequest {
+  uint32 id = 1 [(validate.rules).uint32 = {gte: 1}];
+}
+message GetStoreResponse {
+  Store store = 1;
+}
+
+// ---- ListStore ----
+message ListStoreRequest {
+  uint32 page      = 1;
+  uint32 page_size = 2;
+  optional string keyword  = 3; // 可选过滤
+  optional string provider = 4; // 可选过滤
+  optional uint32 status   = 5; // 可选过滤（0 停用 / 1 启用，均可过滤）
+}
+message ListStoreResponse {
+  repeated Store list = 1;
+  uint32 total            = 2;
+}
+
+// ---- CreateStore ----
+message CreateStoreRequest {
+  string keyword        = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string provider       = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string name           = 3 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  string endpoint       = 4 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string region         = 5 [(validate.rules).string = {min_len: 1, max_len: 64}];
+  string bucket         = 6 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  string ak             = 7 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string sk             = 8 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string public_base_url = 9 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string cdn_auth_type  = 10 [(validate.rules).string = {in: ["none", "cdn_a", "cdn_b", "cdn_c", "s3_presign"]}];
+  optional string cdn_auth_key = 11 [(validate.rules).string = {max_len: 255}]; // 不传 = 不配置
+  uint32 status         = 12 [(validate.rules).uint32 = {in: [0, 1]}];
+  optional string description = 13 [(validate.rules).string = {max_len: 256}]; // 不传 = 无备注
+}
+message CreateStoreResponse {
+  uint32 id = 1;
+}
+
+// ---- UpdateStore ----
+// 局部更新：仅 id 固定必传（WHERE 条件），其余字段 optional——不传 = 该列不改；
+// 传了才走各自的限定约束。更新停用只需 id + status。
+message UpdateStoreRequest {
+  uint32 id             = 1 [(validate.rules).uint32 = {gte: 1}];
+  optional string provider       = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  optional string name           = 3 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  optional string endpoint       = 4 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  optional string region         = 5 [(validate.rules).string = {min_len: 1, max_len: 64}];
+  optional string bucket         = 6 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  optional string ak             = 7 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  optional string sk             = 8 [(validate.rules).string = {max_len: 255}]; // 空串 = 不修改
+  optional string public_base_url = 9 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  optional string cdn_auth_type  = 10 [(validate.rules).string = {in: ["none", "cdn_a", "cdn_b", "cdn_c", "s3_presign"]}];
+  optional string cdn_auth_key = 11 [(validate.rules).string = {max_len: 255}]; // 不传 = 不改
+  optional uint32 status         = 12 [(validate.rules).uint32 = {in: [0, 1]}];
+  optional string description = 13 [(validate.rules).string = {max_len: 256}]; // 不传 = 不改
+}
+message UpdateStoreResponse {
+  uint32 id = 1;
+}
+
+// ---- ListProvider ----
+message ListProviderRequest {}
+message ListProviderResponse {
+  repeated Provider list = 1;
+}
+
+// ---- CheckStore 测试存储配置连通性（不落库） ----
+// 用 HeadBucket 探测：200 = 有效（认证/桶/网络全通）；403 = 凭证或权限；404 = 桶不存在；其余 = 网络异常。
+// 已保存的 store 编辑测试时传 id：sk 为掩码/未改则回退用 DB 存的真实 sk（明文仅在服务端取），其余字段以入参为准。
+message CheckStoreRequest {
+  optional uint32 id = 1; // 已保存的 store 主键（可选：编辑场景回退 sk 用）
+  string provider = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string endpoint = 3 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string region   = 4 [(validate.rules).string = {min_len: 1, max_len: 64}];
+  string bucket   = 5 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  string ak       = 6 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string sk       = 7 [(validate.rules).string = {min_len: 1, max_len: 255}];
+}
+message CheckStoreResponse {
+  bool ok = 1;
+  string message = 2; // ok=false 时为分类原因（凭证错误 / 桶不存在 / 无法连接等）
+}

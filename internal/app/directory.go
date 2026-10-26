@@ -5,102 +5,125 @@ import (
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/limes-cloud/kratosx/model"
 	"github.com/limes-cloud/kratosx/pkg/value"
-	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/limes-cloud/resource/api/directory"
-	"github.com/limes-cloud/resource/api/errors"
+	dirapi "github.com/limes-cloud/resource/api/directory"
 	"github.com/limes-cloud/resource/internal/core"
-
 	"github.com/limes-cloud/resource/internal/domain/entity"
 	"github.com/limes-cloud/resource/internal/domain/service"
 	"github.com/limes-cloud/resource/internal/infra/dbs"
+	initreclaim "github.com/limes-cloud/resource/internal/initiator/reclaim"
+	"github.com/limes-cloud/resource/internal/types"
 )
 
-type Directory struct {
-	directory.UnimplementedDirectoryServer
-	srv *service.Directory
+// directoryHandler 实现 directory.DirectoryServiceHTTPServer / DirectoryServiceServer。
+type directoryHandler struct {
+	dirapi.UnimplementedDirectoryServiceServer
+	dir     *service.Directory
+	recycle *service.Recycle
 }
 
-func NewDirectory() *Directory {
-	return &Directory{
-		srv: service.NewDirectory(dbs.NewDirectory()),
-	}
-}
-
+// init 自注册 DirectoryService。
 func init() {
 	register(func(hs *http.Server, gs *grpc.Server) {
-		srv := NewDirectory()
-		directory.RegisterDirectoryHTTPServer(hs, srv)
-		directory.RegisterDirectoryServer(gs, srv)
+		dir := service.NewDirectory(dbs.NewDirectory(), dbs.NewAppConfig())
+		recycle := service.NewRecycle(dbs.NewFile(), dbs.NewObject(), dbs.NewStore(), dbs.NewDirectory(), dbs.NewAppConfig())
+		h := &directoryHandler{dir: dir, recycle: recycle}
+		dirapi.RegisterDirectoryServiceHTTPServer(hs, h)
+		dirapi.RegisterDirectoryServiceServer(gs, h)
 	})
 }
 
-// GetDirectory 获取指定的文件目录信息
-func (s *Directory) GetDirectory(c context.Context, req *directory.GetDirectoryRequest) (*directory.GetDirectoryReply, error) {
-	result, err := s.srv.GetDirectory(core.MustContext(c), req.Id)
+// ListDirectory 全量取回某 app 的目录。
+func (h *directoryHandler) ListDirectory(ctx context.Context, req *dirapi.ListDirectoryRequest) (*dirapi.ListDirectoryResponse, error) {
+	app, err := currentApp(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &directory.GetDirectoryReply{
-		Id:        result.Id,
-		ParentId:  result.ParentId,
-		Name:      result.Name,
-		Accept:    result.Accept,
-		MaxSize:   result.MaxSize,
-		CreatedAt: uint32(result.CreatedAt),
-		UpdatedAt: uint32(result.UpdatedAt),
-	}, nil
-}
-
-// ListDirectory 获取文件目录信息列表
-func (s *Directory) ListDirectory(c context.Context, _ *emptypb.Empty) (*directory.ListDirectoryReply, error) {
-	result, err := s.srv.ListDirectory(core.MustContext(c))
+	list, err := h.dir.ListDirectory(core.MustContext(ctx), app)
 	if err != nil {
 		return nil, err
 	}
-	reply := directory.ListDirectoryReply{}
-	if err := value.Transform(result, &reply.List); err != nil {
-		return nil, errors.TransformError()
+	out := make([]*dirapi.DirectoryView, 0, len(list))
+	for _, e := range list {
+		out = append(out, toDirectoryView(e))
 	}
-	return &reply, nil
+	return &dirapi.ListDirectoryResponse{List: out}, nil
 }
 
-// CreateDirectory 创建文件目录信息
-func (s *Directory) CreateDirectory(c context.Context, req *directory.CreateDirectoryRequest) (*directory.CreateDirectoryReply, error) {
-	id, err := s.srv.CreateDirectory(core.MustContext(c), &entity.Directory{
-		ParentId: req.ParentId,
-		Name:     req.Name,
-		Accept:   req.Accept,
-		MaxSize:  req.MaxSize,
-	})
+// GetDirectory 按主键查询目录。
+func (h *directoryHandler) GetDirectory(ctx context.Context, req *dirapi.GetDirectoryRequest) (*dirapi.GetDirectoryResponse, error) {
+	app, err := currentApp(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	return &directory.CreateDirectoryReply{Id: id}, nil
-}
-
-// UpdateDirectory 更新文件目录信息
-func (s *Directory) UpdateDirectory(c context.Context, req *directory.UpdateDirectoryRequest) (*directory.UpdateDirectoryReply, error) {
-	if err := s.srv.UpdateDirectory(core.MustContext(c), &entity.Directory{
-		BaseTenantModel: model.BaseTenantModel{Id: req.Id},
-		ParentId:        req.ParentId,
-		Name:            req.Name,
-		Accept:          req.Accept,
-		MaxSize:         req.MaxSize,
-	}); err != nil {
-		return nil, err
-	}
-	return &directory.UpdateDirectoryReply{}, nil
-}
-
-// DeleteDirectory 删除文件目录信息
-func (s *Directory) DeleteDirectory(c context.Context, req *directory.DeleteDirectoryRequest) (*directory.DeleteDirectoryReply, error) {
-	total, err := s.srv.DeleteDirectory(core.MustContext(c), req.Ids)
+	ent, err := h.dir.GetDirectory(core.MustContext(ctx), app, uint32(req.Id))
 	if err != nil {
 		return nil, err
 	}
-	return &directory.DeleteDirectoryReply{Total: total}, nil
+	return &dirapi.GetDirectoryResponse{Directory: toDirectoryView(ent)}, nil
+}
+
+// CreateDirectory 按完整路径创建目录。
+func (h *directoryHandler) CreateDirectory(ctx context.Context, req *dirapi.CreateDirectoryRequest) (*dirapi.CreateDirectoryResponse, error) {
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ent, err := h.dir.CreateDirectory(core.MustContext(ctx), &types.CreateDirectoryRequest{App: app, Path: req.Path})
+	if err != nil {
+		return nil, err
+	}
+	return &dirapi.CreateDirectoryResponse{Directory: toDirectoryView(ent)}, nil
+}
+
+// UpdateDirectory 改名 / 移动 / 改策略。
+func (h *directoryHandler) UpdateDirectory(ctx context.Context, req *dirapi.UpdateDirectoryRequest) (*dirapi.UpdateDirectoryResponse, error) {
+	// proto 字段为 optional（指针），直接透传：nil = 未传，非 nil = 要改（accept 可为 ""）
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c := core.MustContext(ctx)
+	d := &types.UpdateDirectoryRequest{
+		App:       app,
+		Id:        uint32(req.Id),
+		Path:      req.Path,
+		Accept:    req.Accept,
+		MaxSize:   req.MaxSize,
+		UpdatedBy: uint32(c.Auth().UserId),
+	}
+	if err := h.dir.UpdateDirectory(c, d); err != nil {
+		return nil, err
+	}
+	return &dirapi.UpdateDirectoryResponse{Id: req.Id}, nil
+}
+
+// DeleteDirectory 删目录（软删：标记子树待删除 + 删目录树 + 归还配额；随后 Kick 后台立即物理回收，reclaim ticker 兜底补偿）。
+func (h *directoryHandler) DeleteDirectory(ctx context.Context, req *dirapi.DeleteDirectoryRequest) (*dirapi.DeleteDirectoryResponse, error) {
+	app, err := currentApp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := h.recycle.DeleteDirectory(core.MustContext(ctx), app, uint32(req.Id)); err != nil {
+		return nil, err
+	}
+	// 第一层：立即触发后台回收，不等定时 ticker（第二层补偿见 initiator/reclaim）
+	initreclaim.Kick()
+	return &dirapi.DeleteDirectoryResponse{Id: req.Id}, nil
+}
+
+// toDirectoryView 领域 Directory → proto DirectoryView。
+func toDirectoryView(e *entity.Directory) *dirapi.DirectoryView {
+	return &dirapi.DirectoryView{
+		Id:        uint32(e.Id),
+		App:       e.App,
+		Name:      e.Name,
+		Path:      e.Path,
+		Accept:    value.Value(e.Accept),
+		MaxSize:   e.MaxSize,
+		UpdatedBy: uint32(e.UpdatedBy),
+		CreatedAt: uint32(e.CreatedAt),
+		UpdatedAt: uint32(e.UpdatedAt),
+	}
 }

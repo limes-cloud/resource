@@ -10,7 +10,6 @@ import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,41 +19,60 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationDirectoryCreateDirectory = "/resource.api.directory.Directory/CreateDirectory"
-const OperationDirectoryDeleteDirectory = "/resource.api.directory.Directory/DeleteDirectory"
-const OperationDirectoryGetDirectory = "/resource.api.directory.Directory/GetDirectory"
-const OperationDirectoryListDirectory = "/resource.api.directory.Directory/ListDirectory"
-const OperationDirectoryUpdateDirectory = "/resource.api.directory.Directory/UpdateDirectory"
+const OperationDirectoryServiceCreateDirectory = "/resource.api.directory.DirectoryService/CreateDirectory"
+const OperationDirectoryServiceDeleteDirectory = "/resource.api.directory.DirectoryService/DeleteDirectory"
+const OperationDirectoryServiceGetDirectory = "/resource.api.directory.DirectoryService/GetDirectory"
+const OperationDirectoryServiceListDirectory = "/resource.api.directory.DirectoryService/ListDirectory"
+const OperationDirectoryServiceUpdateDirectory = "/resource.api.directory.DirectoryService/UpdateDirectory"
 
-type DirectoryHTTPServer interface {
-	// CreateDirectory CreateDirectory 创建文件目录信息
-	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryReply, error)
-	// DeleteDirectory DeleteDirectory 删除文件目录信息
-	DeleteDirectory(context.Context, *DeleteDirectoryRequest) (*DeleteDirectoryReply, error)
-	// GetDirectory GetDirectory 获取指定的文件目录信息
-	GetDirectory(context.Context, *GetDirectoryRequest) (*GetDirectoryReply, error)
-	// ListDirectory ListDirectory 获取文件目录信息列表
-	ListDirectory(context.Context, *emptypb.Empty) (*ListDirectoryReply, error)
-	// UpdateDirectory UpdateDirectory 更新文件目录信息
-	UpdateDirectory(context.Context, *UpdateDirectoryRequest) (*UpdateDirectoryReply, error)
+type DirectoryServiceHTTPServer interface {
+	// CreateDirectory CreateDirectory 按完整路径创建目录
+	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error)
+	// DeleteDirectory DeleteDirectory 删目录（连带回收子树对象）
+	DeleteDirectory(context.Context, *DeleteDirectoryRequest) (*DeleteDirectoryResponse, error)
+	// GetDirectory GetDirectory 按主键查询目录
+	GetDirectory(context.Context, *GetDirectoryRequest) (*GetDirectoryResponse, error)
+	// ListDirectory ListDirectory 全量取回某 app 的目录（按 path 升序，内存建树）
+	ListDirectory(context.Context, *ListDirectoryRequest) (*ListDirectoryResponse, error)
+	// UpdateDirectory UpdateDirectory 改名 / 移动 / 改策略
+	UpdateDirectory(context.Context, *UpdateDirectoryRequest) (*UpdateDirectoryResponse, error)
 }
 
-func RegisterDirectoryHTTPServer(s *http.Server, srv DirectoryHTTPServer) {
+func RegisterDirectoryServiceHTTPServer(s *http.Server, srv DirectoryServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/resource/api/directory", _Directory_GetDirectory0_HTTP_Handler(srv))
-	r.GET("/resource/api/directories", _Directory_ListDirectory0_HTTP_Handler(srv))
-	r.POST("/resource/api/directory", _Directory_CreateDirectory0_HTTP_Handler(srv))
-	r.PUT("/resource/api/directory", _Directory_UpdateDirectory0_HTTP_Handler(srv))
-	r.DELETE("/resource/api/directory", _Directory_DeleteDirectory0_HTTP_Handler(srv))
+	r.GET("/resource/api/directory", _DirectoryService_ListDirectory0_HTTP_Handler(srv))
+	r.GET("/resource/api/directory/detail", _DirectoryService_GetDirectory0_HTTP_Handler(srv))
+	r.POST("/resource/api/directory", _DirectoryService_CreateDirectory0_HTTP_Handler(srv))
+	r.PUT("/resource/api/directory", _DirectoryService_UpdateDirectory0_HTTP_Handler(srv))
+	r.DELETE("/resource/api/directory", _DirectoryService_DeleteDirectory0_HTTP_Handler(srv))
 }
 
-func _Directory_GetDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
+func _DirectoryService_ListDirectory0_HTTP_Handler(srv DirectoryServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListDirectoryRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationDirectoryServiceListDirectory)
+		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
+			return srv.ListDirectory(ctx, req.(*ListDirectoryRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListDirectoryResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _DirectoryService_GetDirectory0_HTTP_Handler(srv DirectoryServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetDirectoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationDirectoryGetDirectory)
+		http.SetOperation(ctx, OperationDirectoryServiceGetDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.GetDirectory(ctx, req.(*GetDirectoryRequest))
 		})
@@ -62,31 +80,12 @@ func _Directory_GetDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx htt
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetDirectoryReply)
+		reply := out.(*GetDirectoryResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Directory_ListDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in emptypb.Empty
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationDirectoryListDirectory)
-		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
-			return srv.ListDirectory(ctx, req.(*emptypb.Empty))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*ListDirectoryReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Directory_CreateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
+func _DirectoryService_CreateDirectory0_HTTP_Handler(srv DirectoryServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in CreateDirectoryRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -95,7 +94,7 @@ func _Directory_CreateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx 
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationDirectoryCreateDirectory)
+		http.SetOperation(ctx, OperationDirectoryServiceCreateDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.CreateDirectory(ctx, req.(*CreateDirectoryRequest))
 		})
@@ -103,12 +102,12 @@ func _Directory_CreateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx 
 		if err != nil {
 			return err
 		}
-		reply := out.(*CreateDirectoryReply)
+		reply := out.(*CreateDirectoryResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Directory_UpdateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
+func _DirectoryService_UpdateDirectory0_HTTP_Handler(srv DirectoryServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UpdateDirectoryRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -117,7 +116,7 @@ func _Directory_UpdateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx 
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationDirectoryUpdateDirectory)
+		http.SetOperation(ctx, OperationDirectoryServiceUpdateDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.UpdateDirectory(ctx, req.(*UpdateDirectoryRequest))
 		})
@@ -125,18 +124,18 @@ func _Directory_UpdateDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx 
 		if err != nil {
 			return err
 		}
-		reply := out.(*UpdateDirectoryReply)
+		reply := out.(*UpdateDirectoryResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Directory_DeleteDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx http.Context) error {
+func _DirectoryService_DeleteDirectory0_HTTP_Handler(srv DirectoryServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in DeleteDirectoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationDirectoryDeleteDirectory)
+		http.SetOperation(ctx, OperationDirectoryServiceDeleteDirectory)
 		h := ctx.Middleware(func(ctx context.Context, req any) (any, error) {
 			return srv.DeleteDirectory(ctx, req.(*DeleteDirectoryRequest))
 		})
@@ -144,32 +143,32 @@ func _Directory_DeleteDirectory0_HTTP_Handler(srv DirectoryHTTPServer) func(ctx 
 		if err != nil {
 			return err
 		}
-		reply := out.(*DeleteDirectoryReply)
+		reply := out.(*DeleteDirectoryResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-type DirectoryHTTPClient interface {
-	CreateDirectory(ctx context.Context, req *CreateDirectoryRequest, opts ...http.CallOption) (rsp *CreateDirectoryReply, err error)
-	DeleteDirectory(ctx context.Context, req *DeleteDirectoryRequest, opts ...http.CallOption) (rsp *DeleteDirectoryReply, err error)
-	GetDirectory(ctx context.Context, req *GetDirectoryRequest, opts ...http.CallOption) (rsp *GetDirectoryReply, err error)
-	ListDirectory(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *ListDirectoryReply, err error)
-	UpdateDirectory(ctx context.Context, req *UpdateDirectoryRequest, opts ...http.CallOption) (rsp *UpdateDirectoryReply, err error)
+type DirectoryServiceHTTPClient interface {
+	CreateDirectory(ctx context.Context, req *CreateDirectoryRequest, opts ...http.CallOption) (rsp *CreateDirectoryResponse, err error)
+	DeleteDirectory(ctx context.Context, req *DeleteDirectoryRequest, opts ...http.CallOption) (rsp *DeleteDirectoryResponse, err error)
+	GetDirectory(ctx context.Context, req *GetDirectoryRequest, opts ...http.CallOption) (rsp *GetDirectoryResponse, err error)
+	ListDirectory(ctx context.Context, req *ListDirectoryRequest, opts ...http.CallOption) (rsp *ListDirectoryResponse, err error)
+	UpdateDirectory(ctx context.Context, req *UpdateDirectoryRequest, opts ...http.CallOption) (rsp *UpdateDirectoryResponse, err error)
 }
 
-type DirectoryHTTPClientImpl struct {
+type DirectoryServiceHTTPClientImpl struct {
 	cc *http.Client
 }
 
-func NewDirectoryHTTPClient(client *http.Client) DirectoryHTTPClient {
-	return &DirectoryHTTPClientImpl{client}
+func NewDirectoryServiceHTTPClient(client *http.Client) DirectoryServiceHTTPClient {
+	return &DirectoryServiceHTTPClientImpl{client}
 }
 
-func (c *DirectoryHTTPClientImpl) CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...http.CallOption) (*CreateDirectoryReply, error) {
-	var out CreateDirectoryReply
+func (c *DirectoryServiceHTTPClientImpl) CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...http.CallOption) (*CreateDirectoryResponse, error) {
+	var out CreateDirectoryResponse
 	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationDirectoryCreateDirectory))
+	opts = append(opts, http.Operation(OperationDirectoryServiceCreateDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -178,11 +177,11 @@ func (c *DirectoryHTTPClientImpl) CreateDirectory(ctx context.Context, in *Creat
 	return &out, err
 }
 
-func (c *DirectoryHTTPClientImpl) DeleteDirectory(ctx context.Context, in *DeleteDirectoryRequest, opts ...http.CallOption) (*DeleteDirectoryReply, error) {
-	var out DeleteDirectoryReply
+func (c *DirectoryServiceHTTPClientImpl) DeleteDirectory(ctx context.Context, in *DeleteDirectoryRequest, opts ...http.CallOption) (*DeleteDirectoryResponse, error) {
+	var out DeleteDirectoryResponse
 	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationDirectoryDeleteDirectory))
+	opts = append(opts, http.Operation(OperationDirectoryServiceDeleteDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
@@ -191,11 +190,24 @@ func (c *DirectoryHTTPClientImpl) DeleteDirectory(ctx context.Context, in *Delet
 	return &out, err
 }
 
-func (c *DirectoryHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirectoryRequest, opts ...http.CallOption) (*GetDirectoryReply, error) {
-	var out GetDirectoryReply
+func (c *DirectoryServiceHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirectoryRequest, opts ...http.CallOption) (*GetDirectoryResponse, error) {
+	var out GetDirectoryResponse
+	pattern := "/resource/api/directory/detail"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationDirectoryServiceGetDirectory))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *DirectoryServiceHTTPClientImpl) ListDirectory(ctx context.Context, in *ListDirectoryRequest, opts ...http.CallOption) (*ListDirectoryResponse, error) {
+	var out ListDirectoryResponse
 	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationDirectoryGetDirectory))
+	opts = append(opts, http.Operation(OperationDirectoryServiceListDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -204,24 +216,11 @@ func (c *DirectoryHTTPClientImpl) GetDirectory(ctx context.Context, in *GetDirec
 	return &out, err
 }
 
-func (c *DirectoryHTTPClientImpl) ListDirectory(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*ListDirectoryReply, error) {
-	var out ListDirectoryReply
-	pattern := "/resource/api/directories"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationDirectoryListDirectory))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *DirectoryHTTPClientImpl) UpdateDirectory(ctx context.Context, in *UpdateDirectoryRequest, opts ...http.CallOption) (*UpdateDirectoryReply, error) {
-	var out UpdateDirectoryReply
+func (c *DirectoryServiceHTTPClientImpl) UpdateDirectory(ctx context.Context, in *UpdateDirectoryRequest, opts ...http.CallOption) (*UpdateDirectoryResponse, error) {
+	var out UpdateDirectoryResponse
 	pattern := "/resource/api/directory"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationDirectoryUpdateDirectory))
+	opts = append(opts, http.Operation(OperationDirectoryServiceUpdateDirectory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

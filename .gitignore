@@ -39,5 +39,9 @@ bin/
 web_ts/
 autocode/
 .env
+.env.*
+!.env.example
 static/local/
 static/chunk/
+__debug_*
+static/export/

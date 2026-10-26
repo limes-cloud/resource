@@ -1,171 +1,145 @@
 syntax = "proto3";
 
 package resource.api.file;
-option go_package = ".;file";
-option java_multiple_files = true;
-option java_package = "resource.api.file";
 
 import "validate/validate.proto";
 
+option go_package = "resource/api/file;file";
+
+// FileItem 文件条目（列表项，含派生 URL）
+message FileItem {
+  uint32 id          = 1;
+  string app         = 2;
+  uint32 user_id     = 3;
+  uint32 directory_id = 4;
+  string name        = 5;
+  uint32 object_id   = 6;
+  string size        = 7; // 对象大小（字节）
+  string ext         = 8; // 后缀（来自 object，显示用）
+  string url         = 9; // 派生可读 URL
+  uint32 created_at  = 10;
+  string key         = 11; // 对象 key（md5.ext），业务持久化只用它
+}
+
+// PartURL 单个分片的预签名上传地址
+message PartURL {
+  uint32 part_number = 1;
+  string url         = 2;
+}
+
+// ---- GetUserFile ----
 message GetUserFileRequest {
-  optional string directory = 1[(validate.rules).string = {min_len: 1}];
-  optional uint32 id = 2[(validate.rules).uint32 = {gte: 1}];
-  optional string key = 3[(validate.rules).string = {min_len: 1}];
+  uint32 id = 1 [(validate.rules).uint32 = {gte: 1}];
+}
+message GetUserFileResponse {
+  FileItem file = 1;
 }
 
-message GetUserFileReply {
-  uint32 id = 1;
-  uint32 directoryId = 2;
-  string name = 3;
-  string type = 4;
-  uint32 size = 5;
-  string sha = 6;
-  string key = 7;
-  uint32 createdAt = 9;
-  uint32 updatedAt = 10;
-}
-
-message StaticFileRequest{
-  string store = 1[(validate.rules).string = {min_len:1}];
-  string key = 9[(validate.rules).string = {min_len:1}];
-  string expire = 2;
-  string sign = 3;
-  uint32 width = 4;
-  uint32 height = 5;
-  string mode = 6;
-  bool download = 7;
-  string saveName = 8;
-}
-
-message StaticFileReply{
-  bytes data = 1;
-  string mime = 2;
-}
-
-message DownloadTargetFileRequest{
-  string key = 1[(validate.rules).string = {min_len:1}];
-  string saveName = 4;
-}
-
-
-message DownloadFileRequest{
-  string key = 1[(validate.rules).string = {min_len:1}];
-  string expire = 2;
-  string sign = 3;
-  string saveName = 4;
-}
-
-message DownloadFileReply{
-  bytes data = 1;
-  string mime = 2;
-}
-
-message GetFileBytesRequest {
-  string key = 1[(validate.rules).string = {min_len: 1}];
-}
-
-message GetFileBytesReply{
-  bytes data = 1;
-}
-
+// ---- ListUserFile ----
 message ListUserFileRequest {
-  uint32 page = 1[(validate.rules).uint32 = {gt: 0}];
-  uint32 pageSize = 2[(validate.rules).uint32 = {gt: 0,lte:50}];
-  optional string order = 3[(validate.rules).string = {in: ["asc","desc"]}];
-  optional string orderBy = 4[(validate.rules).string = {in: ["id","created_at","updated_at"]}];
-  optional uint32 directoryId = 5;
-  optional string status = 6[(validate.rules).string = {in: [ "PROGRESS","COMPLETED"]}];
-  optional string name = 7;
-  repeated string keyList = 8;
+  uint32 user_id  = 2;
+  uint32 page     = 3;
+  uint32 page_size = 4;
+}
+message ListUserFileResponse {
+  repeated FileItem list = 1;
+  uint32 total           = 2;
 }
 
-message ListUserFileReply {
-  message File {
-    uint32 id = 1;
-    uint32 directoryId = 2;
-    string name = 3;
-    string type = 4;
-    uint32 size = 5;
-    string sha = 6;
-    string key = 7;
-    uint32 createdAt = 9;
-    uint32 updatedAt = 10;
-  }
-
-  uint32 total = 1;
-  repeated File list = 2;
+// ---- ListFile（按目录） ----
+message ListFileRequest {
+  uint32 directory_id = 2;
+  uint32 page         = 3;
+  uint32 page_size    = 4;
+}
+message ListFileResponse {
+  repeated FileItem list = 1;
+  uint32 total           = 2;
 }
 
+// ---- GetUploadChunkSize ----
+message GetUploadChunkSizeRequest {
+  string total_size = 1 [(validate.rules).string = {min_len: 1}];
+}
+message GetUploadChunkSizeResponse {
+  uint32 chunk_size  = 1;
+  uint32 chunk_count = 2;
+}
+
+// ---- PrepareUploadFile ----
 message PrepareUploadFileRequest {
-  optional uint32 directoryId = 1[(validate.rules).uint32 = {gt: 0}];
-  optional string directoryPath = 2[(validate.rules).string = {min_len: 1}];
-  string name = 3[(validate.rules).string = {min_len: 1}];
-  uint32 size = 4[(validate.rules).uint32 = {gt:0}];
-  string sha = 5[(validate.rules).string = {min_len: 1}];
-  string store = 6;
+  string path = 2 [(validate.rules).string = {max_len: 660}];
+  string name = 3 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string ext  = 4 [(validate.rules).string = {max_len: 16, pattern: "^[a-z0-9]*$"}];
+  string md5  = 5 [(validate.rules).string = {min_len: 32, max_len: 32}];
+  string size = 6 [(validate.rules).string = {min_len: 1}];
+}
+message PrepareUploadFileResponse {
+  string   upload_id     = 1;
+  string   md5           = 2;
+  uint32   chunk_size    = 3;
+  uint32   chunk_count   = 4;
+  repeated uint32 upload_chunks = 5; // 已传片号；召回命中时非空
+  bool     skipped       = 6;         // 秒传命中
+  string   url           = 7;         // 秒传命中时的可读 URL
+  string   key           = 8;         // 对象 key（md5.ext），业务持久化只用它
 }
 
-message PrepareUploadFileReply {
-  bool uploaded = 1;
-  optional string key = 2;
-  optional uint32 chunkSize = 3;
-  optional uint32 chunkCount = 4;
-  optional string uploadId = 5;
-  repeated uint32 uploadChunks = 6;
-  optional string sha = 7;
+// ---- GetUploadPartURLs ----
+message GetUploadPartURLsRequest {
+  string   upload_id    = 1 [(validate.rules).string = {min_len: 1}];
+  repeated uint32 part_numbers = 2 [(validate.rules).repeated = {min_items: 1, max_items: 200}];
+}
+message GetUploadPartURLsResponse {
+  repeated PartURL urls = 1;
 }
 
-message UploadChunkFileRequest{
-  bytes data = 1[(validate.rules).bytes = {min_len:0}];
-  string uploadId = 2[(validate.rules).string = {min_len:1}];
-  uint32 index = 3[(validate.rules).uint32 = {gt:0}];;
+// ---- CompleteUpload ----
+message CompleteUploadRequest {
+  string upload_id = 1 [(validate.rules).string = {min_len: 1}];
+}
+message CompleteUploadResponse {
+  string url = 1;
+  string key = 2; // 对象 key（md5.ext），业务持久化只用它
 }
 
-message UploadChunkFileReply{
-  string sha = 1;
-  string key = 2;
-}
-
-message UploadFileRequest{
-  optional uint32 directoryId = 1[(validate.rules).uint32 = {gt: 0}];
-  optional string directoryPath = 2[(validate.rules).string = {min_len: 1}];
-  string name = 3[(validate.rules).string = {min_len: 1}];
-  string sha = 4[(validate.rules).string = {min_len: 1}];
-  bytes data = 5[(validate.rules).bytes = {min_len:0}];
-  string store = 6;
-}
-
-message UploadFileReply{
-  string sha = 1;
-  string key = 2;
-}
-
-message UploadFileByURLRequest{
-  optional string directoryPath = 1[(validate.rules).string = {min_len: 1}];
-  string url = 2[(validate.rules).string = {min_len: 1}];
-  string name = 3[(validate.rules).string = {min_len: 1}];
-  string store = 4;
-}
-
-message UploadFileByURLReply{
-  string sha = 1;
-  string key = 2;
-}
-
+// ---- UpdateUserFile ----
+// app 取自请求上下文（X-App-Key），此处仅 id 固定必传；name/directory_id optional——不传 = 该列不改，传了才校验。
 message UpdateUserFileRequest {
-  uint32 id = 1[(validate.rules).uint32 = {gt: 0}];
-  uint32 directoryId = 2[(validate.rules).uint32 = {gt: 0}];
-  string name = 3[(validate.rules).string = {min_len: 1}];
+  uint32 id           = 1 [(validate.rules).uint32 = {gte: 1}];
+  optional string name         = 3 [(validate.rules).string = {min_len: 1}];
+  optional uint32 directory_id = 4 [(validate.rules).uint32 = {gte: 1}];
+}
+message UpdateUserFileResponse {
+  FileItem file = 1;
 }
 
-message UpdateUserFileReply {
-}
-
+// ---- DeleteUserFile ----
 message DeleteUserFileRequest {
-  repeated uint32 ids = 1[(validate.rules).repeated = {min_items: 1, unique:true, max_items:50}];
+  uint32 id  = 1 [(validate.rules).uint32 = {gte: 1}];
+}
+message DeleteUserFileResponse {
+  uint32 id = 1;
 }
 
-message DeleteUserFileReply {
-  uint32 total = 1;
+// ---- UploadFileByURL ----
+// 服务端从 URL 下载并上传（生成内容落库）；name 含后缀（如 a.png），ext 由其推导；
+// directory_path 不传 = 根目录；store 仅透传，实际落桶以应用配置（AppConfig.store_keyword）为准。
+message UploadFileByURLRequest {
+  string url = 1 [(validate.rules).string = {min_len: 1, max_len: 2048}];
+  string name = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  optional string directory_path = 3 [(validate.rules).string = {max_len: 660}];
+  string store = 4 [(validate.rules).string = {max_len: 64}];
+}
+message UploadFileByURLResponse {
+  string key = 1; // 对象 key（md5.ext），内容指纹唯一、持久可引用（业务存 key，不存临时 URL）
 }
 
+// ---- GetFileURLByKey ----
+// 按对象 key（内容指纹 md5.ext）取可访问地址（快速展示：前端持有 key 即可转真实 URL）
+message GetFileURLByKeyRequest {
+  string key = 1 [(validate.rules).string = {min_len: 1}]; // 对象 key（md5.ext）
+}
+message GetFileURLByKeyReply {
+  string url = 1; // 可访问地址（按 store 的 CDN 鉴权类型生成，TTL 内有效）
+}

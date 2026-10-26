@@ -1,59 +1,66 @@
 syntax = "proto3";
 
 package resource.api.file;
-option go_package = ".;file";
-option java_multiple_files = true;
-option java_package = "resource.api.file";
 
-import "api/file/proto/file.proto";
 import "google/api/annotations.proto";
+import "api/file/proto/file.proto";
 
-service File{
+option go_package = "resource/api/file;file";
 
-  // GetFile 获取指定的文件信息
-  rpc GetUserFile (GetUserFileRequest) returns (GetUserFileReply) {
-    option (google.api.http) = {
-      get: "/resource/api/file",
-    };
+// 约定：不使用 {path} 路径参数，所有入参均经 Request 的 query / body 绑定。
+service FileService {
+  // GetUserFile 取单个文件（响应含完整 url 与 size）
+  rpc GetUserFile(GetUserFileRequest) returns (GetUserFileResponse) {
+    option (google.api.http) = {get: "/resource/api/file/detail"};
   }
 
-  // GetFile 获取指定的文件信息
-  rpc GetFileBytes (GetFileBytesRequest) returns (stream GetFileBytesReply) {}
-
-  // ListUserFile 获取文件信息列表
-  rpc ListUserFile (ListUserFileRequest) returns (ListUserFileReply) {
-    option (google.api.http) = {
-      get: "/resource/api/files",
-    };
+  // ListUserFile 我的文件分页
+  rpc ListUserFile(ListUserFileRequest) returns (ListUserFileResponse) {
+    option (google.api.http) = {get: "/resource/api/file/user"};
   }
 
-  // PrepareUploadFile 预上传文件信息
-  rpc PrepareUploadFile (PrepareUploadFileRequest) returns (PrepareUploadFileReply) {
-    option (google.api.http) = {
-      post: "/resource/api/file/prepare_upload",
-      body: "*",
-    };
+  // ListFile 目录内文件分页
+  rpc ListFile(ListFileRequest) returns (ListFileResponse) {
+    option (google.api.http) = {get: "/resource/api/file"};
   }
 
-  // UploadFile 上传文件
-  rpc UploadFile(UploadFileRequest) returns (UploadFileReply){}
-
-  // UploadFileByURL 上传文件
-  rpc UploadFileByURL(UploadFileByURLRequest) returns (UploadFileByURLReply){}
-
-  // UpdateFile 更新文件信息
-  rpc UpdateUserFile (UpdateUserFileRequest) returns (UpdateUserFileReply) {
-    option (google.api.http) = {
-      put: "/resource/api/file",
-      body: "*"
-    };
+  // GetUploadChunkSize 取分片大小与片数（纯函数，客户端先调它）
+  rpc GetUploadChunkSize(GetUploadChunkSizeRequest) returns (GetUploadChunkSizeResponse) {
+    option (google.api.http) = {get: "/resource/api/file/upload/chunk-size"};
   }
 
-  // DeleteUserFile 删除文件信息
-  rpc DeleteUserFile (DeleteUserFileRequest) returns (DeleteUserFileReply) {
-    option (google.api.http) = {
-      delete: "/resource/api/file",
-    };
+  // PrepareUploadFile 预上传：秒传判定 / 召回 / 建会话
+  rpc PrepareUploadFile(PrepareUploadFileRequest) returns (PrepareUploadFileResponse) {
+    option (google.api.http) = {post: "/resource/api/file/upload/prepare" body: "*"};
   }
 
+  // GetUploadPartURLs 按批取分片上传预签名地址
+  rpc GetUploadPartURLs(GetUploadPartURLsRequest) returns (GetUploadPartURLsResponse) {
+    option (google.api.http) = {post: "/resource/api/file/upload/part-urls" body: "*"};
+  }
+
+  // CompleteUpload 完成分片上传
+  rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadResponse) {
+    option (google.api.http) = {post: "/resource/api/file/upload/complete" body: "*"};
+  }
+
+  // UpdateUserFile 改名 / 移动
+  rpc UpdateUserFile(UpdateUserFileRequest) returns (UpdateUserFileResponse) {
+    option (google.api.http) = {put: "/resource/api/file/user" body: "*"};
+  }
+
+  // DeleteUserFile 删除文件（触发对象回收）
+  rpc DeleteUserFile(DeleteUserFileRequest) returns (DeleteUserFileResponse) {
+    option (google.api.http) = {delete: "/resource/api/file/user"};
+  }
+
+  // UploadFileByURL 服务端从 URL 下载并上传（生成内容落库；name 含后缀）
+  rpc UploadFileByURL(UploadFileByURLRequest) returns (UploadFileByURLResponse) {
+    option (google.api.http) = {post: "/resource/api/file/upload/url" body: "*"};
+  }
+
+  // GetFileURLByKey 按对象 key 取可访问地址
+  rpc GetFileURLByKey(GetFileURLByKeyRequest) returns (GetFileURLByKeyReply) {
+    option (google.api.http) = {get: "/resource/api/file/url-by-key"};
+  }
 }
