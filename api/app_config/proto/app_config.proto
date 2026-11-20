@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package resource.api.app_config;
+
+import "validate/validate.proto";
+
+option go_package = "resource/api/app_config;app_config";
+
+// AppConfigView 应用配置视图
+message AppConfigView {
+  uint32 id                 = 1;
+  string app                = 2;
+  string store_keyword      = 3;
+  string export_store_keyword = 4; // 导出产物的存储后端（必填）
+  string default_accept     = 5;
+  uint32 default_max_size   = 6;
+  uint32 temp_url_ttl       = 7;
+  uint32 export_ttl         = 8;
+  uint32 status             = 9;
+  uint64 quota              = 13; // 存储配额（字节）；0=不限
+  uint64 used_bytes         = 14; // 已用量（字节）；只读
+  uint32 updated_by         = 10;
+  uint32 created_at         = 11;
+  uint32 updated_at         = 12;
+}
+
+// ---- GetAppConfig ----
+message GetAppConfigRequest {
+}
+message GetAppConfigResponse {
+  AppConfigView app_config = 1;
+}
+
+// ---- ListAppConfig ----
+// app 取自请求上下文（X-App-Key）。
+message ListAppConfigRequest {
+  uint32 page      = 1;
+  uint32 page_size = 2;
+  optional uint32 status = 4; // 可选过滤（0 停用 / 1 启用，均可过滤）
+}
+message ListAppConfigResponse {
+  repeated AppConfigView list = 1;
+  uint32 total                = 2;
+}
+
+// ---- CreateAppConfig ----
+message CreateAppConfigRequest {
+  string store_keyword       = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string export_store_keyword = 3 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string default_accept      = 4 [(validate.rules).string = {max_len: 255, pattern: "^(\\*|[a-z0-9]{1,16}(,[a-z0-9]{1,16})*)?$"}];
+  uint32 default_max_size    = 5 [(validate.rules).uint32 = {gte: 1}];
+  uint32 temp_url_ttl        = 6;
+  uint32 export_ttl          = 7;
+  uint32 status              = 8 [(validate.rules).uint32 = {in: [0, 1]}];
+  uint64 quota               = 9; // 存储配额（字节）；0=不限
+}
+message CreateAppConfigResponse {
+  uint32 id = 1;
+}
+
+// ---- UpdateAppConfig ----
+// app 是唯一键（一个 app 只配置一次），取自请求上下文（X-App-Key），不需要 id。
+// 局部更新：其余 optional——不传 = 该列不改；传了才校验。
+message UpdateAppConfigRequest {
+  optional string store_keyword      = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  optional string export_store_keyword = 3 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  optional string default_accept     = 4 [(validate.rules).string = {max_len: 255, pattern: "^(\\*|[a-z0-9]{1,16}(,[a-z0-9]{1,16})*)?$"}];
+  optional uint32 default_max_size   = 5 [(validate.rules).uint32 = {gte: 1}];
+  optional uint32 temp_url_ttl       = 6;
+  optional uint32 export_ttl         = 7;
+  optional uint32 status             = 8 [(validate.rules).uint32 = {in: [0, 1]}];
+  optional uint64 quota              = 9; // 存储配额（字节）；0=不限；传了才改
+}
+message UpdateAppConfigResponse {
+  string app = 1;
+}
+
+// ---- RecalcAppConfigUsage ----
+// app 取自请求上下文（X-App-Key）；按明细重算 used_bytes，用于对账纠漂移。
+message RecalcAppConfigUsageRequest {
+}
+message RecalcAppConfigUsageResponse {
+  string app        = 1;
+  uint64 used_bytes = 2;
+}

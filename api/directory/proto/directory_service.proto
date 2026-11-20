@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package resource.api.directory;
+
+import "google/api/annotations.proto";
+import "api/directory/proto/directory.proto";
+
+option go_package = "resource/api/directory;directory";
+
+// 约定：不使用 {path} 路径参数，所有入参均经 Request 的 query / body 绑定。
+service DirectoryService {
+  // ListDirectory 全量取回某 app 的目录（按 path 升序，内存建树）
+  rpc ListDirectory(ListDirectoryRequest) returns (ListDirectoryResponse) {
+    option (google.api.http) = {get: "/resource/api/directory"};
+  }
+
+  // GetDirectory 按主键查询目录
+  rpc GetDirectory(GetDirectoryRequest) returns (GetDirectoryResponse) {
+    option (google.api.http) = {get: "/resource/api/directory/detail"};
+  }
+
+  // CreateDirectory 按完整路径创建目录
+  rpc CreateDirectory(CreateDirectoryRequest) returns (CreateDirectoryResponse) {
+    option (google.api.http) = {post: "/resource/api/directory" body: "*"};
+  }
+
+  // UpdateDirectory 改名 / 移动 / 改策略
+  rpc UpdateDirectory(UpdateDirectoryRequest) returns (UpdateDirectoryResponse) {
+    option (google.api.http) = {put: "/resource/api/directory" body: "*"};
+  }
+
+  // DeleteDirectory 删目录（连带回收子树对象）
+  rpc DeleteDirectory(DeleteDirectoryRequest) returns (DeleteDirectoryResponse) {
+    option (google.api.http) = {delete: "/resource/api/directory"};
+  }
+}

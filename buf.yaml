@@ -1,0 +1,15 @@
+version: v2
+modules:
+  - path: .
+    excludes:
+      - third_party
+  - path: third_party
+lint:
+  except:
+    - PACKAGE_VERSION_SUFFIX
+    - PACKAGE_DIRECTORY_MATCH
+    - ENUM_VALUE_PREFIX
+    - ENUM_ZERO_VALUE_SUFFIX
+    - ENUM_VALUE_UPPER_SNAKE_CASE
+    - FIELD_LOWER_SNAKE_CASE
+    - SERVICE_SUFFIX

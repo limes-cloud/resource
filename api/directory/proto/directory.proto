@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package resource.api.directory;
+
+import "validate/validate.proto";
+
+option go_package = "resource/api/directory;directory";
+
+// DirectoryView 目录视图
+message DirectoryView {
+  uint32 id         = 1;
+  string app        = 2;
+  string name       = 3;
+  string path       = 4;
+  string accept     = 5;
+  uint32 max_size   = 6;
+  uint32 updated_by = 7;
+  uint32 created_at = 8;
+  uint32 updated_at = 9;
+}
+
+// ---- GetDirectory ----
+message GetDirectoryRequest {
+  uint32 id  = 2 [(validate.rules).uint32 = {gte: 1}];
+}
+message GetDirectoryResponse {
+  DirectoryView directory = 1;
+}
+
+// ---- ListDirectory ----
+message ListDirectoryRequest {
+}
+message ListDirectoryResponse {
+  repeated DirectoryView list = 1;
+}
+
+// ---- CreateDirectory ----
+message CreateDirectoryRequest {
+  string path = 2 [(validate.rules).string = {min_len: 1, max_len: 660}];
+}
+message CreateDirectoryResponse {
+  DirectoryView directory = 1;
+}
+
+// ---- UpdateDirectory ----
+message UpdateDirectoryRequest {
+  uint32 id      = 2 [(validate.rules).uint32 = {gte: 1}];
+  optional string path    = 3 [(validate.rules).string = {min_len: 1, max_len: 660}]; // 可选：新完整路径（改名或移动）；路径分段文法在领域层校验
+  optional string accept  = 4 [(validate.rules).string = {pattern: "^(\\*|[a-z0-9]{1,16}(,[a-z0-9]{1,16})*)?$"}]; // 可选：允许设 ""（禁止所有类型）
+  optional uint32 max_size = 5 [(validate.rules).uint32 = {gte: 1}]; // 可选：新单文件上限（MB）
+}
+message UpdateDirectoryResponse {
+  uint32 id = 1;
+}
+
+// ---- DeleteDirectory ----
+message DeleteDirectoryRequest {
+  uint32 id  = 2 [(validate.rules).uint32 = {gte: 1}];
+}
+message DeleteDirectoryResponse {
+  uint32 id = 1;
+}
