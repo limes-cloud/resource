@@ -13,7 +13,7 @@ const (
 	statusFileDeleting uint8 = 2 // 待删除（软删，后台回收）
 )
 
-// Recycle 回收服务：删目录软删 + 后台分批物理回收（文件行 / 对象桶）。
+// Recycle 回收服务：删目录软删 + 删除后一次性物理回收（文件行 / 对象桶）。
 type Recycle struct {
 	fileRepo      repository.File
 	objectRepo    repository.Object
@@ -27,7 +27,7 @@ func NewRecycle(fileRepo repository.File, objectRepo repository.Object, storeRep
 	return &Recycle{fileRepo: fileRepo, objectRepo: objectRepo, storeRepo: storeRepo, directoryRepo: directoryRepo, appConfig: appConfig}
 }
 
-// DeleteDirectory 删目录（软删）：标记子树文件待删除 + 删 directory 树，物理回收交后台。
+// DeleteDirectory 删目录（软删）：标记子树文件待删除 + 删 directory 树，物理回收由删除动作触发一次。
 func (r *Recycle) DeleteDirectory(ctx core.Context, app string, id uint32) error {
 	cur, err := r.directoryRepo.GetDirectory(ctx, app, id)
 	if err != nil {
@@ -48,19 +48,19 @@ func (r *Recycle) DeleteDirectory(ctx core.Context, app string, id uint32) error
 		return errors.DeleteError()
 	}
 
-	// 待删文件已不计入配额口径（status=2），重算归还；物理删文件行与桶对象由后台 sweep 处理。
+	// 待删文件已不计入配额口径（status=2），重算归还；物理删文件行与桶对象由删除后的 Kick 处理。
 	if _, e := r.appConfig.RecalcUsage(ctx, app); e != nil {
 		ctx.Logger().Warnw("msg", "recalc usage after delete directory error", "app", app, "err", e.Error())
 	}
 	return nil
 }
 
-// SweepDeletedFiles 后台阶段 A：分批硬删 status=待删除 的 file 行，返回本批删除行数。
+// SweepDeletedFiles 分批硬删 status=待删除 的 file 行，返回本批删除行数。仅由删除目录后的即时回收调用。
 func (r *Recycle) SweepDeletedFiles(ctx core.Context, limit int) (int64, error) {
 	return r.fileRepo.DeleteFilesByStatus(ctx, statusFileDeleting, limit)
 }
 
-// SweepUnreferencedObjects 后台阶段 B：扫零引用对象 → 逐个 CAS 删行（防重新上传引用）→ 按 store 批量删桶。
+// SweepUnreferencedObjects 扫零引用对象 → 逐个 CAS 删行（防重新上传引用）→ 按 store 批量删桶。仅由删除目录后的即时回收调用。
 // 返回本批成功回收的对象数。桶删除失败不影响行删除；行删不掉（又被引用）则跳过，下轮重扫。
 func (r *Recycle) SweepUnreferencedObjects(ctx core.Context, limit int) (int, error) {
 	objs, err := r.objectRepo.ScanUnreferenced(ctx, 0, limit)

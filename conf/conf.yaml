@@ -85,7 +85,7 @@ business:
     cleanupInterval: 5m              # 产出物清理周期（expired_at 到期 → 删桶对象 → status=4）
     leaseReclaimInterval: 1m         # 租约恢复周期（leased_at 超租约 → status=3）
     taskReclaimInterval: 1h          # 任务行回收周期（status IN (2,3,4) 且无 export 引用 → DELETE）
-  # ---- 离线对象核对 ----
+  # ---- 后台维护（定时仅过期上传会话 GC；文件回收只由删除目录触发） ----
   objectAudit:
     enable: false
     interval: 24h

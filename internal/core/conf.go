@@ -31,7 +31,7 @@ type Export struct {
 	TaskReclaimInterval  time.Duration // 任务行回收周期（status IN (2,3,4) 且无 export 引用 → DELETE）
 }
 
-// ObjectAudit 离线对象核对（回收 A 类残留）
+// ObjectAudit 后台维护开关（定时仅 GC 过期上传会话；文件回收只由删除目录触发）
 type ObjectAudit struct {
 	Enable    bool          // 是否启用
 	Interval  time.Duration // 扫描周期

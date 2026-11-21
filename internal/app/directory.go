@@ -99,7 +99,8 @@ func (h *directoryHandler) UpdateDirectory(ctx context.Context, req *dirapi.Upda
 	return &dirapi.UpdateDirectoryResponse{Id: req.Id}, nil
 }
 
-// DeleteDirectory 删目录（软删：标记子树待删除 + 删目录树 + 归还配额；随后 Kick 后台立即物理回收，reclaim ticker 兜底补偿）。
+// DeleteDirectory 删目录（软删：标记子树待删除 + 删目录树 + 归还配额）。
+// 删除后立即触发一次文件/对象回收；周期任务不会扫描删除文件。
 func (h *directoryHandler) DeleteDirectory(ctx context.Context, req *dirapi.DeleteDirectoryRequest) (*dirapi.DeleteDirectoryResponse, error) {
 	app, err := currentApp(ctx)
 	if err != nil {
@@ -108,7 +109,6 @@ func (h *directoryHandler) DeleteDirectory(ctx context.Context, req *dirapi.Dele
 	if err := h.recycle.DeleteDirectory(core.MustContext(ctx), app, uint32(req.Id)); err != nil {
 		return nil, err
 	}
-	// 第一层：立即触发后台回收，不等定时 ticker（第二层补偿见 initiator/reclaim）
 	initreclaim.Kick()
 	return &dirapi.DeleteDirectoryResponse{Id: req.Id}, nil
 }
